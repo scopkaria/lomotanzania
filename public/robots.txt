@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Disallow: /agent
+Disallow: /dashboard
+
+Sitemap: https://lomotanzania.com/sitemap.xml

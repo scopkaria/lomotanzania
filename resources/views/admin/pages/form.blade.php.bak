@@ -1,0 +1,702 @@
+<x-app-layout>
+    <x-slot name="header">{{ $page ? 'Edit Page' : 'Add New Page' }}</x-slot>
+
+    @if(session('success'))
+        <div class="mb-4 px-4 py-3 rounded-lg bg-green-50 text-green-800 text-sm font-medium">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 text-red-700 text-sm">
+            <ul class="list-disc pl-4 space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST"
+          action="{{ $page ? route('admin.pages.update', $page) : route('admin.pages.store') }}"
+          enctype="multipart/form-data"
+          x-data="pageBuilder()"
+          x-init="init()">
+        @csrf
+        @if($page) @method('PUT') @endif
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+            {{-- ====== LEFT COLUMN: Main Content ====== --}}
+            <div class="xl:col-span-2 space-y-6">
+
+                {{-- Title (Multilingual) --}}
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-5">
+                        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                            Page Title
+                        </h3>
+                        @include('admin.partials.auto-translate-button')
+                    </div>
+
+                    {{-- Language tabs for title --}}
+                    <div class="flex gap-1 mb-4 border-b border-gray-100">
+                        @foreach($locales as $code)
+                            <button type="button" @click="langTab = '{{ $code }}'"
+                                    :class="langTab === '{{ $code }}' ? 'border-[#FEBC11] text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                                    class="flex items-center gap-1.5 px-4 py-2.5 text-sm border-b-2 transition">
+                                {{ strtoupper($code) }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    @foreach($locales as $code)
+                        <div x-show="langTab === '{{ $code }}'" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Title ({{ strtoupper($code) }}) @if($code === 'en') <span class="text-red-500">*</span> @endif
+                                </label>
+                                <input type="text"
+                                       name="title[{{ $code }}]"
+                                       value="{{ old("title.{$code}", $page ? ($page->title[$code] ?? '') : '') }}"
+                                       placeholder="Page title in {{ strtoupper($code) }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm"
+                                       @if($code === 'en') required @endif>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- ====== PAGE BUILDER: Sections ====== --}}
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-5">
+                        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                            <span class="inline-flex items-center gap-2">
+                                <svg class="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"/></svg>
+                                Page Sections
+                            </span>
+                        </h3>
+                        <span class="text-xs text-gray-400" x-text="sections.length + ' section(s)'"></span>
+                    </div>
+
+                    {{-- Sections list --}}
+                    <div id="sections-container" class="space-y-4 mb-5">
+                        <template x-for="(section, idx) in sections" :key="section._key">
+                            <div class="border border-gray-200 rounded-xl bg-gray-50/50 overflow-hidden"
+                                 :data-index="idx"
+                                 draggable="true"
+                                 @dragstart="dragStart($event, idx)"
+                                 @dragover.prevent="dragOver($event, idx)"
+                                 @drop="drop($event, idx)">
+
+                                {{-- Section header --}}
+                                <div class="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 cursor-move">
+                                    <svg class="w-4 h-4 text-gray-300 shrink-0 cursor-grab" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-green/10 text-brand-green" x-text="sectionLabel(section.type)"></span>
+
+                                    <span class="flex-1 text-sm text-gray-600 truncate" x-text="section.heading?.en || 'Untitled section'"></span>
+
+                                    <input type="hidden" :name="'sections['+idx+'][type]'" :value="section.type">
+                                    <input type="hidden" :name="'sections['+idx+'][order]'" :value="idx">
+
+                                    <button type="button" @click="section._open = !section._open" class="text-gray-400 hover:text-gray-600 transition">
+                                        <svg class="w-4 h-4 transition-transform" :class="section._open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                    <button type="button" @click="removeSection(idx)" class="text-red-400 hover:text-red-600 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+
+                                {{-- Section body --}}
+                                <div x-show="section._open" x-collapse class="p-4 space-y-4">
+
+                                    {{-- Section lang tabs --}}
+                                    <div class="flex gap-1 mb-3 border-b border-gray-100">
+                                        @foreach($locales as $code)
+                                            <button type="button" @click="section._lang = '{{ $code }}'"
+                                                    :class="(section._lang || 'en') === '{{ $code }}' ? 'border-[#FEBC11] text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                                                    class="px-3 py-2 text-xs border-b-2 transition uppercase">{{ $code }}</button>
+                                        @endforeach
+                                    </div>
+
+                                    @foreach($locales as $code)
+                                        <div x-show="(section._lang || 'en') === '{{ $code }}'" class="space-y-3">
+
+                                            {{-- HERO --}}
+                                            <template x-if="section.type === 'hero'">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Heading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][heading][{{ $code }}]'" x-model="section.heading.{{ $code }}" placeholder="Hero heading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Subheading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][subheading][{{ $code }}]'" x-model="section.subheading.{{ $code }}" placeholder="Hero subheading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Button Text ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][button_text][{{ $code }}]'" x-model="section.button_text.{{ $code }}" placeholder="CTA button text" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    @if($code === 'en')
+                                                        <div>
+                                                            <label class="block text-xs font-medium text-gray-600 mb-1">Button URL</label>
+                                                            <input type="text" :name="'sections['+idx+'][button_url]'" x-model="section.button_url" placeholder="/en/contact" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-medium text-gray-600 mb-1">Background Image</label>
+                                                            <div class="flex items-center gap-2">
+                                                                <input type="hidden" :name="'sections['+idx+'][image]'" x-model="section.image">
+                                                                <div x-show="section.image" class="relative inline-block group shrink-0">
+                                                                    <img :src="'/storage/' + section.image" class="w-20 h-14 object-cover rounded-lg border border-gray-200" alt="Preview">
+                                                                    <button type="button" @click="section.image = ''" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-600 transition opacity-0 group-hover:opacity-100">&times;</button>
+                                                                </div>
+                                                                <button type="button" @click="openSectionPicker(idx, 'image')" class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-xs font-semibold text-gray-700 rounded-lg hover:bg-gray-50 hover:border-[#FEBC11] transition">
+                                                                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                                                                    Select Image
+                                                                </button>
+                                                                <button type="button" @click="uploadForSection(idx, 'image', $event)" class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11]/10 text-xs font-semibold text-[#131414] rounded-lg hover:bg-[#FEBC11]/20 transition">
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                                                    Upload
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </template>
+
+                                            {{-- TEXT BLOCK --}}
+                                            <template x-if="section.type === 'text'">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Heading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][heading][{{ $code }}]'" x-model="section.heading.{{ $code }}" placeholder="Section heading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Body ({{ strtoupper($code) }})</label>
+                                                        <textarea :name="'sections['+idx+'][body][{{ $code }}]'" x-model="section.body.{{ $code }}" rows="5" placeholder="Content text or HTML" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></textarea>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            {{-- IMAGE + TEXT --}}
+                                            <template x-if="section.type === 'image_text'">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Heading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][heading][{{ $code }}]'" x-model="section.heading.{{ $code }}" placeholder="Heading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Body ({{ strtoupper($code) }})</label>
+                                                        <textarea :name="'sections['+idx+'][body][{{ $code }}]'" x-model="section.body.{{ $code }}" rows="4" placeholder="Text content" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></textarea>
+                                                    </div>
+                                                    @if($code === 'en')
+                                                        <div class="space-y-3">
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-gray-600 mb-1">Image</label>
+                                                                <div class="flex items-center gap-2">
+                                                                    <input type="hidden" :name="'sections['+idx+'][image]'" x-model="section.image">
+                                                                    <div x-show="section.image" class="relative inline-block group shrink-0">
+                                                                        <img :src="'/storage/' + section.image" class="w-20 h-14 object-cover rounded-lg border border-gray-200" alt="Preview">
+                                                                        <button type="button" @click="section.image = ''" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-600 transition opacity-0 group-hover:opacity-100">&times;</button>
+                                                                    </div>
+                                                                    <button type="button" @click="openSectionPicker(idx, 'image')" class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-xs font-semibold text-gray-700 rounded-lg hover:bg-gray-50 hover:border-[#FEBC11] transition">
+                                                                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                                                                        Select
+                                                                    </button>
+                                                                    <button type="button" @click="uploadForSection(idx, 'image', $event)" class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11]/10 text-xs font-semibold text-[#131414] rounded-lg hover:bg-[#FEBC11]/20 transition">
+                                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                                                        Upload
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-gray-600 mb-1">Layout</label>
+                                                                <select :name="'sections['+idx+'][layout]'" x-model="section.layout" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                                    <option value="image_left">Image Left</option>
+                                                                    <option value="image_right">Image Right</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </template>
+
+                                            {{-- GALLERY --}}
+                                            <template x-if="section.type === 'gallery'">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Heading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][heading][{{ $code }}]'" x-model="section.heading.{{ $code }}" placeholder="Gallery title" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    @if($code === 'en')
+                                                        <div>
+                                                            <label class="block text-xs font-medium text-gray-600 mb-1">Gallery Images</label>
+                                                            <input type="hidden" :name="'sections['+idx+'][images]'" x-model="section.images">
+                                                            {{-- Gallery preview grid --}}
+                                                            <div class="flex flex-wrap gap-2 mb-2" x-show="section.images && section.images.length > 0">
+                                                                <template x-for="(img, gi) in (section.images || '').split(',').filter(i => i.trim())" :key="gi">
+                                                                    <div class="relative group">
+                                                                        <img :src="'/storage/' + img.trim()" class="w-16 h-16 object-cover rounded-lg border border-gray-200" alt="Gallery image">
+                                                                        <button type="button" @click="removeGalleryImage(idx, gi)" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-600 transition opacity-0 group-hover:opacity-100">&times;</button>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                            <div class="flex items-center gap-2">
+                                                                <button type="button" @click="openSectionPicker(idx, 'gallery')" class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-xs font-semibold text-gray-700 rounded-lg hover:bg-gray-50 hover:border-[#FEBC11] transition">
+                                                                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                                                                    Add from Library
+                                                                </button>
+                                                                <button type="button" @click="uploadForSection(idx, 'gallery', $event)" class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11]/10 text-xs font-semibold text-[#131414] rounded-lg hover:bg-[#FEBC11]/20 transition">
+                                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                                                    Upload Images
+                                                                </button>
+                                                            </div>
+                                                            <p class="text-xs text-gray-400 mt-1">Select or upload images for the gallery.</p>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </template>
+
+                                            {{-- CTA --}}
+                                            <template x-if="section.type === 'cta'">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Heading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][heading][{{ $code }}]'" x-model="section.heading.{{ $code }}" placeholder="CTA heading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Subheading ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][subheading][{{ $code }}]'" x-model="section.subheading.{{ $code }}" placeholder="CTA subheading" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Button Text ({{ strtoupper($code) }})</label>
+                                                        <input type="text" :name="'sections['+idx+'][button_text][{{ $code }}]'" x-model="section.button_text.{{ $code }}" placeholder="Button label" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    </div>
+                                                    @if($code === 'en')
+                                                        <div class="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-gray-600 mb-1">Button URL</label>
+                                                                <input type="text" :name="'sections['+idx+'][button_url]'" x-model="section.button_url" placeholder="/en/contact" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-xs font-medium text-gray-600 mb-1">Background Color</label>
+                                                                <input type="text" :name="'sections['+idx+'][bg_color]'" x-model="section.bg_color" placeholder="#083321" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </template>
+
+                                            {{-- CUSTOM HTML --}}
+                                            <template x-if="section.type === 'html'">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">HTML ({{ strtoupper($code) }})</label>
+                                                    <textarea :name="'sections['+idx+'][html][{{ $code }}]'" x-model="section.html.{{ $code }}" rows="8" placeholder="<div>Your custom HTML</div>" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></textarea>
+                                                </div>
+                                            </template>
+
+                                        </div>
+                                    @endforeach
+
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Empty state --}}
+                        <div x-show="sections.length === 0" class="text-center py-12 text-gray-400 text-sm">
+                            <svg class="w-10 h-10 mx-auto text-gray-200 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"/></svg>
+                            No sections yet. Click "Add Section" below to start building.
+                        </div>
+                    </div>
+
+                    {{-- Add section buttons --}}
+                    <div class="border-t border-gray-100 pt-4">
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Add Section</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($sectionTypes as $key => $label)
+                                <button type="button" @click="addSection('{{ $key }}')"
+                                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:border-brand-gold hover:text-brand-gold hover:bg-brand-gold/5 transition">
+                                    @if($key === 'hero')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5"/></svg>
+                                    @elseif($key === 'text')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/></svg>
+                                    @elseif($key === 'image_text')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6Z"/></svg>
+                                    @elseif($key === 'gallery')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5"/></svg>
+                                    @elseif($key === 'cta')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59"/></svg>
+                                    @elseif($key === 'html')
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
+                                    @endif
+                                    {{ $label }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- ====== RIGHT COLUMN: Sidebar ====== --}}
+            <div class="space-y-6">
+
+                {{-- Publish settings --}}
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 mb-4">Settings</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select name="status" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                <option value="draft" @selected(old('status', $page->status ?? 'draft') === 'draft')>Draft</option>
+                                <option value="published" @selected(old('status', $page->status ?? 'draft') === 'published')>Published</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                            <input type="text" name="slug"
+                                   value="{{ old('slug', $page->slug ?? '') }}"
+                                   placeholder="auto-generated-from-title"
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                            <p class="text-xs text-gray-400 mt-1">Leave blank to auto-generate.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Template</label>
+                            <select name="template" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                <option value="default" @selected(old('template', $page->template ?? 'default') === 'default')>Default</option>
+                                <option value="full_width" @selected(old('template', $page->template ?? 'default') === 'full_width')>Full Width</option>
+                                <option value="sidebar" @selected(old('template', $page->template ?? 'default') === 'sidebar')>With Sidebar</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                            <input type="number" name="sort_order"
+                                   value="{{ old('sort_order', $page->sort_order ?? 0) }}"
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- SEO / Meta --}}
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 mb-4">SEO</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+                            <textarea name="meta[description]" rows="3"
+                                      placeholder="Page meta description"
+                                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">{{ old('meta.description', $page->meta['description'] ?? '') }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                            <input type="text" name="meta[keywords]"
+                                   value="{{ old('meta.keywords', $page->meta['keywords'] ?? '') }}"
+                                   placeholder="safari, tanzania, tours"
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 px-5 py-3 bg-brand-gold text-brand-dark text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-yellow-400 transition shadow-sm">
+                        {{ $page ? 'Update Page' : 'Create Page' }}
+                    </button>
+                    <a href="{{ route('admin.pages.index') }}" class="px-5 py-3 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ═══ Shared Section Media Library Modal ═══ --}}
+        <div x-show="pickerOpen" x-transition.opacity
+             class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display:none;">
+            <div @click.outside="pickerOpen = false"
+                 class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+                    <h3 class="font-bold text-gray-900 text-base">Media Library</h3>
+                    <button type="button" @click="pickerOpen = false" class="p-1 hover:bg-gray-100 rounded-lg transition">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3 shrink-0">
+                    <div class="relative flex-1">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                        <input type="text" x-model="mediaSearch" @input.debounce.300ms="fetchMediaLibrary()"
+                               placeholder="Search images…"
+                               class="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#FEBC11]/50 focus:border-[#FEBC11]">
+                    </div>
+                    <button type="button" @click="$refs.sectionUploadInput.click()"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11] text-[#131414] text-xs font-bold rounded-lg hover:bg-yellow-400 transition shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                        Upload
+                    </button>
+                    <input type="file" x-ref="sectionUploadInput" @change="uploadInModal($event)" class="hidden" accept="image/*" multiple>
+                </div>
+                <div class="flex-1 overflow-y-auto p-5">
+                    <div x-show="mediaUploading" class="text-center py-4 text-sm text-gray-500">
+                        <svg class="w-5 h-5 animate-spin mx-auto mb-2 text-[#FEBC11]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        Uploading…
+                    </div>
+                    <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
+                        <template x-for="item in mediaItems" :key="item.id">
+                            <button type="button" @click="toggleMediaSelection(item)"
+                                    class="aspect-square rounded-lg overflow-hidden border-2 transition hover:shadow-md focus:outline-none"
+                                    :class="mediaSelectedIds.includes(item.id) ? 'border-[#FEBC11] ring-2 ring-[#FEBC11]/30 shadow-md' : 'border-transparent hover:border-gray-200'">
+                                <img :src="'/storage/' + item.path" :alt="item.alt_text || item.filename" class="w-full h-full object-cover">
+                            </button>
+                        </template>
+                    </div>
+                    <div x-show="mediaItems.length === 0 && !mediaUploading" class="text-center py-12 text-gray-400 text-sm">
+                        No images found. Upload some!
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between shrink-0">
+                    <p class="text-xs text-gray-400" x-show="mediaSelectedIds.length > 0">
+                        <span x-text="mediaSelectedIds.length"></span> selected
+                    </p>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" @click="pickerOpen = false" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                        <button type="button" @click="confirmMediaSelection()" :disabled="mediaSelectedIds.length === 0"
+                                class="px-4 py-2 bg-[#FEBC11] text-[#131414] text-sm font-bold rounded-lg hover:bg-yellow-400 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                            Use Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Hidden file input for direct section upload --}}
+        <input type="file" x-ref="sectionFileInput" @change="handleSectionUpload($event)" class="hidden" accept="image/*" multiple>
+
+    </form>
+
+    @push('scripts')
+    <script>
+        function pageBuilder() {
+            return {
+                langTab: 'en',
+                sections: [],
+                dragIdx: null,
+
+                // Media picker state
+                pickerOpen: false,
+                pickerTargetIdx: null,
+                pickerTargetField: null, // 'image' or 'gallery'
+                mediaItems: [],
+                mediaSearch: '',
+                mediaSelectedIds: [],
+                mediaSelectedPaths: [],
+                mediaUploading: false,
+
+                init() {
+                    const existing = @json($page ? ($page->sections ?? []) : []);
+                    this.sections = existing.map((s, i) => ({
+                        ...s,
+                        _key: Date.now() + i,
+                        _open: false,
+                        _lang: 'en',
+                        heading:     s.heading     || {en:'',fr:'',de:'',es:''},
+                        subheading:  s.subheading  || {en:'',fr:'',de:'',es:''},
+                        body:        s.body        || {en:'',fr:'',de:'',es:''},
+                        button_text: s.button_text || {en:'',fr:'',de:'',es:''},
+                        html:        s.html        || {en:'',fr:'',de:'',es:''},
+                        image:       s.image       || '',
+                        images:      s.images      || '',
+                        button_url:  s.button_url  || '',
+                        layout:      s.layout      || 'image_left',
+                        bg_color:    s.bg_color    || '',
+                        text_color:  s.text_color  || '',
+                    }));
+                },
+
+                addSection(type) {
+                    this.sections.push({
+                        type,
+                        _key: Date.now() + Math.random(),
+                        _open: true,
+                        _lang: 'en',
+                        order: this.sections.length,
+                        heading:     {en:'',fr:'',de:'',es:''},
+                        subheading:  {en:'',fr:'',de:'',es:''},
+                        body:        {en:'',fr:'',de:'',es:''},
+                        button_text: {en:'',fr:'',de:'',es:''},
+                        html:        {en:'',fr:'',de:'',es:''},
+                        image: '',
+                        images: '',
+                        button_url: '',
+                        layout: 'image_left',
+                        bg_color: '',
+                        text_color: '',
+                    });
+                },
+
+                removeSection(idx) {
+                    if (confirm('Remove this section?')) {
+                        this.sections.splice(idx, 1);
+                    }
+                },
+
+                sectionLabel(type) {
+                    const labels = {hero:'Hero',text:'Text',image_text:'Image+Text',gallery:'Gallery',cta:'CTA',html:'HTML'};
+                    return labels[type] || type;
+                },
+
+                // ── Media picker methods ──
+
+                openSectionPicker(idx, field) {
+                    this.pickerTargetIdx = idx;
+                    this.pickerTargetField = field;
+                    this.mediaSelectedIds = [];
+                    this.mediaSelectedPaths = [];
+                    this.pickerOpen = true;
+                    this.fetchMediaLibrary();
+                },
+
+                toggleMediaSelection(item) {
+                    if (this.pickerTargetField === 'image') {
+                        // Single select for image fields
+                        this.mediaSelectedIds = [item.id];
+                        this.mediaSelectedPaths = [item.path];
+                    } else {
+                        // Multi-select for gallery
+                        const i = this.mediaSelectedIds.indexOf(item.id);
+                        if (i > -1) {
+                            this.mediaSelectedIds.splice(i, 1);
+                            this.mediaSelectedPaths.splice(i, 1);
+                        } else {
+                            this.mediaSelectedIds.push(item.id);
+                            this.mediaSelectedPaths.push(item.path);
+                        }
+                    }
+                },
+
+                confirmMediaSelection() {
+                    const sec = this.sections[this.pickerTargetIdx];
+                    if (!sec) return;
+
+                    if (this.pickerTargetField === 'image') {
+                        sec.image = this.mediaSelectedPaths[0] || '';
+                    } else if (this.pickerTargetField === 'gallery') {
+                        const current = (sec.images || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const merged = [...current, ...this.mediaSelectedPaths];
+                        sec.images = merged.join(', ');
+                    }
+
+                    this.pickerOpen = false;
+                },
+
+                removeGalleryImage(sectionIdx, imageIdx) {
+                    const sec = this.sections[sectionIdx];
+                    const imgs = (sec.images || '').split(',').map(s => s.trim()).filter(Boolean);
+                    imgs.splice(imageIdx, 1);
+                    sec.images = imgs.join(', ');
+                },
+
+                uploadForSection(idx, field, event) {
+                    this.pickerTargetIdx = idx;
+                    this.pickerTargetField = field;
+                    this.$refs.sectionFileInput.multiple = (field === 'gallery');
+                    this.$refs.sectionFileInput.click();
+                },
+
+                async handleSectionUpload(event) {
+                    const files = Array.from(event.target.files);
+                    if (!files.length) return;
+
+                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                    const formData = new FormData();
+                    files.forEach(f => formData.append('files[]', f));
+
+                    try {
+                        const res = await fetch('/admin/media', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+                            body: formData,
+                        });
+                        if (!res.ok) throw new Error('Upload failed');
+                        const data = await res.json();
+                        const media = data.media || [];
+                        const sec = this.sections[this.pickerTargetIdx];
+
+                        if (this.pickerTargetField === 'image' && media.length) {
+                            sec.image = media[0].path;
+                        } else if (this.pickerTargetField === 'gallery') {
+                            const current = (sec.images || '').split(',').map(s => s.trim()).filter(Boolean);
+                            media.forEach(m => current.push(m.path));
+                            sec.images = current.join(', ');
+                        }
+                    } catch (e) {
+                        console.error('Upload error:', e);
+                        alert('Upload failed. Please try again.');
+                    } finally {
+                        event.target.value = '';
+                    }
+                },
+
+                async uploadInModal(event) {
+                    const files = Array.from(event.target.files);
+                    if (!files.length) return;
+                    this.mediaUploading = true;
+
+                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                    const formData = new FormData();
+                    files.forEach(f => formData.append('files[]', f));
+
+                    try {
+                        const res = await fetch('/admin/media', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+                            body: formData,
+                        });
+                        if (!res.ok) throw new Error('Upload failed');
+                        await this.fetchMediaLibrary();
+                    } catch (e) {
+                        console.error('Upload error:', e);
+                        alert('Upload failed. Please try again.');
+                    } finally {
+                        this.mediaUploading = false;
+                        event.target.value = '';
+                    }
+                },
+
+                async fetchMediaLibrary() {
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.mediaSearch) params.append('search', this.mediaSearch);
+                        const res = await fetch('/admin/media/json?' + params.toString(), {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await res.json();
+                        this.mediaItems = data.media?.data || data.media || [];
+                    } catch (e) {
+                        console.error('Failed to load media:', e);
+                    }
+                },
+
+                // ── Drag & drop ──
+
+                dragStart(e, idx) {
+                    this.dragIdx = idx;
+                    e.dataTransfer.effectAllowed = 'move';
+                },
+                dragOver(e, idx) {
+                    e.dataTransfer.dropEffect = 'move';
+                },
+                drop(e, idx) {
+                    if (this.dragIdx === null || this.dragIdx === idx) return;
+                    const item = this.sections.splice(this.dragIdx, 1)[0];
+                    this.sections.splice(idx, 0, item);
+                    this.dragIdx = null;
+                },
+            };
+        }
+    </script>
+    @endpush
+</x-app-layout>
