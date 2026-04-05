@@ -6,7 +6,7 @@
     <div class="relative max-w-4xl mx-auto px-6 py-20 text-center">
         <p class="text-brand-gold text-xs uppercase tracking-[4px] font-semibold mb-4 hero-animate hero-delay-1">{{ __('messages.bespoke_planning') }}</p>
         <h1 class="font-heading text-4xl md:text-5xl font-bold text-white leading-tight hero-animate hero-delay-2">{{ __('messages.design_dream_safari') }}</h1>
-        <p class="mt-5 text-white/70 text-lg leading-relaxed max-w-2xl mx-auto hero-animate hero-delay-3">{{ __('messages.custom_tour_intro') }}</p>
+        <p class="mt-5 text-white/90 text-lg leading-relaxed max-w-2xl mx-auto hero-animate hero-delay-3">{{ __('messages.custom_tour_intro') }}</p>
     </div>
 </div>
 

@@ -14,8 +14,8 @@ return [
     'start_planning'=> 'Start Planning',
     'coming_soon'   => 'Coming soon',
     'countries'     => 'Countries',
-    'categories'    => 'Categories',
-    'safari_types'  => 'Safari Types',
+    'categories'    => 'Budget',
+    'safari_types'  => 'Experiences',
     'explore'       => 'Explore',
     'mega_dest_text'=> 'Discover Tanzania\'s most breathtaking wildlife destinations.',
     'mega_safari_text'=> 'Tailored safari journeys through the heart of East Africa.',
@@ -214,14 +214,14 @@ return [
     'explore_dest'          => 'Explore',
 
     // Tour type & category pages
-    'tour_type_kicker'      => 'Tour Type',
-    'category_kicker'       => 'Category',
+    'tour_type_kicker'      => 'Experience',
+    'category_kicker'       => 'Budget Level',
     'about_type'            => 'About :name',
     'about_category'        => 'About :name',
-    'safaris_for_type'      => 'Safaris for :name',
+    'safaris_for_type'      => ':name Safaris',
     'safaris_for_category'  => ':name Safaris',
-    'no_safaris_type'       => 'No safaris available for this tour type yet.',
-    'no_safaris_category'   => 'No safaris available in this category yet.',
+    'no_safaris_type'       => 'No safaris available for this experience yet.',
+    'no_safaris_category'   => 'No safaris available in this budget level yet.',
 
     // Footer
     'newsletter'            => 'Newsletter',
@@ -236,6 +236,16 @@ return [
     'get_in_touch'          => 'Get In Touch',
     'contact_page'          => 'Contact Page',
     'brand_description'     => 'Luxury safari experiences handcrafted in the heart of Tanzania.',
+
+    // Experiences page
+    'curated_journeys'      => 'Curated Journeys',
+    'experiences_subtitle'  => 'From the vast Serengeti plains to the summit of Kilimanjaro, discover our handcrafted collection of Tanzania\'s most extraordinary safari experiences.',
+    'choose_your_adventure' => 'Choose Your Adventure',
+    'explore_by_experience' => 'Explore by Experience',
+    'explore_experience'    => 'Explore Experience',
+    'no_experiences_yet'    => 'Experiences coming soon. Stay tuned.',
+    'cant_decide'           => 'Not Sure Where to Start?',
+    'cant_decide_desc'      => 'Let our expert safari planners craft a bespoke itinerary tailored to your dreams. Every journey is unique, every moment unforgettable.',
 
     // Safari detail (extra)
     'route_summary_desc'    => 'A quick scan of the grouped day ranges pulled directly from the itinerary.',
@@ -262,7 +272,7 @@ return [
     'safari_details'        => 'Safari Details',
     'days_label'            => 'Days',
     'price_from'            => 'Price From',
-    'tour_type'             => 'Tour Type',
+    'tour_type'             => 'Experience',
     'country'               => 'Country',
     'accept_privacy'        => 'I accept the',
     'privacy_policy'        => 'Privacy Policy',

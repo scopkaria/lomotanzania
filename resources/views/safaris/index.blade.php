@@ -1,13 +1,14 @@
 @extends('layouts.app')
 
-@section('title', __('messages.safari_listing') . ' — ' . ($siteName ?? 'Lomo Tanzania Safari'))
+@section('title', __('messages.safari_listing') . ' - ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
 @push('styles')
 <style>
     /* Filter sidebar sticky */
-    .filter-sidebar { position: sticky; top: 100px; max-height: calc(100vh - 120px); overflow-y: auto; }
-    .filter-sidebar::-webkit-scrollbar { width: 3px; }
-    .filter-sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+    .filter-sidebar {
+        position: sticky;
+        top: 104px;
+    }
 
     /* Filter pill colors */
     .pill-country  { background: #E8F5E9; color: #1B5E20; }
@@ -41,9 +42,19 @@
     /* Checkbox styling */
     .filter-check { accent-color: #083321; }
 
-    /* Line clamp utility */
+    /* Card animation + line clamp utility */
+    .safari-card {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), transform 560ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
+    }
+    .safari-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
     .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
     .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 </style>
 @endpush
 
@@ -51,18 +62,18 @@
 
 <div x-data="safariExplorer()" x-init="init()" x-cloak>
 
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     {{-- HERO HEADER --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     <section class="bg-brand-dark py-14 md:py-20 relative overflow-hidden">
         <div class="absolute inset-0 opacity-15">
             <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&h=500&fit=crop&q=60"
-                 alt="" class="w-full h-full object-cover">
+                 alt=- class="w-full h-full object-cover">
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/50 to-brand-dark/90"></div>
         <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
             <p class="text-[11px] font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.safari_listing_kicker') ?: 'Curated Experiences' }}</p>
-            <h1 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-6">Find Your Perfect Safari</h1>
+            <h1 class="font-heading text-3xl md:text-5xl font-bold uppercase tracking-[0.16em] text-white leading-tight mb-6">Find Your Perfect Safari</h1>
 
             {{-- Search bar --}}
             <div class="max-w-lg mx-auto relative">
@@ -76,9 +87,13 @@
         </div>
     </section>
 
-    {{-- ═══════════════════════════════════════════════════ --}}
+    @if(isset($sections) && $sections->count())
+        @include('partials.render-page-sections', ['sections' => $sections, 'sectionDataMap' => $sectionDataMap ?? []])
+    @endif
+
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     {{-- MAIN CONTENT --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     <section class="bg-brand-light min-h-screen">
         <div class="max-w-[1340px] mx-auto px-4 md:px-6 py-8 md:py-12">
 
@@ -95,15 +110,15 @@
 
             <div class="flex gap-8">
 
-                {{-- ═══════════════════════════════════════ --}}
+                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
                 {{-- LEFT SIDEBAR (Desktop) --}}
-                {{-- ═══════════════════════════════════════ --}}
+                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
                 <aside class="hidden lg:block w-[280px] flex-shrink-0">
                     <div class="filter-sidebar bg-white rounded-lg border border-gray-100 shadow-sm p-5">
                         <div class="flex items-center justify-between mb-5">
                             <h2 class="font-heading text-lg font-bold text-brand-dark">Filters</h2>
                             <button x-show="activeFilterCount > 0" @click="clearAll()"
-                                    class="text-xs text-brand-dark/40 hover:text-brand-dark transition underline underline-offset-2">
+                                    class="text-xs text-brand-dark/90 hover:text-brand-dark transition underline underline-offset-2">
                                 Clear all
                             </button>
                         </div>
@@ -112,15 +127,15 @@
                     </div>
                 </aside>
 
-                {{-- ═══════════════════════════════════════ --}}
+                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
                 {{-- RIGHT CONTENT --}}
-                {{-- ═══════════════════════════════════════ --}}
+                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
                 <div class="flex-1 min-w-0">
 
                     {{-- Results info + active pills --}}
                     <div class="mb-6">
                         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                            <p class="text-sm text-brand-dark/50">
+                            <p class="text-sm text-brand-dark/80">
                                 Showing <span class="font-semibold text-brand-dark" x-text="totalCount"></span> results
                                 <template x-if="search.length > 0">
                                     <span> for "<span class="font-medium text-brand-dark" x-text="search"></span>"</span>
@@ -145,28 +160,25 @@
                     <div class="relative">
                         {{-- Loading overlay --}}
                         <div x-show="loading" x-transition.opacity class="absolute inset-0 bg-brand-light/60 z-10 flex items-start justify-center pt-20">
-                            <div class="flex items-center gap-2 text-sm text-brand-dark/50">
+                            <div class="flex items-center gap-2 text-sm text-brand-dark/80">
                                 <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                Loading…
+                                Loading...
                             </div>
                         </div>
 
                         <div id="safari-grid"
-                             class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                             class="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-3">
                             @include('safaris._cards', ['safaris' => $safaris])
                         </div>
 
-                        {{-- Load more --}}
-                        <div x-show="nextPageUrl" class="text-center mt-10">
-                            <button @click="loadMore()"
-                                    :disabled="loadingMore"
-                                    class="px-8 py-3 border border-brand-dark/20 text-sm font-semibold uppercase tracking-wider text-brand-dark rounded-lg hover:bg-brand-dark hover:text-white transition-all duration-200 disabled:opacity-50">
-                                <span x-show="!loadingMore">Load More Safaris</span>
-                                <span x-show="loadingMore" class="flex items-center gap-2">
-                                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                    Loading…
-                                </span>
-                            </button>
+                        {{-- Infinite scroll sentinel --}}
+                        <div x-ref="sentinel" class="h-4 mt-6"></div>
+                        <div x-show="loadingMore" class="flex items-center justify-center gap-2 py-6 text-sm text-brand-dark/60">
+                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            Loading more safaris...
+                        </div>
+                        <div x-show="!nextPageUrl && totalCount > 0 && !loading" class="text-center py-6">
+                            <p class="text-sm text-brand-dark/40">You've seen all safaris</p>
                         </div>
                     </div>
                 </div>
@@ -174,9 +186,9 @@
         </div>
     </section>
 
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     {{-- MOBILE FILTER DRAWER --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     <div class="lg:hidden fixed inset-0 z-50" x-show="drawerOpen" x-cloak>
         <div class="drawer-backdrop fixed inset-0 bg-black/40"
              :class="drawerOpen && 'open'"
@@ -186,7 +198,7 @@
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                 <h2 class="font-heading text-lg font-bold text-brand-dark">Filters</h2>
                 <button @click="drawerOpen = false" class="p-1 hover:bg-gray-100 rounded">
-                    <svg class="w-5 h-5 text-brand-dark/60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg class="w-5 h-5 text-brand-dark/80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto p-5">
@@ -194,7 +206,7 @@
             </div>
             <div class="px-5 py-4 border-t border-gray-100 flex gap-3">
                 <button @click="clearAll(); drawerOpen = false"
-                        class="flex-1 py-2.5 text-sm font-medium text-brand-dark/60 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        class="flex-1 py-2.5 text-sm font-medium text-brand-dark/80 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                     Clear
                 </button>
                 <button @click="drawerOpen = false"
@@ -231,8 +243,8 @@ document.addEventListener('alpine:init', () => {
         countryMap: @json($countries->pluck('name', 'slug')),
         tourTypeMap: @json($tourTypes->mapWithKeys(fn($t) => [$t->slug => $t->translated('name')])),
         categoryMap: @json($categories->mapWithKeys(fn($c) => [$c->slug => $c->translated('name')])),
-        durationMap: { '1_3': '1–3 Days', '4_7': '4–7 Days', '8_12': '8–12 Days', '12_plus': '12+ Days' },
-        priceMap: { 'under_2k': 'Under $2,000', '2k_5k': '$2K–$5K', '5k_10k': '$5K–$10K', 'over_10k': '$10K+' },
+        durationMap: { '1_3': '1-3 Days', '4_7': '4-7 Days', '8_12': '8-12 Days', '12_plus': '12+ Days' },
+        priceMap: { 'under_2k': 'Under $2,000', '2k_5k': '$2K-$5K', '5k_10k': '$5K-$10K', 'over_10k': '$10K+' },
         monthMap: { '1':'Jan','2':'Feb','3':'Mar','4':'Apr','5':'May','6':'Jun','7':'Jul','8':'Aug','9':'Sep','10':'Oct','11':'Nov','12':'Dec' },
 
         // Computed
@@ -257,6 +269,21 @@ document.addEventListener('alpine:init', () => {
         init() {
             ['selectedCountries','selectedTourTypes','selectedCategories','selectedDurations','selectedPrices','selectedMonths'].forEach(key => {
                 this.$watch(key, () => this.fetchSafaris(), { deep: true });
+            });
+
+            this.$nextTick(() => this.revealCards());
+
+            // Infinite scroll via IntersectionObserver
+            this.$nextTick(() => {
+                const sentinel = this.$refs.sentinel;
+                if (sentinel) {
+                    this._observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting && this.nextPageUrl && !this.loadingMore && !this.loading) {
+                            this.loadMore();
+                        }
+                    }, { rootMargin: '200px' });
+                    this._observer.observe(sentinel);
+                }
             });
         },
 
@@ -302,6 +329,12 @@ document.addEventListener('alpine:init', () => {
             return p;
         },
 
+        revealCards() {
+            document.querySelectorAll('.safari-card:not(.visible)').forEach((el, index) => {
+                setTimeout(() => el.classList.add('visible'), index * 55);
+            });
+        },
+
         async fetchSafaris() {
             this.loading = true;
             const params = this.buildParams();
@@ -319,6 +352,7 @@ document.addEventListener('alpine:init', () => {
                 document.getElementById('safari-grid').innerHTML = data.html;
                 this.totalCount = data.count;
                 this.nextPageUrl = data.next;
+                this.$nextTick(() => this.revealCards());
             } catch (e) {
                 console.error('Filter error:', e);
             } finally {
@@ -336,6 +370,7 @@ document.addEventListener('alpine:init', () => {
                 const data = await resp.json();
                 document.getElementById('safari-grid').insertAdjacentHTML('beforeend', data.html);
                 this.nextPageUrl = data.next;
+                this.$nextTick(() => this.revealCards());
             } catch (e) {
                 console.error('Load more error:', e);
             } finally {

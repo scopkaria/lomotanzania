@@ -157,7 +157,7 @@ document.addEventListener('alpine:init', () => {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
-                this.libraryItems = data.media?.data || data.media || [];
+                this.libraryItems = Array.isArray(data) ? data : (data.media?.data || data.media || data.data || []);
             } catch (e) {
                 console.error('Failed to load media:', e);
             }

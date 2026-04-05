@@ -331,7 +331,7 @@
                         @error('duration') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="tour_type_id" class="block text-sm font-medium text-gray-700 mb-1">Tour Type</label>
+                        <label for="tour_type_id" class="block text-sm font-medium text-gray-700 mb-1">Experience</label>
                         <select name="tour_type_id" id="tour_type_id"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">
                             <option value="">Select…</option>
@@ -342,7 +342,7 @@
                         @error('tour_type_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Budget</label>
                         <select name="category_id" id="category_id"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">
                             <option value="">Select…</option>
@@ -351,6 +351,15 @@
                             @endforeach
                         </select>
                         @error('category_id') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="safari_type" class="block text-sm font-medium text-gray-700 mb-1">Safari Type</label>
+                        <select name="safari_type" id="safari_type"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">
+                            <option value="safari" @selected(old('safari_type', $safari->safari_type ?? 'safari') === 'safari')>Safari</option>
+                            <option value="trekking" @selected(old('safari_type', $safari->safari_type ?? 'safari') === 'trekking')>Trekking</option>
+                        </select>
+                        @error('safari_type') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>

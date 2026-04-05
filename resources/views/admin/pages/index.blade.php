@@ -99,6 +99,8 @@
                                             <p class="text-sm font-semibold text-gray-900">{{ $page->title['en'] ?? '—' }}</p>
                                             @if($page->is_homepage)
                                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#FEBC11]/20 text-[#B8860B]">Homepage</span>
+                                            @elseif($page->isSystemPage())
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#083321]/10 text-[#083321]">System</span>
                                             @endif
                                         </div>
                                         @if(!empty($page->title['fr']) || !empty($page->title['de']))
@@ -125,7 +127,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{{ $page->is_homepage ? url('/en') : url('/en/page/' . $page->slug) }}" target="_blank" rel="noopener"
+                                <a href="{{ $page->liveUrl('en') }}" target="_blank" rel="noopener"
                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-[#083321] hover:bg-[#083321]/5 transition" title="View live page">
                                     <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </a>
@@ -136,7 +138,7 @@
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
                                         Edit
                                     </a>
-                                    @unless($page->is_homepage)
+                                    @unless($page->isSystemPage())
                                         <form method="POST" action="{{ route('admin.pages.destroy', $page) }}" class="inline" onsubmit="return confirm('Delete this page?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition">

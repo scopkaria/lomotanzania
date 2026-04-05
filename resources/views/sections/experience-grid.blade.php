@@ -66,7 +66,7 @@
                     </div>
                     <h3 class="font-heading text-xl font-bold text-white mb-2">{{ $title }}</h3>
                     @if($desc)
-                        <p class="text-sm text-white/60 leading-relaxed">{{ $desc }}</p>
+                        <p class="text-sm text-white/85 leading-relaxed">{{ $desc }}</p>
                     @endif
                 </div>
 

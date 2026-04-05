@@ -829,7 +829,7 @@
                             headers: { 'Accept': 'application/json' }
                         });
                         const data = await res.json();
-                        this.mediaItems = data.media?.data || data.media || [];
+                        this.mediaItems = Array.isArray(data) ? data : (data.media?.data || data.media || data.data || []);
                     } catch (e) {
                         console.error(e);
                     }

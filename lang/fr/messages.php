@@ -14,8 +14,8 @@ return [
     'start_planning'=> 'Commencer à planifier',
     'coming_soon'   => 'Bientôt disponible',
     'countries'     => 'Pays',
-    'categories'    => 'Catégories',
-    'safari_types'  => 'Types de safari',
+    'categories'    => 'Budget',
+    'safari_types'  => 'Expériences',
     'explore'       => 'Explorer',
     'mega_dest_text'=> 'Découvrez les destinations de faune sauvage les plus époustouflantes de Tanzanie.',
     'mega_safari_text'=> 'Des voyages safari sur mesure au cœur de l\'Afrique de l\'Est.',
@@ -214,8 +214,8 @@ return [
     'explore_dest'          => 'Explorer',
 
     // Tour type & category pages
-    'tour_type_kicker'      => 'Type de Circuit',
-    'category_kicker'       => 'Catégorie',
+    'tour_type_kicker'      => 'Expérience',
+    'category_kicker'       => 'Niveau de Budget',
     'about_type'            => 'À Propos de :name',
     'about_category'        => 'À Propos de :name',
     'safaris_for_type'      => 'Safaris pour :name',
@@ -236,6 +236,16 @@ return [
     'get_in_touch'          => 'Contactez-nous',
     'contact_page'          => 'Page de contact',
     'brand_description'     => 'Expériences safari de luxe créées au cœur de la Tanzanie.',
+
+    // Experiences page
+    'curated_journeys'      => 'Voyages sur mesure',
+    'experiences_subtitle'  => 'Des vastes plaines du Serengeti au sommet du Kilimandjaro, découvrez notre collection exclusive des expériences safari les plus extraordinaires de Tanzanie.',
+    'choose_your_adventure' => 'Choisissez votre aventure',
+    'explore_by_experience' => 'Explorer par expérience',
+    'explore_experience'    => 'Découvrir',
+    'no_experiences_yet'    => 'Expériences bientôt disponibles. Restez à l\'écoute.',
+    'cant_decide'           => 'Vous ne savez pas par où commencer ?',
+    'cant_decide_desc'      => 'Laissez nos experts safari concevoir un itinéraire sur mesure, façonné selon vos rêves. Chaque voyage est unique, chaque instant inoubliable.',
 
     // Safari detail (extra)
     'route_summary_desc'    => 'Un aperçu rapide des plages de jours regroupés tirés directement de l\'itinéraire.',

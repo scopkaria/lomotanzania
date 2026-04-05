@@ -52,6 +52,8 @@ class PageController extends Controller
 
     public function index(Request $request)
     {
+        $this->syncSystemPages();
+
         $query = Page::withCount('pageSections')
             ->orderBy('is_homepage', 'desc')
             ->orderBy('sort_order')
@@ -73,6 +75,8 @@ class PageController extends Controller
 
     public function create()
     {
+        $this->syncSystemPages();
+
         return view('admin.pages.form', [
             'page'         => null,
             'sectionsJson' => [],
@@ -116,6 +120,8 @@ class PageController extends Controller
 
     public function edit(Page $page)
     {
+        $this->syncSystemPages();
+
         $sections = $page->pageSections()->with('heroSlides')->get();
 
         $sectionsJson = $sections->map(fn ($s) => [
@@ -152,8 +158,8 @@ class PageController extends Controller
     {
         $validated = $this->validatePage($request, $page->id);
 
-        $slug = $validated['slug'] ?: Str::slug($validated['title']['en']);
-        if ($slug !== $page->slug) {
+        $slug = $page->isSystemPage() ? $page->slug : ($validated['slug'] ?: Str::slug($validated['title']['en']));
+        if (!$page->isSystemPage() && $slug !== $page->slug) {
             $slug = $this->ensureUniqueSlug($slug, $page->id);
         }
 
@@ -165,14 +171,14 @@ class PageController extends Controller
             'title'           => $validated['title'],
             'slug'            => $slug,
             'status'          => $validated['status'],
-            'is_homepage'     => $request->boolean('is_homepage'),
+            'is_homepage'     => $page->isSystemPage() ? $page->is_homepage : $request->boolean('is_homepage'),
             'template'        => $validated['template'] ?? 'default',
             'layout'          => $validated['layout'] ?? 'full_width',
             'bg_color'        => $validated['bg_color'] ?? null,
             'section_spacing' => $validated['section_spacing'] ?? 'normal',
             'sort_order'      => $validated['sort_order'] ?? 0,
             'meta'            => $validated['meta'] ?? [],
-            'type'            => $request->boolean('is_homepage') ? 'homepage' : 'page',
+            'type'            => $page->is_homepage ? 'homepage' : ($page->type === 'system' ? 'system' : ($request->boolean('is_homepage') ? 'homepage' : 'page')),
         ]);
 
         $this->syncSections($page, $request->input('sections', []));
@@ -185,6 +191,11 @@ class PageController extends Controller
 
     public function destroy(Page $page)
     {
+        if ($page->isSystemPage()) {
+            return redirect()->route('admin.pages.index')
+                ->with('success', 'This core page is managed by the system and cannot be deleted.');
+        }
+
         $page->delete();
         return redirect()->route('admin.pages.index')
             ->with('success', 'Page deleted successfully.');
@@ -283,6 +294,157 @@ class PageController extends Controller
         }
 
         return $data;
+    }
+
+    protected function syncSystemPages(): void
+    {
+        $definitions = [
+            [
+                'slug' => 'homepage',
+                'title' => ['en' => 'Homepage', 'fr' => 'Homepage', 'de' => 'Homepage', 'es' => 'Homepage'],
+                'status' => 'published',
+                'is_homepage' => true,
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 0,
+                'type' => 'homepage',
+                'meta' => ['description' => 'Homepage content and hero sections.'],
+            ],
+            [
+                'slug' => 'safaris',
+                'title' => ['en' => 'Safaris', 'fr' => 'Safaris', 'de' => 'Safaris', 'es' => 'Safaris'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 10,
+                'type' => 'system',
+                'meta' => ['description' => 'Safari listing hero and intro content.'],
+            ],
+            [
+                'slug' => 'destinations',
+                'title' => ['en' => 'Destinations', 'fr' => 'Destinations', 'de' => 'Destinations', 'es' => 'Destinations'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 20,
+                'type' => 'system',
+                'meta' => ['description' => 'Destination listing intro and filter copy.'],
+            ],
+            [
+                'slug' => 'experiences',
+                'title' => ['en' => 'Experiences', 'fr' => 'Experiences', 'de' => 'Experiences', 'es' => 'Experiences'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 30,
+                'type' => 'system',
+                'meta' => ['description' => 'Experiences page messaging and support content.'],
+            ],
+            [
+                'slug' => 'blog',
+                'title' => ['en' => 'Blog', 'fr' => 'Blog', 'de' => 'Blog', 'es' => 'Blog'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 40,
+                'type' => 'system',
+                'meta' => ['description' => 'Blog landing page intro content.'],
+            ],
+            [
+                'slug' => 'contact',
+                'title' => ['en' => 'Contact', 'fr' => 'Contact', 'de' => 'Contact', 'es' => 'Contact'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 50,
+                'type' => 'system',
+                'meta' => ['description' => 'Contact page intro, support details, and map widgets.'],
+            ],
+            [
+                'slug' => 'about-us',
+                'title' => ['en' => 'About Us', 'fr' => 'About Us', 'de' => 'About Us', 'es' => 'About Us'],
+                'status' => 'published',
+                'template' => 'default',
+                'layout' => 'full_width',
+                'section_spacing' => 'normal',
+                'sort_order' => 60,
+                'type' => 'page',
+                'meta' => ['description' => 'About page sections and company story.'],
+            ],
+        ];
+
+        foreach ($definitions as $definition) {
+            $page = Page::firstOrCreate(
+                ['slug' => $definition['slug']],
+                $definition,
+            );
+
+            if (! $page->pageSections()->exists()) {
+                foreach ($this->defaultSectionsForSlug($page->slug) as $index => $section) {
+                    $page->pageSections()->create([
+                        'section_type' => $section['section_type'],
+                        'order' => $index,
+                        'is_active' => true,
+                        'data' => $section['data'],
+                    ]);
+                }
+            }
+        }
+    }
+
+    protected function defaultSectionsForSlug(string $slug): array
+    {
+        return match ($slug) {
+            'safaris' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'Safari listing intro'],
+                    'body' => ['en' => '<p>Edit this section from the backend to control the safari listing introduction, trust signals, or planning tips shown above the grid.</p>'],
+                ],
+            ]],
+            'destinations' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'Destinations intro'],
+                    'body' => ['en' => '<p>Use this editable intro block for destination highlights, planning advice, or seasonal guidance above the filters and cards.</p>'],
+                ],
+            ]],
+            'experiences' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'Experiences intro'],
+                    'body' => ['en' => '<p>Introduce your signature experiences here and keep the content fully editable from the CMS.</p>'],
+                ],
+            ]],
+            'blog' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'Blog intro'],
+                    'body' => ['en' => '<p>Add editorial positioning, author notes, or featured-story copy for the blog landing page here.</p>'],
+                ],
+            ]],
+            'contact' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'Contact page intro'],
+                    'body' => ['en' => '<p>Add welcome text, support promises, office details, or travel-planning notes for the contact page here.</p>'],
+                ],
+            ]],
+            'about-us' => [[
+                'section_type' => 'text',
+                'data' => [
+                    'heading' => ['en' => 'About Lomo'],
+                    'body' => ['en' => '<p>Tell your brand story, mission, and team values here using the page builder.</p>'],
+                ],
+            ]],
+            default => [],
+        };
     }
 
     // ─── VALIDATION ─────────────────────────────────────────

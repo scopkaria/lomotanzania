@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AccommodationController;
 use App\Http\Controllers\Admin\AgentController as AdminAgentController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\SafariRequestController as AdminSafariRequestController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DestinationController;
 use App\Http\Controllers\Admin\InquiryController as AdminInquiryController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PlannerSettingController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\SafariController;
@@ -16,8 +19,9 @@ use App\Http\Controllers\Admin\SafariPlanController as AdminSafariPlanController
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TourTypeController;
+use App\Http\Controllers\Admin\WorkerController;
+use App\Http\Controllers\Api\ChatController as ApiChatController;
 use App\Http\Controllers\Agent\Auth\AgentSessionController;
-use App\Http\Controllers\Agent\Auth\RegisteredAgentController;
 use App\Http\Controllers\Agent\BookingController as AgentBookingController;
 use App\Http\Controllers\Agent\DashboardController as AgentDashboardController;
 use App\Http\Controllers\Agent\ProfileController as AgentProfileController;
@@ -27,6 +31,7 @@ use App\Http\Controllers\Admin\HeroSettingController;
 use App\Http\Controllers\Admin\HomepageController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuBuilderController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\BlogController;
@@ -56,10 +61,15 @@ Route::prefix('{locale}')
     ->middleware(SetLocale::class)
     ->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
-        Route::get('/countries/{slug}', [HomeController::class, 'country'])->name('countries.show');
-        Route::get('/types/{slug}', [HomeController::class, 'tourType'])->name('tour-types.show');
-        Route::get('/categories/{slug}', [HomeController::class, 'category'])->name('categories.show');
+        Route::get('/destinations', [HomeController::class, 'destinationIndex'])->name('destinations.index');
+        Route::get('/destinations/tanzania', fn (string $locale) => redirect()->route('countries.show', ['locale' => $locale, 'slug' => 'tanzania']))->name('destinations.tanzania');
         Route::get('/destinations/{slug}', [HomeController::class, 'destination'])->name('destinations.show');
+        Route::get('/countries', [HomeController::class, 'countryIndex'])->name('countries.index');
+        Route::get('/countries/{slug}', [HomeController::class, 'country'])->name('countries.show');
+        Route::get('/trekking', [HomeController::class, 'trekkingIndex'])->name('trekking.index');
+        Route::get('/experiences', [HomeController::class, 'experienceIndex'])->name('experiences.index');
+        Route::get('/types/{slug}', [HomeController::class, 'tourType'])->name('tour-types.show');
+        Route::get('/budget/{slug}', [HomeController::class, 'category'])->name('categories.show');
         Route::get('/safaris', [HomeController::class, 'safariIndex'])->name('safaris.index');
         Route::get('/safaris/{slug}/download-pdf', [HomeController::class, 'downloadPdf'])->name('safaris.pdf');
         Route::get('/safaris/{slug}', [HomeController::class, 'show'])->name('safaris.show');
@@ -68,6 +78,9 @@ Route::prefix('{locale}')
 
         Route::get('/custom-tour', [CustomTourController::class, 'create'])->name('custom-tour');
         Route::post('/custom-tour', [CustomTourController::class, 'store'])->name('custom-tour.store');
+
+        Route::get('/contact', [CustomTourController::class, 'contact'])->name('contact');
+        Route::post('/contact', [CustomTourController::class, 'contactStore'])->middleware('throttle:6,10')->name('contact.store');
 
         Route::get('/plan-safari', [PlanSafariController::class, 'create'])->name('plan-safari');
         Route::post('/plan-safari/submit', [PlanSafariController::class, 'store'])->name('plan-safari.store');
@@ -82,10 +95,26 @@ Route::prefix('{locale}')
         Route::get('/safaris/g/{slug}', [SeoPageController::class, 'show'])->name('seo.page');
     });
 
+// Dashboard redirect — route users to correct dashboard based on role
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    $user = auth()->user();
+    if (! $user) return redirect('/login');
 
+    return match ($user->role) {
+        'super_admin' => redirect()->route('super-admin.dashboard'),
+        'admin'       => redirect()->route('admin.dashboard'),
+        'worker'      => redirect()->route('worker.dashboard'),
+        'agent'       => redirect()->route('agent.dashboard'),
+        default       => redirect('/login'),
+    };
+})->middleware('auth')->name('dashboard');
+
+// ─── Super Admin Routes ──────────────────────────────────────
+Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+});
+
+// ─── Admin Routes ────────────────────────────────────────────
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
@@ -130,6 +159,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+
+    Route::get('appearance/menu', [MenuBuilderController::class, 'index'])->name('appearance.menu.index');
+    Route::post('appearance/menu', [MenuBuilderController::class, 'store'])->name('appearance.menu.store');
+    Route::put('appearance/menu/sort', [MenuBuilderController::class, 'sort'])->name('appearance.menu.sort');
+    Route::put('appearance/menu/{menuItem}', [MenuBuilderController::class, 'update'])->name('appearance.menu.update');
+    Route::delete('appearance/menu/{menuItem}', [MenuBuilderController::class, 'destroy'])->name('appearance.menu.destroy');
 
     Route::get('planner-settings', [PlannerSettingController::class, 'edit'])->name('planner-settings.edit');
     Route::put('planner-settings', [PlannerSettingController::class, 'update'])->name('planner-settings.update');
@@ -183,6 +218,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // SEO Dashboard & Analysis
     Route::get('seo', [SeoController::class, 'dashboard'])->name('seo.dashboard');
+    Route::get('seo/search-engines', [SeoController::class, 'searchEngines'])->name('seo.search-engines');
+    Route::put('seo/search-engines', [SeoController::class, 'updateSearchEngines'])->name('seo.search-engines.update');
     Route::post('seo/analyze', [SeoController::class, 'analyze'])->name('seo.analyze');
     Route::post('seo/analyze-all', [SeoController::class, 'analyzeAll'])->name('seo.analyze-all');
     Route::post('seo/optimize', [SeoController::class, 'optimize'])->name('seo.optimize');
@@ -238,22 +275,59 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Language Management
     Route::resource('languages', LanguageController::class)->except(['show']);
+
+    // Account Settings
+    Route::get('account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('account', [AccountController::class, 'update'])->name('account.update');
+    Route::post('account/email', [AccountController::class, 'updateEmail'])->name('account.update-email');
+    Route::get('account/verify-email/{token}', [AccountController::class, 'verifyEmail'])->name('account.verify-email');
+    Route::put('account/password', [AccountController::class, 'updatePassword'])->name('account.update-password');
+
+    // Live Chat (Admin)
+    Route::get('chat', [AdminChatController::class, 'index'])->name('chat.index');
+    Route::get('chat/missed', [AdminChatController::class, 'missed'])->name('chat.missed');
+    Route::get('chat/sessions', [AdminChatController::class, 'sessions'])->name('chat.sessions');
+    Route::get('chat/unread-count', [AdminChatController::class, 'unreadCount'])->name('chat.unread-count');
+    Route::get('chat/online-workers', [AdminChatController::class, 'onlineWorkers'])->name('chat.online-workers');
+    Route::get('chat/{chatSession}', [AdminChatController::class, 'show'])->name('chat.show');
+    Route::get('chat/{chatSession}/messages', [AdminChatController::class, 'messages'])->name('chat.messages');
+    Route::post('chat/{chatSession}/reply', [AdminChatController::class, 'reply'])->name('chat.reply');
+    Route::post('chat/{chatSession}/whisper', [AdminChatController::class, 'whisper'])->name('chat.whisper');
+    Route::post('chat/{chatSession}/transfer', [AdminChatController::class, 'transfer'])->name('chat.transfer');
+    Route::post('chat/{chatSession}/typing', [AdminChatController::class, 'typing'])->name('chat.typing');
+    Route::post('chat/{chatSession}/close', [AdminChatController::class, 'close'])->name('chat.close');
+
+    // Workers Management
+    Route::get('workers', [WorkerController::class, 'index'])->name('workers.index');
+    Route::get('workers/create', [WorkerController::class, 'create'])->name('workers.create');
+    Route::get('workers/departments', [WorkerController::class, 'departments'])->name('workers.departments');
+    Route::post('workers/departments', [WorkerController::class, 'storeDepartment'])->name('workers.departments.store');
+    Route::put('workers/departments/{department}', [WorkerController::class, 'updateDepartment'])->name('workers.departments.update');
+    Route::delete('workers/departments/{department}', [WorkerController::class, 'destroyDepartment'])->name('workers.departments.destroy');
+    Route::post('workers', [WorkerController::class, 'store'])->name('workers.store');
+    Route::get('workers/{worker}/edit', [WorkerController::class, 'edit'])->name('workers.edit');
+    Route::put('workers/{worker}', [WorkerController::class, 'update'])->name('workers.update');
+    Route::delete('workers/{worker}', [WorkerController::class, 'destroy'])->name('workers.destroy');
+
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/fetch', [NotificationController::class, 'fetch'])->name('notifications.fetch');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 });
 
 // Agent root redirect
 Route::get('agent', function () {
-    if (auth()->check() && auth()->user()->isAgent() && auth()->user()->agent?->isActive()) {
+    if (auth()->check() && auth()->user()->role === 'agent' && auth()->user()->agent?->isActive()) {
         return redirect()->route('agent.dashboard');
     }
     return redirect()->route('agent.login');
 });
 
-// Agent Auth (guest)
+// Agent Auth (guest) — no register
 Route::middleware('guest')->prefix('agent')->name('agent.')->group(function () {
     Route::get('login', [AgentSessionController::class, 'create'])->name('login');
     Route::post('login', [AgentSessionController::class, 'store'])->name('login.store');
-    Route::get('register', [RegisteredAgentController::class, 'create'])->name('register');
-    Route::post('register', [RegisteredAgentController::class, 'store'])->name('register.store');
 });
 
 // Agent Portal (authenticated + active agents)
@@ -281,10 +355,24 @@ Route::middleware(['auth', 'agent'])->prefix('agent')->name('agent.')->group(fun
     Route::patch('profile', [AgentProfileController::class, 'update'])->name('profile.update');
 });
 
+// ─── Worker Dashboard Routes ─────────────────────────────────
+Route::middleware(['auth', 'worker'])->prefix('worker')->name('worker.')->group(function () {
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+});
+
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Public Chat API (no auth - visitor side)
+Route::prefix('api/chat')->name('api.chat.')->group(function () {
+    Route::post('start', [ApiChatController::class, 'startSession'])->name('start');
+    Route::post('{chatSession}/message', [ApiChatController::class, 'sendMessage'])->name('message');
+    Route::get('{chatSession}/poll', [ApiChatController::class, 'pollMessages'])->name('poll');
+    Route::post('{chatSession}/track-page', [ApiChatController::class, 'trackPage'])->name('track-page');
+    Route::post('{chatSession}/typing', [ApiChatController::class, 'typing'])->name('typing');
+    Route::post('{chatSession}/end', [ApiChatController::class, 'endSession'])->name('end');
 });
 
 require __DIR__.'/auth.php';

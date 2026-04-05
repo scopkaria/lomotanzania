@@ -25,14 +25,14 @@
         </div>
 
         @if(count($images))
-        <div class="grid grid-cols-2 md:grid-cols-{{ $columns }} gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-{{ $columns }} gap-4">
             @foreach($images as $i => $img)
                 @if(!empty($img))
                 <div class="cursor-pointer overflow-hidden rounded-xl reveal"
                      style="transition-delay: {{ ($i + 1) * 50 }}ms;"
                      @click="lightbox = true; current = {{ $i }}">
                     <img src="{{ str_starts_with($img, 'http') ? $img : asset('storage/' . $img) }}"
-                         alt="" loading="lazy"
+                         alt=- loading="lazy"
                          class="w-full h-56 md:h-64 object-cover hover:scale-105 transition-transform duration-500">
                 </div>
                 @endif
@@ -51,17 +51,17 @@
              @keydown.escape.window="lightbox = false"
              @click.self="lightbox = false">
 
-            <button @click="lightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white">
+            <button @click="lightbox = false" class="absolute top-6 right-6 text-white/90 hover:text-white">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
             @if(count($images) > 1)
             <button @click="current = current > 0 ? current - 1 : {{ count($images) - 1 }}"
-                    class="absolute left-4 text-white/70 hover:text-white">
+                    class="absolute left-4 text-white/90 hover:text-white">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </button>
             <button @click="current = current < {{ count($images) - 1 }} ? current + 1 : 0"
-                    class="absolute right-4 text-white/70 hover:text-white">
+                    class="absolute right-4 text-white/90 hover:text-white">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
             @endif
@@ -69,7 +69,7 @@
             @foreach($images as $i => $img)
                 <img x-show="current === {{ $i }}"
                      src="{{ str_starts_with($img, 'http') ? $img : asset('storage/' . $img) }}"
-                     alt="" class="max-h-[85vh] max-w-[90vw] object-contain rounded-lg">
+                     alt=- class="max-h-[85vh] max-w-[90vw] object-contain rounded-lg">
             @endforeach
         </div>
         @endif

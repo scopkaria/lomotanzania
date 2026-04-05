@@ -93,6 +93,7 @@
 @push('styles')
 <style>
     .blog-content { font-family: 'Inter', sans-serif; }
+    .blog-content h2, .blog-content h3 { scroll-margin-top: 120px; }
     .blog-content h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; color: #131414; }
     .blog-content h3 { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600; margin: 1.75rem 0 0.75rem; color: #131414; }
     .blog-content p { margin-bottom: 1.25rem; line-height: 1.8; color: rgba(19,20,20,0.7); }
@@ -101,15 +102,18 @@
     .blog-content ul li { list-style: disc; }
     .blog-content ol li { list-style: decimal; }
     .blog-content blockquote { border-left: 4px solid #FEBC11; padding: 1rem 1.5rem; margin: 1.5rem 0; background: rgba(254,188,17,0.05); font-style: italic; color: rgba(19,20,20,0.6); }
-    .blog-content img { border-radius: 0.75rem; margin: 1.5rem 0; }
+    .blog-content img { display: block; width: 100%; max-width: 100%; height: auto; object-fit: cover; border-radius: 0.9rem; margin: 1.5rem 0; }
     .blog-content a { color: #083321; text-decoration: underline; text-underline-offset: 3px; }
     .blog-content a:hover { color: #FEBC11; }
+    .toc-link { display: block; border-left: 2px solid transparent; padding: 0.35rem 0 0.35rem 0.75rem; color: rgba(19,20,20,0.75); transition: all 160ms ease; }
+    .toc-link:hover { border-left-color: #FEBC11; color: #083321; background: rgba(8,51,33,0.04); }
+    .toc-link-sub { margin-left: 0.75rem; font-size: 0.875rem; }
 </style>
 @endpush
 
 @section('content')
 
-{{-- ── Hero / Featured Image ── --}}
+{{-- â”€â”€ Hero / Featured Image â”€â”€ --}}
 <section class="relative bg-brand-dark">
     <div class="relative aspect-[21/9] max-h-[480px] overflow-hidden">
         @if($post->featured_image)
@@ -131,7 +135,7 @@
             <h1 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-5">
                 {{ $post->translatedTitle() }}
             </h1>
-            <div class="flex items-center justify-center gap-4 text-sm text-white/50">
+            <div class="flex items-center justify-center gap-4 text-sm text-white/80">
                 @if($post->author)
                     <span>{{ __('messages.by') }} {{ $post->author->name }}</span>
                     <span>&bull;</span>
@@ -142,76 +146,81 @@
                 @endif
                 <span>{{ $post->readingTime() }} {{ __('messages.min_read') }}</span>
             </div>
+
+            <ol class="mt-5 flex flex-wrap items-center justify-center gap-1.5 text-xs text-white/70">
+                <li><a href="{{ url('/') }}" class="hover:text-white transition">{{ __('messages.home') }}</a></li>
+                <li>/</li>
+                <li><a href="{{ route('blog.index') }}" class="hover:text-white transition">{{ __('messages.blog') }}</a></li>
+                @if($post->category)
+                    <li>/</li>
+                    <li><a href="{{ route('blog.index', ['category' => $post->category->slug]) }}" class="hover:text-white transition">{{ $post->category->translatedName() }}</a></li>
+                @endif
+                <li>/</li>
+                <li class="max-w-[220px] truncate text-white">{{ $post->translatedTitle() }}</li>
+            </ol>
         </div>
     </div>
 </section>
 
-{{-- ── Breadcrumb ── --}}
-<nav class="bg-white border-b border-gray-100" aria-label="Breadcrumb">
-    <div class="max-w-4xl mx-auto px-6 py-3">
-        <ol class="flex items-center gap-1.5 text-sm text-gray-400">
-            <li><a href="{{ url('/') }}" class="hover:text-brand-green transition">{{ __('messages.home') }}</a></li>
-            <li><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></li>
-            <li><a href="{{ route('blog.index') }}" class="hover:text-brand-green transition">{{ __('messages.blog') }}</a></li>
-            @if($post->category)
-                <li><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></li>
-                <li><a href="{{ route('blog.index', ['category' => $post->category->slug]) }}" class="hover:text-brand-green transition">{{ $post->category->translatedName() }}</a></li>
-            @endif
-            <li><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></li>
-            <li class="text-gray-600 font-medium truncate max-w-[200px]">{{ $post->translatedTitle() }}</li>
-        </ol>
-    </div>
-</nav>
-
-{{-- ── Article Body ── --}}
+{{-- â”€â”€ Article Body â”€â”€ --}}
 <article class="py-16 md:py-20 bg-white">
-    <div class="max-w-3xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="grid gap-10 lg:grid-cols-12">
+            <aside class="lg:col-span-4">
+                <div class="space-y-4 lg:sticky lg:top-28">
+                    <a href="{{ route('blog.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-green transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        {{ __('messages.all_posts') }}
+                    </a>
 
-        {{-- Social share + back link --}}
-        <div class="flex items-center justify-between mb-10 pb-6 border-b border-gray-100">
-            <a href="{{ route('blog.index') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-green transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-                {{ __('messages.all_posts') }}
-            </a>
+                    <div class="rounded-2xl border border-gray-200 bg-[#F9F7F3] p-5">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">On this page</p>
+                        <nav id="blog-toc" class="mt-3 space-y-1"></nav>
+                        <p id="blog-toc-empty" class="mt-3 text-sm text-gray-400">Table of contents will appear when the article has headings.</p>
+                    </div>
 
-            <div class="flex items-center gap-2" x-data="shareLinks()">
-                <span class="text-xs text-gray-400 mr-1">{{ __('messages.share') }}</span>
-                <a :href="fbUrl" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center transition" title="{{ __('messages.share_facebook') }}">
-                    <svg class="w-4 h-4 text-gray-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-                </a>
-                <a :href="twUrl" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-sky-100 flex items-center justify-center transition" title="{{ __('messages.share_x') }}">
-                    <svg class="w-4 h-4 text-gray-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-                <a :href="waUrl" target="_blank" rel="noopener" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-green-100 flex items-center justify-center transition" title="{{ __('messages.share_whatsapp') }}">
-                    <svg class="w-4 h-4 text-gray-500 hover:text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                </a>
-                <button @click="copyLink()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-brand-gold/20 flex items-center justify-center transition" title="{{ __('messages.copy_link') }}">
-                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                </button>
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5" x-data="shareLinks()">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">{{ __('messages.share') }}</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <a :href="fbUrl" target="_blank" rel="noopener" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center transition" title="{{ __('messages.share_facebook') }}">
+                                <svg class="w-4 h-4 text-gray-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                            </a>
+                            <a :href="twUrl" target="_blank" rel="noopener" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-sky-100 flex items-center justify-center transition" title="{{ __('messages.share_x') }}">
+                                <svg class="w-4 h-4 text-gray-500 hover:text-sky-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </a>
+                            <a :href="waUrl" target="_blank" rel="noopener" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-green-100 flex items-center justify-center transition" title="{{ __('messages.share_whatsapp') }}">
+                                <svg class="w-4 h-4 text-gray-500 hover:text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            </a>
+                            <button @click="copyLink()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-brand-gold/20 flex items-center justify-center transition" title="{{ __('messages.copy_link') }}">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="lg:col-span-8">
+                <div id="blog-article-content" class="blog-content text-base md:text-[17px]">
+                    {!! $post->translatedContent() !!}
+                </div>
+
+                @if($post->author)
+                    <div class="mt-14 pt-8 border-t border-gray-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-brand-green/10 flex items-center justify-center text-lg font-bold text-brand-green">
+                            {{ strtoupper(substr($post->author->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ $post->author->name }}</p>
+                            <p class="text-sm text-gray-400">{{ __('messages.author') }}</p>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
-
-        {{-- Content --}}
-        <div class="blog-content text-base md:text-[17px]">
-            {!! $post->translatedContent() !!}
-        </div>
-
-        {{-- Tags / Author --}}
-        @if($post->author)
-            <div class="mt-14 pt-8 border-t border-gray-100 flex items-center gap-4">
-                <div class="w-14 h-14 rounded-full bg-brand-green/10 flex items-center justify-center text-lg font-bold text-brand-green">
-                    {{ strtoupper(substr($post->author->name, 0, 1)) }}
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">{{ $post->author->name }}</p>
-                    <p class="text-sm text-gray-400">{{ __('messages.author') }}</p>
-                </div>
-            </div>
-        @endif
     </div>
 </article>
 
-{{-- ── Related Posts ── --}}
+{{-- â”€â”€ Related Posts â”€â”€ --}}
 @if($related->count())
 <section class="py-16 md:py-20 bg-brand-light">
     <div class="max-w-7xl mx-auto px-6">
@@ -257,11 +266,11 @@
 </section>
 @endif
 
-{{-- ── CTA ── --}}
+{{-- â”€â”€ CTA â”€â”€ --}}
 <section class="py-16 md:py-20 bg-brand-green text-center">
     <div class="max-w-2xl mx-auto px-6">
         <h2 class="font-heading text-2xl md:text-3xl font-bold text-white mb-4">{{ __('messages.ready_for_adventure') }}</h2>
-        <p class="text-white/60 mb-8">{{ __('messages.adventure_subtitle') }}</p>
+        <p class="text-white/85 mb-8">{{ __('messages.adventure_subtitle') }}</p>
         <a href="{{ route('plan-safari') }}"
            class="inline-block px-8 py-4 bg-brand-gold text-brand-dark text-sm font-bold uppercase tracking-wider rounded-sm hover:bg-white transition-all duration-300">
             {{ __('messages.start_planning') }}
@@ -270,6 +279,32 @@
 </section>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const article = document.getElementById('blog-article-content');
+    const toc = document.getElementById('blog-toc');
+    const emptyState = document.getElementById('blog-toc-empty');
+
+    if (!article || !toc) return;
+
+    const headings = Array.from(article.querySelectorAll('h2, h3')).filter((heading) => heading.textContent.trim().length > 0);
+
+    if (!headings.length) return;
+
+    emptyState?.classList.add('hidden');
+
+    headings.forEach((heading, index) => {
+        if (!heading.id) {
+            heading.id = `article-section-${index + 1}`;
+        }
+
+        const link = document.createElement('a');
+        link.href = `#${heading.id}`;
+        link.textContent = heading.textContent.trim();
+        link.className = `toc-link ${heading.tagName === 'H3' ? 'toc-link-sub' : ''}`;
+        toc.appendChild(link);
+    });
+});
+
 function shareLinks() {
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(document.title);

@@ -41,11 +41,31 @@ class HomeController extends Controller
         ] + $this->seoData($page, 'Luxury Safari Experiences in Tanzania'));
     }
 
+    protected function managedPageContent(string $slug): array
+    {
+        $page = Page::published()->where('slug', $slug)->first();
+        $sections = $page ? $page->activeSections()->with('heroSlides')->get() : collect();
+        $sectionDataMap = [];
+
+        foreach ($sections as $section) {
+            $sectionDataMap[$section->id] = $this->loadSectionData($section);
+        }
+
+        return [
+            'page' => $page,
+            'sections' => $sections,
+            'sectionDataMap' => $sectionDataMap,
+        ];
+    }
+
     // loadSectionData() is provided by the LoadsSectionData trait
 
     public function safariIndex(Request $request)
     {
         $query = SafariPackage::where('status', 'published')
+            ->where(function($q) {
+                $q->where('safari_type', 'safari')->orWhereNull('safari_type');
+            })
             ->with(['countries', 'itineraries.destination', 'tourType', 'categoryRelation']);
 
         // Search
@@ -124,7 +144,7 @@ class HomeController extends Controller
         $tourTypes  = TourType::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
 
-        return view('safaris.index', compact('safaris', 'countries', 'tourTypes', 'categories') + $this->seoData(null, __('messages.safari'), 'Browse our curated safari packages across Tanzania'));
+        return view('safaris.index', compact('safaris', 'countries', 'tourTypes', 'categories') + $this->managedPageContent('safaris') + $this->seoData(null, __('messages.safari'), 'Browse our curated safari packages across Tanzania'));
     }
 
     public function show(string $locale, string $slug)
@@ -180,6 +200,15 @@ class HomeController extends Controller
         return view('pages.tour-type', compact('tourType', 'safaris') + $this->seoData($tourType, $tourType->name));
     }
 
+    public function experienceIndex()
+    {
+        $experiences = TourType::withCount(['safariPackages' => fn ($q) => $q->where('status', 'published')])
+            ->orderBy('name')
+            ->get();
+
+        return view('experiences.index', compact('experiences') + $this->managedPageContent('experiences') + $this->seoData(null, __('messages.experiences'), 'Discover our curated safari experiences across Tanzania'));
+    }
+
     public function category(string $locale, string $slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();
@@ -198,6 +227,83 @@ class HomeController extends Controller
             ->firstOrFail();
 
         return view('pages.destination', compact('destination') + $this->seoData($destination, $destination->translated('name'), $destination->translated('description')));
+    }
+
+    public function destinationIndex(Request $request)
+    {
+        $perPage = 12;
+        $query = Destination::with('country')
+            ->whereNotNull('name')
+            ->orderBy('name');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('country', fn ($countryQuery) => $countryQuery->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('countries')) {
+            $countrySlugs = is_array($request->countries) ? $request->countries : explode(',', $request->countries);
+            $query->whereHas('country', fn ($countryQuery) => $countryQuery->whereIn('slug', $countrySlugs));
+        }
+
+        if ($request->filled('tour_types')) {
+            $typeSlugs = is_array($request->tour_types) ? $request->tour_types : explode(',', $request->tour_types);
+            $query->whereHas('safariPackages.tourType', fn ($typeQuery) => $typeQuery->whereIn('slug', $typeSlugs));
+        }
+
+        if ($request->filled('categories')) {
+            $categorySlugs = is_array($request->categories) ? $request->categories : explode(',', $request->categories);
+            $query->whereHas('safariPackages.categoryRelation', fn ($categoryQuery) => $categoryQuery->whereIn('slug', $categorySlugs));
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $destinations = $query->paginate($perPage);
+            return response()->json([
+                'html'  => view('destinations._list', compact('destinations'))->render(),
+                'next'  => $destinations->nextPageUrl(),
+                'count' => $destinations->total(),
+            ]);
+        }
+
+        $destinations = $query->paginate($perPage);
+        $countries = Country::has('destinations')->orderBy('name')->get();
+        $tourTypes = TourType::has('safariPackages')->orderBy('name')->get();
+        $categories = Category::has('safariPackages')->orderBy('name')->get();
+
+        return view('destinations.index', compact('destinations', 'countries', 'tourTypes', 'categories') + $this->managedPageContent('destinations') + $this->seoData(null, __('messages.destinations'), 'Explore all safari destinations across Tanzania'));
+    }
+
+    public function countryIndex(Request $request)
+    {
+        $countries = Country::withCount('destinations')
+            ->orderBy('name')
+            ->get();
+
+        return view('countries.index', compact('countries') + $this->seoData(null, __('messages.countries'), 'Explore countries for your African safari adventure'));
+    }
+
+    public function trekkingIndex(Request $request)
+    {
+        $perPage = 12;
+        $query = SafariPackage::where('status', 'published')
+            ->where('safari_type', 'trekking')
+            ->with(['countries', 'itineraries.destination', 'tourType']);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $safaris = $query->latest()->paginate($perPage);
+            return response()->json([
+                'html'  => view('safaris._cards', compact('safaris'))->render(),
+                'count' => $safaris->total(),
+                'next'  => $safaris->nextPageUrl(),
+            ]);
+        }
+
+        $safaris = $query->latest()->paginate($perPage);
+        return view('trekking.index', compact('safaris') + $this->seoData(null, 'Mountain Trekking', 'Conquer Africa\'s highest peaks with our guided trekking expeditions'));
     }
 
     public function downloadPdf(string $locale, string $slug)

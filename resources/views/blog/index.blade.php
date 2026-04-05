@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Blog — ' . ($siteName ?? 'Lomo Tanzania Safari'))
+@section('title', __('messages.blog') . ' - ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
 @push('jsonld')
 <script type="application/ld+json">
@@ -43,33 +43,60 @@
 {{-- Hero --}}
 <section class="relative bg-brand-dark py-20 md:py-28 overflow-hidden">
     <div class="absolute inset-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=1600&h=500&fit=crop&q=60" alt="" class="w-full h-full object-cover">
+        <img src="https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=1600&h=500&fit=crop&q=60" alt=- class="w-full h-full object-cover">
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/60 to-brand-dark/90"></div>
     <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
         <p class="text-xs font-semibold tracking-[0.3em] uppercase text-brand-gold mb-4">{{ __('messages.our_blog') }}</p>
         <h1 class="font-heading text-4xl md:text-5xl font-bold text-white leading-tight mb-4">{{ __('messages.stories_travel_tips') }}</h1>
-        <p class="text-lg text-white/60 max-w-xl mx-auto">{{ __('messages.blog_subtitle') }}</p>
+        <p class="text-lg text-white/85 max-w-xl mx-auto mb-8">{{ __('messages.blog_subtitle') }}</p>
+
+        {{-- Search bar --}}
+        <form action="{{ route('blog.index') }}" method="GET" class="max-w-lg mx-auto relative">
+            @if(request('category'))
+                <input type="hidden" name="category" value="{{ request('category') }}">
+            @endif
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-dark/30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="search" value="{{ request('search') }}"
+                   placeholder="Search articles..."
+                   class="w-full pl-12 pr-4 py-3.5 rounded-lg bg-white/95 backdrop-blur text-sm text-brand-dark placeholder-brand-dark/40 border-0 focus:ring-2 focus:ring-brand-gold shadow-lg">
+        </form>
     </div>
 </section>
+
+@if(isset($sections) && $sections->count())
+    @include('partials.render-page-sections', ['sections' => $sections, 'sectionDataMap' => $sectionDataMap ?? []])
+@endif
 
 <section class="py-16 md:py-24 bg-brand-light">
     <div class="max-w-7xl mx-auto px-6">
 
         {{-- Category filter pills --}}
         @if($categories->count())
-            <div class="flex flex-wrap items-center gap-2 mb-12">
-                <a href="{{ route('blog.index') }}"
+            <div class="flex flex-wrap items-center gap-2 mb-8">
+                <a href="{{ route('blog.index', request('search') ? ['search' => request('search')] : []) }}"
                    class="px-4 py-2 rounded-full text-sm font-medium transition {{ !request('category') ? 'bg-brand-green text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
                     {{ __('messages.all') }}
                 </a>
                 @foreach($categories as $cat)
-                    <a href="{{ route('blog.index', ['category' => $cat->slug]) }}"
+                    <a href="{{ route('blog.index', array_filter(['category' => $cat->slug, 'search' => request('search')])) }}"
                        class="px-4 py-2 rounded-full text-sm font-medium transition {{ request('category') === $cat->slug ? 'bg-brand-green text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
                         {{ $cat->translatedName() }}
                         <span class="ml-1 text-xs opacity-60">({{ $cat->posts_count }})</span>
                     </a>
                 @endforeach
+            </div>
+        @endif
+
+        {{-- Search results indicator --}}
+        @if(request('search'))
+            <div class="flex items-center gap-3 mb-8">
+                <p class="text-sm text-brand-dark/70">
+                    Showing results for "<span class="font-semibold text-brand-dark">{{ request('search') }}</span>"
+                    <span class="text-brand-dark/40">({{ $posts->total() }} {{ Str::plural('article', $posts->total()) }})</span>
+                </p>
+                <a href="{{ route('blog.index', request('category') ? ['category' => request('category')] : []) }}"
+                   class="text-xs text-brand-gold hover:underline">Clear search</a>
             </div>
         @endif
 

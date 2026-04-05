@@ -22,12 +22,12 @@
                     </h1>
                 @endif
                 @if($subheading)
-                    <p class="text-lg md:text-xl text-white/70 leading-relaxed mb-6 max-w-lg">
+                    <p class="text-lg md:text-xl text-white/90 leading-relaxed mb-6 max-w-lg">
                         {{ $subheading }}
                     </p>
                 @endif
                 @if($body)
-                    <div class="prose prose-lg prose-invert max-w-none text-white/60 mb-8">
+                    <div class="prose prose-lg prose-invert max-w-none text-white/85 mb-8">
                         {!! $body !!}
                     </div>
                 @endif

@@ -54,20 +54,14 @@
                       lg:translate-x-0 lg:static lg:shrink-0">
 
             {{-- Logo --}}
-            <div class="flex flex-col items-center justify-center px-6 py-5 border-b border-gray-100 shrink-0">
-                <div class="flex items-center gap-3">
-                    @if(optional($siteSetting ?? null)->logo_path)
-                        <img src="{{ asset('storage/' . $siteSetting->logo_path) }}" alt="Admin" class="h-9 w-auto object-contain">
-                    @else
-                        <div class="w-9 h-9 rounded-xl bg-[#083321] flex items-center justify-center">
-                            <svg class="w-5 h-5 text-[#FEBC11]" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
-                        </div>
-                    @endif
-                    <div>
-                        <span class="text-[#131414] font-bold text-base tracking-wide">LOMO</span>
-                        <span class="text-[#FEBC11] font-bold text-base ml-0.5">SAFARI</span>
+            <div class="flex items-center justify-center px-6 py-5 border-b border-gray-100 shrink-0">
+                @if(optional($siteSetting ?? null)->logo_path)
+                    <img src="{{ asset('storage/' . $siteSetting->logo_path) }}" alt="Admin" class="h-12 w-auto object-contain">
+                @else
+                    <div class="w-11 h-11 rounded-xl bg-[#083321] flex items-center justify-center">
+                        <svg class="w-6 h-6 text-[#FEBC11]" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
                     </div>
-                </div>
+                @endif
                 <button @click="sidebarOpen = false" class="absolute right-3 top-5 lg:hidden text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -113,6 +107,24 @@
                         @endisset
                     </div>
                     <div class="flex items-center gap-3">
+                        {{-- Chat badge --}}
+                        <a href="{{ route('admin.chat.index') }}" class="relative text-gray-400 hover:text-gray-600 transition" title="Live Chat"
+                           x-data="{ chatCount: 0 }" x-init="
+                               fetch('{{ route('admin.chat.unread-count') }}').then(r => r.json()).then(d => chatCount = d.count);
+                               setInterval(() => fetch('{{ route('admin.chat.unread-count') }}').then(r => r.json()).then(d => chatCount = d.count), 15000);
+                           ">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <span x-show="chatCount > 0" x-text="chatCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center"></span>
+                        </a>
+                        {{-- Notifications bell --}}
+                        <a href="{{ route('admin.notifications.index') }}" class="relative text-gray-400 hover:text-gray-600 transition" title="Notifications"
+                           x-data="{ notiCount: 0 }" x-init="
+                               fetch('{{ route('admin.notifications.fetch') }}').then(r => r.json()).then(d => notiCount = d.filter(n => !n.read_at).length);
+                               setInterval(() => fetch('{{ route('admin.notifications.fetch') }}').then(r => r.json()).then(d => notiCount = d.filter(n => !n.read_at).length), 15000);
+                           ">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+                            <span x-show="notiCount > 0" x-text="notiCount" class="absolute -top-1 -right-1 bg-[#FEBC11] text-[#131414] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center"></span>
+                        </a>
                         <span class="hidden sm:inline text-sm text-gray-500">{{ Auth::user()->name }}</span>
                         <div class="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold text-xs font-bold">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}

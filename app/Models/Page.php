@@ -89,6 +89,26 @@ class Page extends Model
         return $query->where('is_homepage', true);
     }
 
+    public function isSystemPage(): bool
+    {
+        return $this->is_homepage || $this->type === 'system';
+    }
+
+    public function liveUrl(?string $locale = null): string
+    {
+        $locale = $locale ?: App::getLocale() ?: 'en';
+
+        return match ($this->slug) {
+            'homepage'     => route('home', ['locale' => $locale]),
+            'safaris'      => route('safaris.index', ['locale' => $locale]),
+            'destinations' => route('destinations.index', ['locale' => $locale]),
+            'experiences'  => route('experiences.index', ['locale' => $locale]),
+            'blog'         => route('blog.index', ['locale' => $locale]),
+            'contact'      => route('contact', ['locale' => $locale]),
+            default        => route('page.show', ['locale' => $locale, 'slug' => $this->slug]),
+        };
+    }
+
     public function pageSections()
     {
         return $this->hasMany(PageSection::class)->orderBy('order');

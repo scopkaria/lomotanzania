@@ -1,7 +1,32 @@
+@once
+    @push('styles')
+        <style>
+            input:not([type='checkbox']):not([type='radio']):not([type='range']),
+            select,
+            textarea {
+                border-width: 1px;
+                border-color: rgb(209 213 219);
+                padding: 0.75rem 1rem;
+                border-radius: 0.75rem;
+            }
+
+            input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+            select:focus,
+            textarea:focus {
+                border-color: #083321 !important;
+                box-shadow: 0 0 0 3px rgba(8, 51, 33, 0.12) !important;
+                outline: none;
+            }
+        </style>
+    @endpush
+@endonce
+
 @php
     $current = request()->route()?->getName();
+    $isWorker = Auth::user()->role === 'worker';
 @endphp
 
+@if(!$isWorker)
 {{-- Dashboard --}}
 @php $active = $current && fnmatch('admin.dashboard', $current); @endphp
 <a href="{{ route('admin.dashboard') }}"
@@ -12,6 +37,15 @@
     </svg>
     Dashboard
 </a>
+<a href="{{ route('home', ['locale' => app()->getLocale()]) }}"
+   target="_blank" rel="noopener noreferrer"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+    <svg class="w-5 h-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H19.5m0 0V12m0-6L10.5 15m-4.5 3h12a1.5 1.5 0 001.5-1.5v-12A1.5 1.5 0 0018 3H6a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 006 18z"/>
+    </svg>
+    View Website
+</a>
+@endif
 
 
 
@@ -35,9 +69,9 @@
         @php $a = $current === 'admin.safaris.create'; @endphp
         <a href="{{ route('admin.safaris.create') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Add New</a>
         @php $a = $current && fnmatch('admin.tour-types.*', $current); @endphp
-        <a href="{{ route('admin.tour-types.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Tour Types</a>
+        <a href="{{ route('admin.tour-types.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Experiences</a>
         @php $a = $current && fnmatch('admin.categories.*', $current); @endphp
-        <a href="{{ route('admin.categories.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Categories</a>
+        <a href="{{ route('admin.categories.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Budget</a>
     </div>
 </div>
 
@@ -141,6 +175,30 @@
 
 <p class="px-3 pt-4 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business</p>
 
+{{-- Live Chat --}}
+@php $chatActive = $current && fnmatch('admin.chat.*', $current); @endphp
+<a href="{{ route('admin.chat.index') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $chatActive ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $chatActive ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
+    <span class="flex-1">Live Chat</span>
+    <span x-data="{ count: 0 }" x-init="
+        fetch('{{ route('admin.chat.unread-count') }}').then(r => r.json()).then(d => count = d.count);
+        setInterval(() => fetch('{{ route('admin.chat.unread-count') }}').then(r => r.json()).then(d => count = d.count), 15000);
+    " x-show="count > 0" x-text="count" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"></span>
+</a>
+
+{{-- Workers --}}
+@if(!$isWorker)
+@php $workerActive = $current && fnmatch('admin.workers.*', $current); @endphp
+<a href="{{ route('admin.workers.index') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $workerActive ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $workerActive ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+    <span class="flex-1">Workers</span>
+</a>
+@endif
+
 {{-- Inquiries --}}
 @php $active = $current && fnmatch('admin.inquiries.*', $current); @endphp
 <a href="{{ route('admin.inquiries.index') }}"
@@ -164,6 +222,7 @@
 </a>
 
 {{-- Agents --}}
+@if(!$isWorker)
 @php $active = $current && fnmatch('admin.agents.*', $current); @endphp
 <a href="{{ route('admin.agents.index') }}"
    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
@@ -175,6 +234,7 @@
         <span class="bg-amber-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">{{ $pendingAgents }}</span>
     @endif
 </a>
+@endif
 
 {{-- Safari Plans --}}
 @php $active = $current && fnmatch('admin.safari-plans.*', $current); @endphp
@@ -200,6 +260,30 @@
 
 <p class="px-3 pt-4 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Settings</p>
 
+@if(!$isWorker)
+{{-- Notifications --}}
+@php $active = $current && fnmatch('admin.notifications.*', $current); @endphp
+<a href="{{ route('admin.notifications.index') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $active ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $active ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+    <span class="flex-1">Notifications</span>
+    <span x-data="{ count: 0 }" x-init="
+        fetch('{{ route('admin.notifications.fetch') }}').then(r => r.json()).then(d => count = d.filter(n => !n.read_at).length);
+        setInterval(() => fetch('{{ route('admin.notifications.fetch') }}').then(r => r.json()).then(d => count = d.filter(n => !n.read_at).length), 15000);
+    " x-show="count > 0" x-text="count" class="bg-[#FEBC11] text-[#131414] text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"></span>
+</a>
+@endif
+
+{{-- Account Settings --}}
+@php $active = $current && fnmatch('admin.account.*', $current); @endphp
+<a href="{{ route('admin.account.edit') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $active ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $active ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Account Settings
+</a>
+
 {{-- Hero Settings (moved under Pages) --}}
 {{-- @php $active = $current && fnmatch('admin.hero-settings.*', $current); @endphp
 <a href="{{ route('admin.hero-settings.edit') }}"
@@ -209,6 +293,7 @@
     Hero Settings
 </a> --}}
 
+@if(!$isWorker)
 {{-- Planner Settings --}}
 @php $active = $current && fnmatch('admin.planner-settings.*', $current); @endphp
 <a href="{{ route('admin.planner-settings.edit') }}"
@@ -236,6 +321,15 @@
     Settings
 </a>
 
+{{-- Appearance / Menu Builder --}}
+@php $active = $current && fnmatch('admin.appearance.menu.*', $current); @endphp
+<a href="{{ route('admin.appearance.menu.index') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $active ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $active ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    Menu Builder
+</a>
+
 {{-- SEO Section --}}
 @php $seoActive = $current && fnmatch('admin.seo.*', $current); @endphp
 <div x-data="{ open: {{ $seoActive ? 'true' : 'false' }} }">
@@ -253,6 +347,8 @@
         <a href="{{ route('admin.seo.keywords') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Keywords</a>
         @php $a = $current === 'admin.seo.rankings'; @endphp
         <a href="{{ route('admin.seo.rankings') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Rankings</a>
+        @php $a = $current === 'admin.seo.search-engines'; @endphp
+        <a href="{{ route('admin.seo.search-engines') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Search Engines</a>
         @php $a = $current === 'admin.seo.pages'; @endphp
         <a href="{{ route('admin.seo.pages') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">SEO Pages</a>
         @php $a = $current === 'admin.seo.markets'; @endphp
@@ -267,3 +363,4 @@
         <a href="{{ route('admin.seo.authors') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Authors (E-E-A-T)</a>
     </div>
 </div>
+@endif

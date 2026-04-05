@@ -13,8 +13,13 @@ class AgentMiddleware
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isAgent()) {
-            abort(403, 'Access denied. Agent account required.');
+        if (! $user || $user->role !== 'agent') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('agent.login')
+                ->withErrors(['email' => 'Unauthorized access.']);
         }
 
         if (! $user->agent || ! $user->agent->isActive()) {

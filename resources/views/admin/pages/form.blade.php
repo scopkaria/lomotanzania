@@ -27,7 +27,7 @@
             </div>
             <div class="flex items-center gap-2">
                 @if($page)
-                    <a href="{{ $page->is_homepage ? url('/en') : url('/en/page/' . $page->slug) }}" target="_blank" rel="noopener"
+                    <a href="{{ $page->liveUrl('en') }}" target="_blank" rel="noopener"
                        class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         View Page
@@ -645,8 +645,11 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                             <input type="text" name="slug" value="{{ old('slug', $page->slug ?? '') }}" placeholder="auto-generated-from-title"
-                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
-                            <p class="text-xs text-gray-400 mt-1">Leave blank to auto-generate.</p>
+                                   @readonly($page?->isSystemPage())
+                                   class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] {{ $page?->isSystemPage() ? 'bg-gray-50 cursor-not-allowed text-gray-500' : '' }}">
+                            <p class="text-xs text-gray-400 mt-1">
+                                {{ $page?->isSystemPage() ? 'This core page route is locked to keep the frontend stable.' : 'Leave blank to auto-generate.' }}
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
@@ -655,14 +658,15 @@
                         </div>
 
                         {{-- Homepage toggle --}}
-                        <label class="flex items-center gap-3 p-3 rounded-lg bg-[#FEBC11]/5 border border-[#FEBC11]/20 cursor-pointer hover:bg-[#FEBC11]/10 transition">
+                        <label class="flex items-center gap-3 p-3 rounded-lg bg-[#FEBC11]/5 border border-[#FEBC11]/20 cursor-pointer hover:bg-[#FEBC11]/10 transition {{ $page?->isSystemPage() && !($page->is_homepage ?? false) ? 'opacity-70' : '' }}">
                             <input type="hidden" name="is_homepage" value="0">
                             <input type="checkbox" name="is_homepage" value="1"
                                    @checked(old('is_homepage', $page->is_homepage ?? false))
+                                   @disabled($page?->isSystemPage() && !($page->is_homepage ?? false))
                                    class="w-4 h-4 rounded border-gray-300 text-[#FEBC11] focus:ring-[#FEBC11]">
                             <div>
                                 <span class="text-sm font-semibold text-gray-900 block">Set as Homepage</span>
-                                <span class="text-xs text-gray-500">This page will be the site's front page</span>
+                                <span class="text-xs text-gray-500">{{ $page?->isSystemPage() && !($page->is_homepage ?? false) ? 'Core listing pages keep their existing routes and cannot become the homepage.' : 'This page will be the site\'s front page' }}</span>
                             </div>
                         </label>
                     </div>

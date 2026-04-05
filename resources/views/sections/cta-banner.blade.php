@@ -15,7 +15,7 @@
          style="background-color: {{ $bgColor }};">
     @if($bgImage)
         <img src="{{ str_starts_with($bgImage, 'http') ? $bgImage : asset('storage/' . $bgImage) }}"
-             alt="" loading="lazy"
+             alt=- loading="lazy"
              class="absolute inset-0 w-full h-full object-cover opacity-30">
         <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
     @endif
@@ -27,7 +27,7 @@
             </h2>
         @endif
         @if($subheading)
-            <p class="text-lg text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p class="text-lg text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
                 {{ $subheading }}
             </p>
         @endif

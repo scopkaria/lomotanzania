@@ -34,7 +34,7 @@
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                     <h3 class="font-heading text-xl font-bold mb-1">{{ $destination->translated('name') }}</h3>
                     @if($destination->country)
-                        <p class="text-sm text-white/70">{{ $destination->country->name }}</p>
+                        <p class="text-sm text-white/90">{{ $destination->country->name }}</p>
                     @endif
                 </div>
             </a>

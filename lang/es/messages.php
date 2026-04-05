@@ -14,8 +14,8 @@ return [
     'start_planning'=> 'Empezar a planificar',
     'coming_soon'   => 'Próximamente',
     'countries'     => 'Países',
-    'categories'    => 'Categorías',
-    'safari_types'  => 'Tipos de safari',
+    'categories'    => 'Presupuesto',
+    'safari_types'  => 'Experiencias',
     'explore'       => 'Explorar',
     'mega_dest_text'=> 'Descubra los destinos de vida salvaje más impresionantes de Tanzania.',
     'mega_safari_text'=> 'Viajes de safari a medida al corazón del África Oriental.',
@@ -214,8 +214,8 @@ return [
     'explore_dest'          => 'Explorar',
 
     // Tour type & category pages
-    'tour_type_kicker'      => 'Tipo de Tour',
-    'category_kicker'       => 'Categoría',
+    'tour_type_kicker'      => 'Experiencia',
+    'category_kicker'       => 'Nivel de Presupuesto',
     'about_type'            => 'Sobre :name',
     'about_category'        => 'Sobre :name',
     'safaris_for_type'      => 'Safaris para :name',
@@ -236,6 +236,16 @@ return [
     'get_in_touch'          => 'Contáctenos',
     'contact_page'          => 'Página de contacto',
     'brand_description'     => 'Experiencias de safari de lujo creadas en el corazón de Tanzania.',
+
+    // Experiences page
+    'curated_journeys'      => 'Viajes seleccionados',
+    'experiences_subtitle'  => 'Desde las vastas llanuras del Serengeti hasta la cumbre del Kilimanjaro, descubra nuestra colección exclusiva de las experiencias de safari más extraordinarias de Tanzania.',
+    'choose_your_adventure' => 'Elige tu aventura',
+    'explore_by_experience' => 'Explorar por experiencia',
+    'explore_experience'    => 'Explorar experiencia',
+    'no_experiences_yet'    => 'Experiencias próximamente. Manténgase atento.',
+    'cant_decide'           => '¿No sabe por dónde empezar?',
+    'cant_decide_desc'      => 'Deje que nuestros expertos en safari diseñen un itinerario a medida, adaptado a sus sueños. Cada viaje es único, cada momento inolvidable.',
 
     // Safari detail (extra)
     'route_summary_desc'    => 'Un vistazo rápido a los rangos de días agrupados extraídos directamente del itinerario.',

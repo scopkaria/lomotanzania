@@ -12,7 +12,7 @@
 <section class="relative py-20 md:py-28 overflow-hidden" style="background-color: {{ $bgColor }};">
     @if($bgImage)
         <img src="{{ str_starts_with($bgImage, 'http') ? $bgImage : asset('storage/' . $bgImage) }}"
-             alt="" loading="lazy"
+             alt=- loading="lazy"
              class="absolute inset-0 w-full h-full object-cover opacity-20">
         <div class="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70"></div>
     @endif
@@ -32,7 +32,7 @@
         @endif
 
         @if($body)
-            <div class="prose prose-lg prose-invert max-w-2xl mx-auto text-white/70 leading-relaxed mb-10 reveal">
+            <div class="prose prose-lg prose-invert max-w-2xl mx-auto text-white/90 leading-relaxed mb-10 reveal">
                 {!! $body !!}
             </div>
         @endif

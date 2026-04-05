@@ -1,9 +1,9 @@
 {{-- Destinations Section --}}
 @php
     $locale = app()->getLocale();
-    $heading = $section->getData('heading', $locale, 'Explore Destinations');
+    $heading = $section->getData('heading', $locale, 'Explore Most Breathtaking Destinations');
     $subheading = $section->getData('subheading', $locale);
-    $destinations = $sectionData['destinations'] ?? collect();
+    $destinations = ($sectionData['destinations'] ?? collect())->take(3);
 @endphp
 
 <section class="py-20 md:py-28 bg-[#F9F7F3]">
@@ -19,9 +19,9 @@
             @endif
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach($destinations as $destination)
-            <a href="{{ route('destinations.show', $destination->slug) }}"
+            <a href="{{ route('destinations.index') }}"
                class="group relative rounded-xl overflow-hidden aspect-[3/4] block reveal"
                style="transition-delay: {{ ($loop->index + 1) * 100 }}ms;">
                 @if($destination->featured_image)
@@ -35,11 +35,19 @@
                 <div class="absolute bottom-0 left-0 right-0 p-6">
                     <h3 class="font-heading text-xl font-bold text-white mb-1.5">{{ $destination->translated('name') }}</h3>
                     @if($destination->country)
-                    <p class="text-sm text-white/60">{{ $destination->country->name }}</p>
+                    <p class="text-sm text-white/85">{{ $destination->country->name }}</p>
                     @endif
                 </div>
             </a>
             @endforeach
+        </div>
+
+        <div class="text-center mt-10 reveal">
+            <a href="{{ route('destinations.index') }}"
+               class="inline-flex items-center gap-2 px-8 py-3 bg-[#131414] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[#FEBC11] hover:text-[#131414] transition-all duration-200">
+                View All Destinations
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
         </div>
     </div>
 </section>

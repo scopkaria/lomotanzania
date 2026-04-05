@@ -1,4 +1,4 @@
-{{-- Dynamic Luxury Hero — Video background + featured safari slider --}}
+{{-- Dynamic Luxury Hero "” Video background + featured safari slider --}}
 @php
     $heroSafaris  = $sectionData['heroSafaris'] ?? collect();
     $heroSettings = $sectionData['heroSettings'] ?? null;
@@ -16,7 +16,7 @@
 
 @if($heroSafaris->count())
 {{-- ============================================ --}}
-{{-- VIDEO HERO — Featured Safari Slider          --}}
+{{-- VIDEO HERO "” Featured Safari Slider          --}}
 {{-- ============================================ --}}
 <section
     x-data="luxuryHero({{ $heroSafaris->count() }}, {{ $autoplay ? 'true' : 'false' }}, {{ $speed }})"
@@ -37,7 +37,7 @@
     </div>
     @elseif($videoPoster)
     <div class="absolute inset-0 z-0">
-        <img src="{{ asset('storage/' . $videoPoster) }}" alt="" class="w-full h-full object-cover">
+        <img src="{{ asset('storage/' . $videoPoster) }}" alt=- class="w-full h-full object-cover">
     </div>
     @endif
 
@@ -75,7 +75,7 @@
 
                     {{-- Subtitle / Short Description --}}
                     @if($safari->translated('short_description', $locale))
-                    <p class="text-base md:text-lg text-white/60 leading-relaxed mb-10 max-w-md"
+                    <p class="text-base md:text-lg text-white/85 leading-relaxed mb-10 max-w-md"
                        x-show="active === {{ $i }}"
                        x-transition:enter="transition duration-700 delay-[400ms]"
                        x-transition:enter-start="opacity-0 translate-y-4"
@@ -126,10 +126,10 @@
         <div class="relative z-20 w-full max-w-7xl mx-auto px-6 lg:px-12 pb-8 flex items-end justify-between">
             {{-- Left: Next Up Preview --}}
             <div class="hidden sm:block">
-                <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-white/30 mb-1">Next Up</p>
+                <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-white/85 mb-1">Next Up</p>
                 @foreach($heroSafaris as $i => $safari)
                     @php $nextIdx = ($i + 1) % $heroSafaris->count(); @endphp
-                    <p x-show="active === {{ $i }}" x-cloak class="text-sm text-white/50 transition-all duration-300">
+                    <p x-show="active === {{ $i }}" x-cloak class="text-sm text-white/80 transition-all duration-300">
                         {{ $heroSafaris[$nextIdx]->translated('title', $locale) }}
                     </p>
                 @endforeach
@@ -148,16 +148,16 @@
 
             {{-- Right: Nav Arrows + Counter --}}
             <div class="flex items-center gap-3 ml-auto">
-                <span class="text-xs text-white/40 font-mono mr-2">
+                <span class="text-xs text-white/90 font-mono mr-2">
                     <span x-text="String(active + 1).padStart(2, '0')"></span>
                     / {{ str_pad($heroSafaris->count(), 2, '0', STR_PAD_LEFT) }}
                 </span>
                 <button @click="prev()"
-                        class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition-colors">
+                        class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/85 hover:text-white hover:border-white/40 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
                 </button>
                 <button @click="next()"
-                        class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition-colors">
+                        class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/85 hover:text-white hover:border-white/40 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
                 </button>
             </div>
@@ -286,7 +286,7 @@ function luxuryHero(total, autoplay, interval) {
 
         @if($slide->bg_image)
         <div class="absolute inset-0">
-            <img src="{{ asset('storage/' . $slide->bg_image) }}" alt="" class="w-full h-full object-cover opacity-20" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+            <img src="{{ asset('storage/' . $slide->bg_image) }}" alt=- class="w-full h-full object-cover opacity-20" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
         </div>
         @endif
 
@@ -305,7 +305,7 @@ function luxuryHero(total, autoplay, interval) {
                 </h1>
 
                 @if($slide->translated('subtitle', $locale))
-                <p class="text-base md:text-lg text-white/60 leading-relaxed mb-10 max-w-md"
+                <p class="text-base md:text-lg text-white/85 leading-relaxed mb-10 max-w-md"
                    x-show="active === {{ $i }}" x-transition:enter="transition duration-700 delay-400" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     {{ $slide->translated('subtitle', $locale) }}
                 </p>
@@ -322,8 +322,8 @@ function luxuryHero(total, autoplay, interval) {
 
                 @if($slide->translated('next_up_text', $locale))
                 <div class="mt-auto pt-12">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-white/30 mb-1">Next Up</p>
-                    <p class="text-sm text-white/50">{{ $slide->translated('next_up_text', $locale) }}</p>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-white/85 mb-1">Next Up</p>
+                    <p class="text-sm text-white/80">{{ $slide->translated('next_up_text', $locale) }}</p>
                 </div>
                 @endif
             </div>
@@ -345,14 +345,14 @@ function luxuryHero(total, autoplay, interval) {
 
     @if($slides->count() > 1)
     <div class="absolute bottom-8 right-8 z-20 flex items-center gap-3">
-        <span class="text-xs text-white/40 font-mono mr-2">
+        <span class="text-xs text-white/90 font-mono mr-2">
             <span x-text="String(active + 1).padStart(2, '0')"></span>
             / {{ str_pad($slides->count(), 2, '0', STR_PAD_LEFT) }}
         </span>
-        <button @click="prev()" class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition">
+        <button @click="prev()" class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/85 hover:text-white hover:border-white/40 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
         </button>
-        <button @click="next()" class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition">
+        <button @click="next()" class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/85 hover:text-white hover:border-white/40 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
         </button>
     </div>

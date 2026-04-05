@@ -12,7 +12,7 @@
 <section class="relative py-24 md:py-32 overflow-hidden" style="background-color: {{ $bgColor }};">
     @if($bgImage)
     <div class="absolute inset-0">
-        <img src="{{ asset('storage/' . $bgImage) }}" alt="" class="w-full h-full object-cover opacity-20" loading="lazy">
+        <img src="{{ asset('storage/' . $bgImage) }}" alt=- class="w-full h-full object-cover opacity-20" loading="lazy">
     </div>
     @endif
 
@@ -21,7 +21,7 @@
             {{ $heading }}
         </h2>
         @if($subheading)
-        <p class="text-base md:text-lg text-white/60 leading-relaxed mb-10 max-w-xl mx-auto reveal">
+        <p class="text-base md:text-lg text-white/85 leading-relaxed mb-10 max-w-xl mx-auto reveal">
             {{ $subheading }}
         </p>
         @endif

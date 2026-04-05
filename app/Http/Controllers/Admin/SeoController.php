@@ -19,6 +19,7 @@ use App\Models\Destination;
 use App\Models\Country;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Setting;
 use App\Models\TourType;
 use App\Services\ContentOptimizer;
 use App\Services\GeoMarketGenerator;
@@ -78,6 +79,55 @@ class SeoController extends Controller
             'scoreOverview', 'rankings', 'topKeywords',
             'droppingKeywords', 'improvingKeywords', 'lowScoreItems'
         ));
+    }
+
+    /**
+     * Search engine verification and sitemap submission page.
+     */
+    public function searchEngines()
+    {
+        $setting = Setting::firstOrCreate([], [
+            'site_name' => 'Lomo Tanzania Safari',
+        ]);
+
+        $stats = [
+            'published_safaris' => SafariPackage::where('status', 'published')->count(),
+            'destinations' => Destination::count(),
+            'countries' => Country::count(),
+            'pages' => Page::where('status', 'published')->count(),
+            'posts' => Post::where('status', 'published')->count(),
+            'sitemap_url' => route('sitemap.xml'),
+            'sitemap_ready' => true,
+            'verified_engines' => collect([
+                $setting->google_search_console,
+                $setting->bing_webmaster_code,
+                $setting->yandex_verification_code,
+                $setting->baidu_verification_code,
+            ])->filter()->count(),
+        ];
+
+        $stats['indexable_urls'] = $stats['published_safaris'] + $stats['destinations'] + $stats['pages'] + $stats['posts'];
+
+        return view('admin.seo.search-engines', compact('setting', 'stats'));
+    }
+
+    public function updateSearchEngines(Request $request)
+    {
+        $data = $request->validate([
+            'google_search_console' => ['nullable', 'string', 'max:100'],
+            'bing_webmaster_code' => ['nullable', 'string', 'max:100'],
+            'yandex_verification_code' => ['nullable', 'string', 'max:100'],
+            'baidu_verification_code' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $setting = Setting::firstOrCreate([], [
+            'site_name' => 'Lomo Tanzania Safari',
+        ]);
+
+        $setting->update($data);
+
+        return redirect()->route('admin.seo.search-engines')
+            ->with('success', 'Search engine settings updated successfully.');
     }
 
     /**

@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         User::factory()->create([
             'name' => 'Super Admin',
-            'email' => 'admin@lomotanzania.com',
-            'password' => bcrypt('L0m0T@nz4n!4'),
+            'email' => 'admin@demo.lomotanzaniasafari.com',
+            'password' => bcrypt('Arusha@#$20245##'),
             'role' => 'super_admin',
         ]);
     }

@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ Auth::user()->name }}</h1>
             <p class="text-sm text-gray-500 mt-1">Here's what's happening with your safari business today.</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <a href="{{ route('admin.safaris.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#083321] text-white text-sm font-semibold rounded-lg hover:bg-[#0a4a30] transition shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Add Safari
@@ -15,6 +15,10 @@
             <a href="{{ route('admin.destinations.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 Add Destination
+            </a>
+            <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H19.5m0 0V12m0-6L10.5 15m-4.5 3h12a1.5 1.5 0 001.5-1.5v-12A1.5 1.5 0 0018 3H6a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 006 18z"/></svg>
+                View Website
             </a>
         </div>
     </div>

@@ -3,7 +3,7 @@
 @section('content')
 <div x-data="safariPlanner()" x-cloak class="min-h-screen bg-brand-light">
 
-    {{-- ═══════════ SUCCESS STATE ═══════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â• SUCCESS STATE â•â•â•â•â•â•â•â•â•â•â• --}}
     @if(session('success'))
     <div class="min-h-screen flex items-center justify-center px-6">
         <div class="max-w-md w-full text-center">
@@ -26,7 +26,7 @@
     </div>
     @else
 
-    {{-- ═══════════ PROGRESS BAR (STEPS 1-6) ═══════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â• PROGRESS BAR (STEPS 1-6) â•â•â•â•â•â•â•â•â•â•â• --}}
     <div x-show="currentStep > 0" x-transition class="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100">
         <div class="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
             <button @click="prevStep()" x-show="currentStep > (hasSafari ? 1 : 0)"
@@ -49,13 +49,13 @@
         </div>
     </div>
 
-    {{-- ═══════════ FORM WRAPPER ═══════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â• FORM WRAPPER â•â•â•â•â•â•â•â•â•â•â• --}}
     <form action="{{ route('plan-safari.store') }}" method="POST" @submit="handleSubmit($event)">
         @csrf
         <input type="hidden" name="safari_id" :value="safariId">
         <input type="hidden" name="know_destination" :value="knowDestination">
 
-        {{-- ═══════════ STEP 0 — INTRO ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 0 "” INTRO â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 0" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="bg-brand-green relative overflow-hidden">
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&h=600&fit=crop')] bg-cover bg-center opacity-15"></div>
@@ -64,7 +64,7 @@
                     <h1 class="font-heading text-4xl md:text-5xl font-bold text-white leading-tight mb-5 hero-animate hero-delay-2">
                         {{ $settings->get('intro')?->title ?? 'Your dream African safari starts here' }}
                     </h1>
-                    <p class="text-white/60 text-lg leading-relaxed max-w-xl mx-auto hero-animate hero-delay-3">
+                    <p class="text-white/85 text-lg leading-relaxed max-w-xl mx-auto hero-animate hero-delay-3">
                         {{ $settings->get('intro')?->description ?? 'Answer a few quick questions and our safari experts will craft a personalised itinerary tailored to your pace, interests, and budget.' }}
                     </p>
                 </div>
@@ -93,7 +93,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 1 — DESTINATIONS ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 1 "” DESTINATIONS â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-3xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -150,7 +150,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 2 — TRAVEL TIME ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 2 "” TRAVEL TIME â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-2xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -188,7 +188,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 3 — TRAVEL GROUP ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 3 "” TRAVEL GROUP â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 3" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-2xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -227,7 +227,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 4 — INTERESTS ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 4 "” INTERESTS â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-3xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -265,7 +265,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 5 — BUDGET ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 5 "” BUDGET â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 5" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-2xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -303,7 +303,7 @@
         </div>
 
 
-        {{-- ═══════════ STEP 6 — CONTACT DETAILS ═══════════ --}}
+        {{-- â•â•â•â•â•â•â•â•â•â•â• STEP 6 "” CONTACT DETAILS â•â•â•â•â•â•â•â•â•â•â• --}}
         <div x-show="currentStep === 6" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
             <div class="max-w-2xl mx-auto px-6 py-16">
                 <div class="text-center mb-10">
@@ -348,7 +348,7 @@
                         <div class="flex gap-3">
                             <select name="country_code" x-model="countryCode"
                                     class="w-28 rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm py-3 px-3">
-                                <option value="">Code</option>
+                                <option value=->Code</option>
                                 <option value="+1">+1 US</option>
                                 <option value="+44">+44 UK</option>
                                 <option value="+255">+255 TZ</option>
@@ -452,11 +452,11 @@
 
             // Step 3
             travelGroups: [
-                { label: {!! json_encode(__('messages.solo')) !!}, icon: '🧑' },
-                { label: {!! json_encode(__('messages.couple')) !!}, icon: '💑' },
-                { label: {!! json_encode(__('messages.family')) !!}, icon: '👨‍👩‍👧‍👦' },
-                { label: {!! json_encode(__('messages.friends')) !!}, icon: '👯' },
-                { label: {!! json_encode(__('messages.group')) !!}, icon: '👥' },
+                { label: {!! json_encode(__('messages.solo')) !!}, icon: "\u{1F9D1}" },
+                { label: {!! json_encode(__('messages.couple')) !!}, icon: "\u{1F491}" },
+                { label: {!! json_encode(__('messages.family')) !!}, icon: "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}" },
+                { label: {!! json_encode(__('messages.friends')) !!}, icon: "\u{1F46F}" },
+                { label: {!! json_encode(__('messages.group')) !!}, icon: "\u{1F465}" },
             ],
             selectedGroup: '',
 

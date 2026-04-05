@@ -41,6 +41,7 @@ class SafariPackage extends Model
         'video_url',
         'map_embed',
         'status',
+        'safari_type',
         'featured',
         'featured_order',
         'featured_label',

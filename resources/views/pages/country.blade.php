@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $country->name . ' — ' . ($siteName ?? 'Lomo Tanzania Safari'))
+@section('title', $country->name . ' "” ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
 @section('content')
 
@@ -27,7 +27,7 @@
 <section class="py-16 md:py-24 bg-white">
     <div class="max-w-4xl mx-auto px-6">
         <h2 class="font-heading text-2xl md:text-3xl font-bold text-brand-dark mb-6">{{ __('messages.about_country', ['country' => $country->name]) }}</h2>
-        <div class="prose prose-lg max-w-none text-brand-dark/70 leading-relaxed">
+        <div class="prose prose-lg max-w-none text-brand-dark/90 leading-relaxed">
             {!! nl2br(e($country->description)) !!}
         </div>
     </div>
@@ -74,7 +74,7 @@
             </div>
         @else
             <div class="text-center py-12">
-                <p class="text-brand-dark/40 text-sm">{{ __('messages.no_destinations_country') }}</p>
+                <p class="text-brand-dark/90 text-sm">{{ __('messages.no_destinations_country') }}</p>
             </div>
         @endif
     </div>
@@ -109,10 +109,10 @@
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
                             <svg class="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                            <span class="text-xs font-semibold uppercase tracking-wider text-brand-dark/40">{{ $safari->duration ?? __('messages.multi_day') }}</span>
+                            <span class="text-xs font-semibold uppercase tracking-wider text-brand-dark/90">{{ $safari->duration ?? __('messages.multi_day') }}</span>
                         </div>
                         <h3 class="font-heading text-xl font-bold text-brand-dark mb-2">{{ $safari->translated('title') }}</h3>
-                        <p class="text-sm text-brand-dark/50 leading-relaxed mb-5">{{ Str::limit($safari->translated('short_description'), 140) }}</p>
+                        <p class="text-sm text-brand-dark/80 leading-relaxed mb-5">{{ Str::limit($safari->translated('short_description'), 140) }}</p>
 
                         @if($safari->price)
                             <p class="text-lg font-bold text-brand-green mb-4">${{ number_format($safari->price) }}</p>
@@ -131,7 +131,7 @@
 @else
 <section class="py-16 md:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6 text-center">
-        <p class="text-brand-dark/40 text-sm">{{ __('messages.no_safaris_country') }}</p>
+        <p class="text-brand-dark/90 text-sm">{{ __('messages.no_safaris_country') }}</p>
     </div>
 </section>
 @endif

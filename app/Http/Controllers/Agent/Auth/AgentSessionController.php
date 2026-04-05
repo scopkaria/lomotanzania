@@ -22,21 +22,12 @@ class AgentSessionController extends Controller
 
         $user = $request->user();
 
-        // If admin logs in here, redirect to admin panel
-        if ($user->isAdmin()) {
+        if ($user->role !== 'agent') {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('agent.login')
-                ->withErrors(['email' => 'Please use the admin login.']);
-        }
-
-        if (! $user->isAgent()) {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            return redirect()->route('agent.login')
-                ->withErrors(['email' => 'This account is not registered as an agent.']);
+                ->withErrors(['email' => 'Unauthorized access.']);
         }
 
         if (! $user->agent || ! $user->agent->isActive()) {

@@ -19,7 +19,7 @@
             <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
                 {{ __('messages.hero_headline') }}
             </h1>
-            <p class="text-lg text-white/60 mb-8 max-w-lg mx-auto">{{ __('messages.hero_subtext') }}</p>
+            <p class="text-lg text-white/85 mb-8 max-w-lg mx-auto">{{ __('messages.hero_subtext') }}</p>
             <a href="{{ route('plan-safari') }}"
                class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-wider rounded hover:scale-105 transition-all duration-300">
                 {{ __('messages.start_planning') }}

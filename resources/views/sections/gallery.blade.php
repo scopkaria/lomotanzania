@@ -17,11 +17,11 @@
         @endif
 
         @if(count($images))
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 @foreach($images as $img)
                     @if(!empty($img))
                         <img src="{{ str_starts_with($img, 'http') ? $img : asset('storage/' . $img) }}"
-                             alt="" loading="lazy"
+                             alt=- loading="lazy"
                              class="rounded-lg w-full h-56 object-cover hover:opacity-90 transition-opacity duration-300">
                     @endif
                 @endforeach

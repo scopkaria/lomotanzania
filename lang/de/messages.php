@@ -14,8 +14,8 @@ return [
     'start_planning'=> 'Jetzt planen',
     'coming_soon'   => 'Demnächst verfügbar',
     'countries'     => 'Länder',
-    'categories'    => 'Kategorien',
-    'safari_types'  => 'Safari-Typen',
+    'categories'    => 'Budget',
+    'safari_types'  => 'Erlebnisse',
     'explore'       => 'Entdecken',
     'mega_dest_text'=> 'Entdecken Sie Tansanias atemberaubendste Wildtier-Reiseziele.',
     'mega_safari_text'=> 'Maßgeschneiderte Safari-Reisen ins Herz Ostafrikas.',
@@ -214,8 +214,8 @@ return [
     'explore_dest'          => 'Erkunden',
 
     // Tour type & category pages
-    'tour_type_kicker'      => 'Tourart',
-    'category_kicker'       => 'Kategorie',
+    'tour_type_kicker'      => 'Erlebnis',
+    'category_kicker'       => 'Budgetstufe',
     'about_type'            => 'Über :name',
     'about_category'        => 'Über :name',
     'safaris_for_type'      => 'Safaris für :name',
@@ -236,6 +236,16 @@ return [
     'get_in_touch'          => 'Kontaktieren Sie uns',
     'contact_page'          => 'Kontaktseite',
     'brand_description'     => 'Luxuriöse Safari-Erlebnisse, gestaltet im Herzen Tansanias.',
+
+    // Experiences page
+    'curated_journeys'      => 'Kuratierte Reisen',
+    'experiences_subtitle'  => 'Von den weiten Ebenen der Serengeti bis zum Gipfel des Kilimandscharo — entdecken Sie unsere handverlesene Kollektion der außergewöhnlichsten Safari-Erlebnisse Tansanias.',
+    'choose_your_adventure' => 'Wählen Sie Ihr Abenteuer',
+    'explore_by_experience' => 'Nach Erlebnis entdecken',
+    'explore_experience'    => 'Erlebnis entdecken',
+    'no_experiences_yet'    => 'Erlebnisse werden bald verfügbar sein.',
+    'cant_decide'           => 'Nicht sicher, wo Sie anfangen sollen?',
+    'cant_decide_desc'      => 'Lassen Sie unsere Safari-Experten eine maßgeschneiderte Reiseroute ganz nach Ihren Träumen gestalten. Jede Reise ist einzigartig, jeder Moment unvergesslich.',
 
     // Safari detail (extra)
     'route_summary_desc'    => 'Ein schneller Überblick über die gruppierten Tagesbereiche direkt aus der Reiseroute.',

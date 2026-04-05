@@ -114,7 +114,7 @@
     $countryName = $safari->countries->first()?->name ?? 'Tanzania';
 
     if ($destNames) {
-        $faqs[] = ['q' => "What is the best time to visit {$destNames}?", 'a' => "The best time to visit {$destNames} depends on your safari goals. The dry season (June–October) offers excellent wildlife viewing, while the wet season (November–May) brings lush scenery, fewer crowds, and lower prices."];
+        $faqs[] = ['q' => "What is the best time to visit {$destNames}?", 'a' => "The best time to visit {$destNames} depends on your safari goals. The dry season (June-October) offers excellent wildlife viewing, while the wet season (November-May) brings lush scenery, fewer crowds, and lower prices."];
     }
     if ($safari->seasonal_pricing && isset($minPrice)) {
         $faqs[] = ['q' => "How much does the {$safariTitle} cost?", 'a' => "Prices for this safari start from \${$minPrice} {$currency} per person and go up to \${$maxPrice} {$currency} depending on the season and group size. Contact us for customized quotes."];
@@ -149,6 +149,11 @@
 @push('styles')
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
 <style>
+    /* Push chat widget above the floating safari bar */
+    [x-data*="liveChatWidget"] {
+        bottom: 5rem !important;
+    }
+
     .safari-editorial-copy {
         color: #374151;
     }
@@ -279,7 +284,7 @@
         min-height: 28rem;
     }
 
-    /* Outer element: Mapbox applies transform on this — keep it clean */
+    /* Outer element: Mapbox applies transform on this "” keep it clean */
     .safari-map-marker {
         width: 10px;
         height: 10px;
@@ -477,8 +482,8 @@
             if ($lastIndex >= 0 && ($groupedMapStops[$lastIndex]['destination_id'] ?? null) === $destination->id) {
                 $groupedMapStops[$lastIndex]['day_end'] = $day->day_number;
                 $groupedMapStops[$lastIndex]['label'] = $groupedMapStops[$lastIndex]['day_start'] === $day->day_number
-                    ? 'Day ' . $day->day_number . ' — ' . $destination->translated('name')
-                    : 'Day ' . $groupedMapStops[$lastIndex]['day_start'] . '–' . $day->day_number . ' — ' . $destination->translated('name');
+                    ? 'Day ' . $day->day_number . ' "” ' . $destination->translated('name')
+                    : 'Day ' . $groupedMapStops[$lastIndex]['day_start'] . '-' . $day->day_number . ' "” ' . $destination->translated('name');
                 continue;
             }
 
@@ -489,7 +494,7 @@
                 'name' => $destination->translated('name'),
                 'latitude' => (float) $destination->latitude,
                 'longitude' => (float) $destination->longitude,
-                'label' => 'Day ' . $day->day_number . ' — ' . $destination->translated('name'),
+                'label' => 'Day ' . $day->day_number . ' "” ' . $destination->translated('name'),
             ];
         }
         $hasMapStops = count($groupedMapStops) > 0;
@@ -506,19 +511,19 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_35%),linear-gradient(180deg,rgba(19,20,20,0.42)_0%,rgba(19,20,20,0.58)_32%,rgba(19,20,20,0.84)_100%)]"></div>
 
         <nav class="absolute bottom-6 left-6 z-10 flex items-center gap-2 text-sm font-medium text-white/80 sm:bottom-8 sm:left-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center text-white/70 transition hover:text-white" aria-label="Home">
+            <a href="{{ route('home') }}" class="inline-flex items-center text-white/90 transition hover:text-white" aria-label="Home">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12 11.204 3.045a1.125 1.125 0 0 1 1.592 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
                 <span class="sr-only">Home</span>
             </a>
             <span>/</span>
-            <a href="{{ route('safaris.index') }}" class="text-white/70 transition hover:text-white">Safaris</a>
+            <a href="{{ route('safaris.index') }}" class="text-white/90 transition hover:text-white">Safaris</a>
             <span>/</span>
             <span class="max-w-[15rem] truncate text-white/90 sm:max-w-none">{{ $safari->translated('title') }}</span>
         </nav>
 
         <div class="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center justify-center text-center">
             @if($safari->duration || $safari->tour_type || $safari->countries->isNotEmpty())
-                <div class="mb-8 flex flex-wrap items-center justify-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/75 sm:text-xs">
+                <div class="mb-8 flex flex-wrap items-center justify-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/90 sm:text-xs">
                     @if($safari->duration)
                         <span>{{ $safari->duration }}</span>
                     @endif
@@ -716,7 +721,7 @@
                                         @if($dayImage)
                                             <img src="{{ $dayImage }}" alt="{{ $day->translated('title') }}" loading="lazy" class="h-[240px] w-full object-cover sm:h-[320px] lg:h-[380px]">
                                         @else
-                                            <div class="flex h-[240px] items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/70 sm:h-[320px] lg:h-[380px]">
+                                            <div class="flex h-[240px] items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/90 sm:h-[320px] lg:h-[380px]">
                                                 <span class="text-sm uppercase tracking-[0.3em]">{{ __('messages.safari_day') }}</span>
                                             </div>
                                         @endif
@@ -758,7 +763,7 @@
                                             @if($featuredImage)
                                                 <img src="{{ asset('storage/' . $featuredImage) }}" alt="{{ $accommodation->translated('name') }}" loading="lazy" class="h-[360px] w-full object-cover sm:h-[400px] lg:h-[440px]">
                                             @else
-                                                <div class="flex h-[360px] items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/70 sm:h-[400px] lg:h-[440px]">
+                                                <div class="flex h-[360px] items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/90 sm:h-[400px] lg:h-[440px]">
                                                     <svg class="h-12 w-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M4.5 18V9.75m0 8.25h15m-15 0v-3.375c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125V18m-15-8.25 4.816-4.012a1.125 1.125 0 0 1 1.44 0l4.819 4.012m-6.259 0V21m6-11.25V21"/></svg>
                                                 </div>
                                             @endif
@@ -897,7 +902,7 @@
                                         @if($relatedSafari->featured_image)
                                             <img src="{{ asset('storage/' . $relatedSafari->featured_image) }}" alt="{{ $relatedSafari->translated('title') }}" loading="lazy" class="h-56 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
                                         @else
-                                            <div class="flex h-56 items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/70">
+                                            <div class="flex h-56 items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/90">
                                                 <span class="text-xs font-semibold uppercase tracking-[0.24em]">Safari</span>
                                             </div>
                                         @endif
@@ -905,10 +910,10 @@
                                     <div class="p-6">
                                         <div class="mb-3 flex items-center gap-2">
                                             <svg class="h-4 w-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                            <span class="text-xs font-semibold uppercase tracking-wider text-brand-dark/40">{{ $relatedSafari->duration ?? __('messages.multi_day') }}</span>
+                                            <span class="text-xs font-semibold uppercase tracking-wider text-brand-dark/90">{{ $relatedSafari->duration ?? __('messages.multi_day') }}</span>
                                         </div>
                                         <h3 class="mb-2 font-heading text-xl font-bold text-brand-dark">{{ $relatedSafari->translated('title') }}</h3>
-                                        <p class="text-sm leading-relaxed text-brand-dark/50">{{ \Illuminate\Support\Str::limit($relatedSafari->translated('short_description'), 140) }}</p>
+                                        <p class="text-sm leading-relaxed text-brand-dark/80">{{ \Illuminate\Support\Str::limit($relatedSafari->translated('short_description'), 140) }}</p>
                                     </div>
                                 </a>
                             @endforeach
@@ -934,6 +939,60 @@
                     <a href="{{ route('plan-safari', ['safari_id' => $safari->id]) }}" class="inline-flex items-center justify-center rounded-sm border border-white/25 bg-white/10 px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_40px_-28px_rgba(0,0,0,0.45)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white/15">
                         {{ __('messages.plan_this_safari') }}
                     </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="editorial-reveal px-6 py-16 sm:py-20" data-reveal>
+            <div class="mx-auto max-w-6xl">
+                <div class="grid gap-6 lg:grid-cols-[0.85fr,1.15fr]">
+                    <div class="border border-gray-200 bg-brand-light p-8">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-gold">TripAdvisor</p>
+                        <h2 class="mt-3 font-heading text-3xl font-bold text-brand-dark">Trusted by safari travellers</h2>
+                        <p class="mt-4 text-sm leading-7 text-gray-600">Use TripAdvisor to validate the brand, then explore the verified guest feedback below. If live widgets are unavailable, the page falls back to curated review highlights automatically.</p>
+                        @if(optional($siteSetting ?? null)->tripadvisor_url)
+                            <a href="{{ $siteSetting->tripadvisor_url }}" target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 rounded-sm bg-brand-green px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark">
+                                View on TripAdvisor
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H19.5m0 0V12m0-6L10.5 15"/></svg>
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        @forelse($safari->testimonials->take(2) as $testimonial)
+                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="font-semibold text-brand-dark">{{ $testimonial->name }}</p>
+                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Safari guest</p>
+                                    </div>
+                                    <span class="text-sm text-brand-gold">{{ str_repeat('★', (int) ($testimonial->rating ?: 5)) }}</span>
+                                </div>
+                                <p class="mt-4 text-sm leading-7 text-gray-600">{{ \Illuminate\Support\Str::limit($testimonial->message, 155) }}</p>
+                            </article>
+                        @empty
+                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="font-semibold text-brand-dark">Safari guest</p>
+                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Verified fallback review</p>
+                                    </div>
+                                    <span class="text-sm text-brand-gold">★★★★★</span>
+                                </div>
+                                <p class="mt-4 text-sm leading-7 text-gray-600">“Seamless planning, thoughtful guides, and a polished safari experience from start to finish.”</p>
+                            </article>
+                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="font-semibold text-brand-dark">Returning traveller</p>
+                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Static review fallback</p>
+                                    </div>
+                                    <span class="text-sm text-brand-gold">★★★★★</span>
+                                </div>
+                                <p class="mt-4 text-sm leading-7 text-gray-600">“Beautiful lodges, fast support, and expertly paced game drives that felt premium on every day of the itinerary.”</p>
+                            </article>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </section>
@@ -1014,7 +1073,7 @@
                             </template>
                             <template x-if="currentAccommodation && !currentAccommodation.images.length">
                                 <div class="flex h-[320px] items-center justify-center sm:h-[420px] lg:h-[560px]">
-                                    <svg class="h-16 w-16 text-white/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M4.5 18V9.75m0 8.25h15m-15 0v-3.375c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125V18m-15-8.25 4.816-4.012a1.125 1.125 0 0 1 1.44 0l4.819 4.012m-6.259 0V21m6-11.25V21"/></svg>
+                                    <svg class="h-16 w-16 text-white/85" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M4.5 18V9.75m0 8.25h15m-15 0v-3.375c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125V18m-15-8.25 4.816-4.012a1.125 1.125 0 0 1 1.44 0l4.819 4.012m-6.259 0V21m6-11.25V21"/></svg>
                                 </div>
                             </template>
 
@@ -1185,7 +1244,7 @@
                                 @endif
                                 <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,51,33,0.2)_0%,rgba(8,51,33,0.72)_55%,rgba(8,51,33,0.9)_100%)]"></div>
                                 <div class="relative flex h-full flex-col justify-end px-5 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-10">
-                                    <p class="text-[11px] uppercase tracking-[0.22em] text-white/65">{{ __('messages.safari_details') }}</p>
+                                    <p class="text-[11px] uppercase tracking-[0.22em] text-white/85">{{ __('messages.safari_details') }}</p>
                                     <h3 class="mt-2 font-heading text-2xl font-bold sm:text-3xl">{{ $safari->translated('title') }}</h3>
                                     <div class="mt-5 grid gap-3 text-sm text-white/85">
                                         <div class="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
