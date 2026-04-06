@@ -297,6 +297,7 @@ class ChatController extends Controller
 
         return response()->json([
             'chat_unread' => $chatUnread,
+            'count' => $chatUnread,
             'notifications' => $notifications,
             'total' => $chatUnread + $notifications,
         ]);

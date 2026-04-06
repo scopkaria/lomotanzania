@@ -224,6 +224,27 @@
                 @endif
             </div>
         </div>
+
+        {{-- Confirmation Modal --}}
+        <template x-if="showConfirm">
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="confirmNo()">
+                <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 animate-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Confirm</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-6" x-text="confirmMessage"></p>
+                    <div class="flex justify-end gap-3">
+                        <button @click="confirmNo()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                        <button @click="confirmYes()" class="px-4 py-2 text-sm font-medium text-white bg-[#083321] hover:bg-[#0a4a2e] rounded-lg transition">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 
     @push('scripts')
@@ -272,6 +293,11 @@
             selectedTransferTo: null,
             transferToName: '',
             transferNote: '',
+
+            // Confirmation modal
+            showConfirm: false,
+            confirmMessage: '',
+            confirmCallback: null,
 
             init() {
                 this.$nextTick(() => this.scrollToBottom());
@@ -360,9 +386,29 @@
                 } catch (e) { this.newMessage = msg; }
             },
 
+            askConfirm(msg, cb) {
+                this.confirmMessage = msg;
+                this.confirmCallback = cb;
+                this.showConfirm = true;
+            },
+
+            confirmYes() {
+                this.showConfirm = false;
+                if (this.confirmCallback) this.confirmCallback();
+                this.confirmCallback = null;
+            },
+
+            confirmNo() {
+                this.showConfirm = false;
+                this.confirmCallback = null;
+            },
+
             async doTransfer() {
                 if (!this.selectedTransferTo) return;
-                if (!confirm(`Transfer this chat to ${this.transferToName}?`)) return;
+                this.askConfirm(`Transfer this chat to ${this.transferToName}?`, () => this._executeTransfer());
+            },
+
+            async _executeTransfer() {
                 try {
                     const res = await fetch(`/admin/chat/${this.sessionId}/transfer`, {
                         method: 'POST',
@@ -378,7 +424,7 @@
                         this.transferNote = '';
                         // System message will appear via polling
                     }
-                } catch (e) { alert('Transfer failed'); }
+                } catch (e) { if (Alpine.store('toast')) Alpine.store('toast').show('Transfer failed', 'error'); }
             },
 
             handleTyping() {
@@ -399,12 +445,13 @@
             },
 
             async closeChat() {
-                if (!confirm('Close this chat session?')) return;
-                await fetch(`/admin/chat/${this.sessionId}/close`, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' }
+                this.askConfirm('Close this chat session?', async () => {
+                    await fetch(`/admin/chat/${this.sessionId}/close`, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' }
+                    });
+                    window.location.href = '{{ route("admin.chat.index") }}';
                 });
-                window.location.href = '{{ route("admin.chat.index") }}';
             },
 
             scrollToBottom() {

@@ -203,15 +203,26 @@
     " x-show="count > 0" x-text="count" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"></span>
 </a>
 
-{{-- Workers --}}
-@if(!$isWorker)
-@php $workerActive = $current && fnmatch('admin.workers.*', $current); @endphp
-<a href="{{ route('admin.workers.index') }}"
-   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-          {{ $workerActive ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-    <svg class="w-5 h-5 shrink-0 {{ $workerActive ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-    <span class="flex-1">Workers</span>
-</a>
+{{-- Team Management --}}
+@if(Auth::user()->isSuperAdmin())
+@php $teamActive = $current && fnmatch('admin.workers.*', $current); @endphp
+<div x-data="{ open: {{ $teamActive ? 'true' : 'false' }} }">
+    <button @click="open = !open" type="button"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                   {{ $teamActive ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+        <svg class="w-5 h-5 shrink-0 {{ $teamActive ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+        <span class="flex-1 text-left">Team</span>
+        <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="open && 'rotate-90'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+    </button>
+    <div x-show="open" x-collapse class="ml-5 mt-1 space-y-0.5 border-l-2 border-gray-100 pl-3">
+        @php $a = $current === 'admin.workers.admins'; @endphp
+        <a href="{{ route('admin.workers.admins') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Administrators</a>
+        @php $a = $current === 'admin.workers.index'; @endphp
+        <a href="{{ route('admin.workers.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Workers</a>
+        @php $a = $current === 'admin.workers.departments'; @endphp
+        <a href="{{ route('admin.workers.departments') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Departments</a>
+    </div>
+</div>
 @endif
 
 {{-- Inquiries --}}

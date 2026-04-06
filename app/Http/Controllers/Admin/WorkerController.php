@@ -6,11 +6,109 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class WorkerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            abort_unless(Auth::user()->isSuperAdmin(), 403);
+            return $next($request);
+        });
+    }
+
+    // ─── Admin Management ───────────────────────────────
+
+    public function admins()
+    {
+        $admins = User::where('role', 'admin')
+            ->with('department')
+            ->orderByDesc('created_at')
+            ->paginate(25);
+
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.workers.admins', compact('admins', 'departments'));
+    }
+
+    public function createAdmin()
+    {
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+        return view('admin.workers.admin-create', compact('departments'));
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => ['required', 'confirmed', Password::min(8)],
+            'phone' => 'nullable|string|max:20',
+            'department_id' => 'nullable|exists:departments,id',
+            'bio' => 'nullable|string|max:255',
+        ]);
+
+        $validated['role'] = 'admin';
+        $validated['password'] = Hash::make($validated['password']);
+
+        User::create($validated);
+
+        return redirect()->route('admin.workers.admins')
+            ->with('success', 'Administrator account created successfully.');
+    }
+
+    public function editAdmin(User $admin)
+    {
+        abort_unless($admin->role === 'admin', 404);
+        $departments = Department::where('is_active', true)->orderBy('name')->get();
+        return view('admin.workers.admin-edit', compact('admin', 'departments'));
+    }
+
+    public function updateAdmin(Request $request, User $admin)
+    {
+        abort_unless($admin->role === 'admin', 404);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $admin->id,
+            'phone' => 'nullable|string|max:20',
+            'department_id' => 'nullable|exists:departments,id',
+            'bio' => 'nullable|string|max:255',
+            'password' => ['nullable', 'confirmed', Password::min(8)],
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $admin->update($validated);
+
+        return redirect()->route('admin.workers.admins')
+            ->with('success', 'Administrator updated successfully.');
+    }
+
+    public function destroyAdmin(User $admin)
+    {
+        abort_unless($admin->role === 'admin', 404);
+
+        if ($admin->id === Auth::id()) {
+            return redirect()->route('admin.workers.admins')
+                ->with('error', 'You cannot delete your own account.');
+        }
+
+        $admin->delete();
+
+        return redirect()->route('admin.workers.admins')
+            ->with('success', 'Administrator deleted.');
+    }
+
+    // ─── Worker Management ──────────────────────────────
+
     public function index()
     {
         $workers = User::where('role', 'worker')

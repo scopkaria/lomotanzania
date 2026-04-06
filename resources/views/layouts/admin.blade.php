@@ -224,6 +224,87 @@
     });
     </script>
 
+    {{-- ============ GLOBAL TOAST NOTIFICATIONS ============ --}}
+    <div x-data x-init="$store.toast || Alpine.store('toast', { items: [], show(msg, type='success', dur=4000) { const id=Date.now(); this.items.push({id,msg,type}); setTimeout(()=>this.items=this.items.filter(t=>t.id!==id), dur); } })"
+         class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none" style="max-width:380px">
+        <template x-for="t in $store.toast.items" :key="t.id">
+            <div x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-x-8"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-x-0"
+                 x-transition:leave-end="opacity-0 translate-x-8"
+                 :class="{
+                    'bg-green-600': t.type==='success',
+                    'bg-red-600': t.type==='error',
+                    'bg-blue-600': t.type==='info',
+                    'bg-amber-500': t.type==='warning',
+                    'bg-[#083321]': t.type==='chat'
+                 }"
+                 class="text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-3 pointer-events-auto">
+                <template x-if="t.type==='success'">
+                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                </template>
+                <template x-if="t.type==='error'">
+                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                </template>
+                <template x-if="t.type==='chat'">
+                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                </template>
+                <template x-if="t.type==='info' || t.type==='warning'">
+                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                </template>
+                <span x-text="t.msg" class="flex-1"></span>
+                <button @click="$store.toast.items = $store.toast.items.filter(i=>i.id!==t.id)" class="text-white/60 hover:text-white shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    {{-- ============ GLOBAL CHAT NOTIFICATION SOUND ============ --}}
+    <div x-data="{
+        lastUnread: -1,
+        audioCtx: null,
+        init() {
+            this.poll();
+            setInterval(() => this.poll(), 5000);
+        },
+        async poll() {
+            try {
+                const res = await fetch('{{ route("admin.chat.unread-count") }}');
+                const data = await res.json();
+                const count = data.count || 0;
+                if (this.lastUnread >= 0 && count > this.lastUnread) {
+                    this.playSound();
+                    if (typeof Alpine !== 'undefined' && Alpine.store('toast')) {
+                        Alpine.store('toast').show('New chat message received!', 'chat');
+                    }
+                }
+                this.lastUnread = count;
+            } catch(e) {}
+        },
+        playSound() {
+            try {
+                if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = this.audioCtx;
+                const now = ctx.currentTime;
+                const gain = ctx.createGain();
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                [523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    osc.connect(gain);
+                    osc.start(now + i * 0.12);
+                    osc.stop(now + i * 0.12 + 0.25);
+                });
+            } catch(e) {}
+        }
+    }" x-init="init()" class="hidden"></div>
+
     @stack('scripts')
 </body>
 </html>

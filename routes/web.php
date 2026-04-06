@@ -371,6 +371,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('chat/{chatSession}/typing', [AdminChatController::class, 'typing'])->name('chat.typing');
     Route::post('chat/{chatSession}/close', [AdminChatController::class, 'close'])->name('chat.close');
 
+    // Team Management — Admin Users (Super Admin only)
+    Route::get('workers/admins', [WorkerController::class, 'admins'])->name('workers.admins');
+    Route::get('workers/admins/create', [WorkerController::class, 'createAdmin'])->name('workers.admin-create');
+    Route::post('workers/admins', [WorkerController::class, 'storeAdmin'])->name('workers.admin-store');
+    Route::get('workers/admins/{admin}/edit', [WorkerController::class, 'editAdmin'])->name('workers.admin-edit');
+    Route::put('workers/admins/{admin}', [WorkerController::class, 'updateAdmin'])->name('workers.admin-update');
+    Route::delete('workers/admins/{admin}', [WorkerController::class, 'destroyAdmin'])->name('workers.admin-destroy');
+
     // Workers Management
     Route::get('workers', [WorkerController::class, 'index'])->name('workers.index');
     Route::get('workers/create', [WorkerController::class, 'create'])->name('workers.create');

@@ -89,7 +89,7 @@ class ChatController extends Controller
 
         $messages = ChatMessage::where('chat_session_id', $chatSession->id)
             ->where('sender_type', 'agent')
-            ->where('message_type', 'normal')
+            ->whereIn('message_type', ['normal', 'system'])
             ->when($afterId, fn ($q) => $q->where('id', '>', $afterId))
             ->orderBy('id')
             ->get()
@@ -97,6 +97,7 @@ class ChatController extends Controller
                 'id' => $m->id,
                 'message' => $m->message,
                 'sender_type' => $m->sender_type,
+                'message_type' => $m->message_type ?? 'normal',
                 'created_at' => $m->created_at->toISOString(),
             ]);
 

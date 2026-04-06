@@ -87,7 +87,19 @@
                 {{-- Messages --}}
                 <div x-ref="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
                     <template x-for="msg in messages" :key="msg.id">
-                        <div :class="msg.sender_type === 'visitor' ? 'flex justify-end' : 'flex justify-start'">
+                        <div>
+                            {{-- System messages (transfer notifications etc) --}}
+                            <template x-if="msg.message_type === 'system' || msg.sender_type === 'system'">
+                                <div class="flex justify-center my-2">
+                                    <div class="bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 flex items-center gap-2">
+                                        <svg class="w-3 h-3 text-blue-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <p class="text-[11px] text-blue-600 font-medium" x-text="msg.message"></p>
+                                    </div>
+                                </div>
+                            </template>
+                            {{-- Normal messages --}}
+                            <template x-if="msg.message_type !== 'system' && msg.sender_type !== 'system'">
+                            <div :class="msg.sender_type === 'visitor' ? 'flex justify-end' : 'flex justify-start'">
                             <div class="max-w-[80%]">
                                 <p x-show="msg.sender_type === 'agent' && agentInfo" class="text-[10px] text-gray-400 mb-0.5 ml-1" x-text="agentInfo ? agentInfo.name : ''"></p>
                                 <div :class="msg.sender_type === 'visitor' ? 'bg-[#083321] text-white' : 'bg-gray-100 text-gray-800'"
@@ -96,6 +108,8 @@
                                     <p :class="msg.sender_type === 'visitor' ? 'text-white/50' : 'text-gray-400'" class="text-[10px] mt-1" x-text="formatTime(msg.created_at)"></p>
                                 </div>
                             </div>
+                        </div>
+                            </template>
                         </div>
                     </template>
                     {{-- Typing indicator --}}
@@ -120,10 +134,13 @@
         </template>
     </div>
 
-    {{-- Floating button --}}
-    <button @click="open = !open" class="w-14 h-14 rounded-full bg-[#FEBC11] text-[#131414] shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center ml-auto">
+    {{-- Floating button with unread badge --}}
+    <button @click="toggleChat()" class="relative w-14 h-14 rounded-full bg-[#FEBC11] text-[#131414] shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center ml-auto">
         <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
         <svg x-show="open" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        {{-- Unread badge --}}
+        <span x-show="unreadCount > 0 && !open" x-text="unreadCount" x-transition
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 px-1 rounded-full flex items-center justify-center shadow-md animate-bounce"></span>
     </button>
 </div>
 
@@ -145,6 +162,7 @@ function liveChatWidget() {
         storageKey: 'lomo-live-chat-state',
         audioCtx: null,
         hasInteracted: false,
+        unreadCount: 0,
 
         init() {
             this.restoreState();
@@ -167,6 +185,14 @@ function liveChatWidget() {
             this.$watch('visitorName', () => this.persistState());
             this.$watch('visitorEmail', () => this.persistState());
             this.$watch('sessionId', () => this.persistState());
+        },
+
+        toggleChat() {
+            this.open = !this.open;
+            if (this.open) {
+                this.unreadCount = 0;
+                this.$nextTick(() => this.scrollToBottom());
+            }
         },
 
         restoreState() {
@@ -272,10 +298,14 @@ function liveChatWidget() {
                 const res = await fetch(`/api/chat/${this.sessionId}/poll?after=${this.lastMessageId}`);
                 const data = await res.json();
                 if (data.messages && data.messages.length > 0) {
-                    const hasAgentMsg = data.messages.some(m => m.sender_type === 'agent');
+                    const agentMsgs = data.messages.filter(m => m.sender_type === 'agent');
+                    const hasAgentMsg = agentMsgs.length > 0;
                     this.mergeMessages(data.messages);
                     this.$nextTick(() => this.scrollToBottom());
-                    if (hasAgentMsg && (!document.hasFocus() || !this.open)) {
+                    if (hasAgentMsg && !this.open) {
+                        this.unreadCount += agentMsgs.length;
+                        this.playNotificationSound();
+                    } else if (hasAgentMsg && !document.hasFocus()) {
                         this.playNotificationSound();
                     }
                 }
