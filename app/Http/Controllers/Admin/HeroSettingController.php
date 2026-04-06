@@ -18,7 +18,7 @@ class HeroSettingController extends Controller
             ->orderBy('title')
             ->get(['id', 'title', 'featured_image', 'slug', 'duration', 'price', 'currency']);
 
-        $selectedIds = $settings->hero_safari_ids ?? [];
+        $selectedIds = array_map('intval', $settings->hero_safari_ids ?? []);
 
         $pages = Page::where('status', 'published')->orderBy('sort_order')->get(['id', 'title', 'slug', 'is_homepage']);
 
@@ -49,13 +49,13 @@ class HeroSettingController extends Controller
         ]);
 
         $validated['autoplay'] = $request->boolean('autoplay');
-        $validated['hero_safari_ids'] = $validated['hero_safari_ids'] ?? [];
+        $validated['hero_safari_ids'] = array_map('intval', $validated['hero_safari_ids'] ?? []);
 
         $settings = HeroSetting::instance();
         $settings->update(collect($validated)->except('hero_pages')->toArray());
 
         // Sync hero sections per page
-        $enabledPageIds = $validated['hero_pages'] ?? [];
+        $enabledPageIds = array_map('intval', $validated['hero_pages'] ?? []);
         $allPages = Page::where('status', 'published')->pluck('id');
 
         foreach ($allPages as $pageId) {

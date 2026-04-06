@@ -269,7 +269,7 @@
 
                     return {
                         allSafaris,
-                        selected: [...initialSelected],
+                        selected: initialSelected.map(Number),
                         search: '',
                         dragIdx: null,
                         dragOverIdx: null,
@@ -287,12 +287,14 @@
                         },
 
                         add(id) {
+                            id = Number(id);
                             if (!this.selected.includes(id)) {
                                 this.selected.push(id);
                             }
                         },
 
                         remove(id) {
+                            id = Number(id);
                             this.selected = this.selected.filter(i => i !== id);
                         },
 
