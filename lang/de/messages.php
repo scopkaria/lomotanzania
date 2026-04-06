@@ -302,6 +302,9 @@ return [
     'clear_filters'         => 'Filter zurücksetzen',
     'safaris_count'         => ':count Safari|:count Safaris',
 
+    // Hero CTA
+    'explore_safari'        => 'Safari Entdecken',
+
     // Language names
     'lang_en' => 'English',
     'lang_fr' => 'Français',

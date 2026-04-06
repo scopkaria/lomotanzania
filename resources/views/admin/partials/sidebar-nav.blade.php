@@ -5,9 +5,13 @@
             select,
             textarea {
                 border-width: 1px;
-                border-color: rgb(209 213 219);
-                padding: 0.75rem 1rem;
-                border-radius: 0.75rem;
+                border-color: #083321;
+                padding: 0.625rem 0.875rem;
+                border-radius: 0.375rem;
+                margin-bottom: 0.25rem;
+                color: #131414;
+                background-color: #fff;
+                transition: border-color 0.15s ease, box-shadow 0.15s ease;
             }
 
             textarea {
@@ -19,9 +23,14 @@
             input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
             select:focus,
             textarea:focus {
-                border-color: #083321 !important;
-                box-shadow: 0 0 0 3px rgba(8, 51, 33, 0.12) !important;
+                border-color: #FEBC11 !important;
+                box-shadow: 0 0 0 3px rgba(254, 188, 17, 0.15) !important;
                 outline: none;
+            }
+
+            input:not([type='checkbox']):not([type='radio']):not([type='range'])::placeholder,
+            textarea::placeholder {
+                color: rgba(8, 51, 33, 0.4);
             }
         </style>
     @endpush

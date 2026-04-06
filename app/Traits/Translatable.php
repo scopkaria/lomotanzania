@@ -36,14 +36,33 @@ trait Translatable
 
         // Return translation if available, else fallback to EN, else original field
         if (is_array($translations) && ! empty($translations[$locale])) {
-            return $translations[$locale];
+            return $this->fixBrokenUnicode($translations[$locale]);
         }
 
         if ($locale !== 'en' && is_array($translations) && ! empty($translations['en'])) {
-            return $translations['en'];
+            return $this->fixBrokenUnicode($translations['en']);
         }
 
         return $this->getAttribute($field);
+    }
+
+    /**
+     * Fix broken unicode escape sequences (e.g. "u00e9" without backslash).
+     */
+    protected function fixBrokenUnicode(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        // Fix sequences like u00e9 → proper é character
+        if (preg_match('/(?<!\\\\)u[0-9a-fA-F]{4}/', $value)) {
+            $value = preg_replace_callback('/(?<!\\\\)u([0-9a-fA-F]{4})/', function ($m) {
+                return mb_chr(hexdec($m[1]), 'UTF-8');
+            }, $value);
+        }
+
+        return $value;
     }
 
     /**
