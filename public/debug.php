@@ -28,7 +28,7 @@ foreach (['pdo_mysql', 'mbstring', 'openssl', 'tokenizer', 'xml', 'ctype', 'json
 }
 
 // 3. .env file
-$envPath = __DIR__ . '/.env';
+$envPath = __DIR__ . '/../.env';
 if (file_exists($envPath)) {
     $checks[] = "<span class='ok'>✅ .env exists</span>";
     $env = file_get_contents($envPath);
@@ -61,30 +61,35 @@ if (file_exists($envPath)) {
             : "<span class='warn'>⚠️ APP_DEBUG=false (won't show errors — set to true temporarily to debug)</span>";
     }
 } else {
-    $checks[] = "<span class='err'>❌ .env file MISSING — copy .env.production to .env and fill in credentials</span>";
+    if (file_exists(__DIR__ . '/../.env.production')) {
+        copy(__DIR__ . '/../.env.production', __DIR__ . '/../.env');
+        $checks[] = "<span class='ok'>✅ Copied .env.production → .env (edit your DB credentials!)</span>";
+    } else {
+        $checks[] = "<span class='err'>❌ .env file MISSING — create it from .env.production template</span>";
+    }
 }
 
 // 4. Vendor
-$checks[] = file_exists(__DIR__ . '/vendor/autoload.php')
+$checks[] = file_exists(__DIR__ . '/../vendor/autoload.php')
     ? "<span class='ok'>✅ vendor/autoload.php exists</span>"
     : "<span class='err'>❌ vendor/autoload.php MISSING — git pull may have failed</span>";
 
 // 5. Build assets
-$checks[] = file_exists(__DIR__ . '/public/build/manifest.json')
+$checks[] = file_exists(__DIR__ . '/build/manifest.json')
     ? "<span class='ok'>✅ public/build/manifest.json exists</span>"
     : "<span class='err'>❌ public/build/manifest.json MISSING</span>";
 
 // 6. Storage symlink
-$publicStorage = __DIR__ . '/public/storage';
+$publicStorage = __DIR__ . '/storage';
 if (is_link($publicStorage) || is_dir($publicStorage)) {
-    $checks[] = "<span class='ok'>✅ public/storage exists</span>";
+    $checks[] = "<span class='ok'>✅ public/storage symlink exists</span>";
 } else {
-    $checks[] = "<span class='err'>❌ public/storage symlink MISSING — run server_setup.php first</span>";
+    $checks[] = "<span class='err'>❌ public/storage symlink MISSING</span>";
 }
 
 // 7. Writable directories
 foreach (['storage/logs', 'storage/framework/views', 'storage/framework/sessions', 'storage/framework/cache', 'bootstrap/cache'] as $dir) {
-    $path = __DIR__ . '/' . $dir;
+    $path = __DIR__ . '/../' . $dir;
     if (!is_dir($path)) {
         $checks[] = "<span class='err'>❌ $dir directory MISSING</span>";
     } elseif (!is_writable($path)) {
@@ -100,10 +105,10 @@ foreach ($checks as $c) echo "<div>$c</div>";
 
 echo '<h2>Laravel Boot Test</h2>';
 try {
-    require __DIR__ . '/vendor/autoload.php';
+    require __DIR__ . '/../vendor/autoload.php';
 
     /** @var \Illuminate\Foundation\Application $app */
-    $app = require_once __DIR__ . '/bootstrap/app.php';
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
     $kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
     $kernel->bootstrap();
 
@@ -118,7 +123,7 @@ try {
     }
 
     // Check for cached config pointing to wrong paths
-    $configCache = __DIR__ . '/bootstrap/cache/config.php';
+    $configCache = __DIR__ . '/../bootstrap/cache/config.php';
     if (file_exists($configCache)) {
         $cached = file_get_contents($configCache);
         if (strpos($cached, 'wamp64') !== false || strpos($cached, 'C:\\') !== false) {
@@ -129,7 +134,7 @@ try {
     }
 
     // Check route cache
-    $routeCache = __DIR__ . '/bootstrap/cache/routes-v7.php';
+    $routeCache = __DIR__ . '/../bootstrap/cache/routes-v7.php';
     if (file_exists($routeCache)) {
         $cached = file_get_contents($routeCache);
         if (strpos($cached, 'wamp64') !== false || strpos($cached, 'C:\\') !== false) {
@@ -146,7 +151,7 @@ try {
 
 // 9. Check Laravel log
 echo '<h2>Recent Log Errors</h2>';
-$logFile = __DIR__ . '/storage/logs/laravel.log';
+$logFile = __DIR__ . '/../storage/logs/laravel.log';
 if (file_exists($logFile) && filesize($logFile) > 0) {
     $lines = file($logFile);
     $tail = array_slice($lines, -80);
