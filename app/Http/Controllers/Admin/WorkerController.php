@@ -12,18 +12,16 @@ use Illuminate\Validation\Rules\Password;
 
 class WorkerController extends Controller
 {
-    public function __construct()
+    private function authorizeSuperAdmin(): void
     {
-        $this->middleware(function ($request, $next) {
-            abort_unless(Auth::user()->isSuperAdmin(), 403);
-            return $next($request);
-        });
+        abort_unless(Auth::user()->isSuperAdmin(), 403);
     }
 
     // ─── Admin Management ───────────────────────────────
 
     public function admins()
     {
+        $this->authorizeSuperAdmin();
         $admins = User::where('role', 'admin')
             ->with('department')
             ->orderByDesc('created_at')
@@ -36,12 +34,14 @@ class WorkerController extends Controller
 
     public function createAdmin()
     {
+        $this->authorizeSuperAdmin();
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         return view('admin.workers.admin-create', compact('departments'));
     }
 
     public function storeAdmin(Request $request)
     {
+        $this->authorizeSuperAdmin();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -62,6 +62,7 @@ class WorkerController extends Controller
 
     public function editAdmin(User $admin)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($admin->role === 'admin', 404);
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         return view('admin.workers.admin-edit', compact('admin', 'departments'));
@@ -69,6 +70,7 @@ class WorkerController extends Controller
 
     public function updateAdmin(Request $request, User $admin)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($admin->role === 'admin', 404);
 
         $validated = $request->validate([
@@ -94,6 +96,7 @@ class WorkerController extends Controller
 
     public function destroyAdmin(User $admin)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($admin->role === 'admin', 404);
 
         if ($admin->id === Auth::id()) {
@@ -111,6 +114,7 @@ class WorkerController extends Controller
 
     public function index()
     {
+        $this->authorizeSuperAdmin();
         $workers = User::where('role', 'worker')
             ->with('department')
             ->withCount(['chatSessions' => fn ($q) => $q->where('status', 'active')])
@@ -124,12 +128,14 @@ class WorkerController extends Controller
 
     public function create()
     {
+        $this->authorizeSuperAdmin();
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         return view('admin.workers.create', compact('departments'));
     }
 
     public function store(Request $request)
     {
+        $this->authorizeSuperAdmin();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -150,6 +156,7 @@ class WorkerController extends Controller
 
     public function edit(User $worker)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($worker->role === 'worker', 404);
         $departments = Department::where('is_active', true)->orderBy('name')->get();
         return view('admin.workers.edit', compact('worker', 'departments'));
@@ -157,6 +164,7 @@ class WorkerController extends Controller
 
     public function update(Request $request, User $worker)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($worker->role === 'worker', 404);
 
         $validated = $request->validate([
@@ -182,6 +190,7 @@ class WorkerController extends Controller
 
     public function destroy(User $worker)
     {
+        $this->authorizeSuperAdmin();
         abort_unless($worker->role === 'worker', 404);
         $worker->delete();
 
@@ -192,12 +201,14 @@ class WorkerController extends Controller
     // Department CRUD
     public function departments()
     {
+        $this->authorizeSuperAdmin();
         $departments = Department::withCount('workers')->orderBy('name')->get();
         return view('admin.workers.departments', compact('departments'));
     }
 
     public function storeDepartment(Request $request)
     {
+        $this->authorizeSuperAdmin();
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:departments,name',
             'description' => 'nullable|string|max:255',
@@ -211,6 +222,7 @@ class WorkerController extends Controller
 
     public function updateDepartment(Request $request, Department $department)
     {
+        $this->authorizeSuperAdmin();
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:departments,name,' . $department->id,
             'description' => 'nullable|string|max:255',
@@ -225,6 +237,7 @@ class WorkerController extends Controller
 
     public function destroyDepartment(Department $department)
     {
+        $this->authorizeSuperAdmin();
         $department->delete();
         return back()->with('success', 'Department deleted.');
     }
