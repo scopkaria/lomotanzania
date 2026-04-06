@@ -18,6 +18,55 @@
             @csrf
             @method('PUT')
 
+            {{-- Pages to Display Hero --}}
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 mb-2">
+                    Pages to Display Hero
+                </h2>
+                <p class="text-xs text-gray-400 mb-4">Select which pages should show the hero slider. Uncheck a page to hide the hero section on it.</p>
+
+                <div class="space-y-2" x-data="{ selectedPages: @js(old('hero_pages', $heroPageIds)) }">
+                    @foreach($pages as $page)
+                        @php $pageTitle = is_array($page->title) ? ($page->title['en'] ?? $page->title[array_key_first($page->title)] ?? $page->slug) : $page->title; @endphp
+                        <label class="flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors"
+                               :class="selectedPages.includes({{ $page->id }}) ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-gray-50 hover:bg-gray-100'">
+                            <input type="checkbox"
+                                   value="{{ $page->id }}"
+                                   :checked="selectedPages.includes({{ $page->id }})"
+                                   @change="if ($event.target.checked) { selectedPages.push({{ $page->id }}) } else { selectedPages = selectedPages.filter(i => i !== {{ $page->id }}) }"
+                                   class="w-4 h-4 rounded border-gray-300 text-[#083321] focus:ring-[#083321]">
+                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center {{ $page->is_homepage ? 'bg-[#FEBC11]/20 text-[#083321]' : 'bg-gray-200 text-gray-500' }}">
+                                    @if($page->is_homepage)
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                                    @else
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                    @endif
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ $pageTitle }}</p>
+                                    <p class="text-[11px] text-gray-400">/{{ $page->slug }}</p>
+                                </div>
+                            </div>
+                            @if($page->is_homepage)
+                                <span class="text-[10px] font-semibold uppercase tracking-wider text-[#083321] bg-[#FEBC11]/30 px-2 py-0.5 rounded-full">Homepage</span>
+                            @endif
+                        </label>
+                    @endforeach
+
+                    {{-- Hidden inputs for form submission --}}
+                    <template x-for="id in selectedPages" :key="id">
+                        <input type="hidden" name="hero_pages[]" :value="id">
+                    </template>
+                </div>
+
+                @if($pages->isEmpty())
+                    <div class="text-center py-6">
+                        <p class="text-sm text-gray-400">No published pages found.</p>
+                    </div>
+                @endif
+            </div>
+
             {{-- Background Video --}}
             <div class="bg-white rounded-xl shadow-sm p-6 space-y-5">
                 <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3">
