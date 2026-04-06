@@ -16,7 +16,7 @@ class HeroSettingController extends Controller
         $settings = HeroSetting::instance();
         $allSafaris = SafariPackage::where('status', 'published')
             ->orderBy('title')
-            ->get(['id', 'title', 'featured_image', 'slug']);
+            ->get(['id', 'title', 'featured_image', 'slug', 'duration', 'price', 'currency']);
 
         $selectedIds = $settings->hero_safari_ids ?? [];
 
