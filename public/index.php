@@ -42,11 +42,25 @@ if (isset($_GET['raw_debug'])) {
         echo ".env NOT FOUND\n";
     }
 
-    echo "\n--- Laravel Log (last 30 lines) ---\n";
+    echo "\n--- Laravel Log (ERRORS only, last 500 lines scanned) ---\n";
     $log = __DIR__ . '/../storage/logs/laravel.log';
     if (file_exists($log) && filesize($log) > 0) {
         $lines = file($log);
-        echo implode('', array_slice($lines, -30));
+        $tail = array_slice($lines, -500);
+        // Extract just the ERROR lines (not full traces)
+        $errors = [];
+        foreach ($tail as $line) {
+            if (preg_match('/production\.ERROR:|local\.ERROR:|EMERGENCY:|CRITICAL:/', $line)) {
+                $errors[] = trim($line);
+            }
+        }
+        if ($errors) {
+            echo implode("\n\n", array_slice($errors, -10));
+        } else {
+            echo "No ERROR lines found in last 500 lines\n";
+            echo "\n--- Raw last 80 lines ---\n";
+            echo implode('', array_slice($lines, -80));
+        }
     } else {
         echo "No log file\n";
     }
