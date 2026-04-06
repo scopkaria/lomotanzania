@@ -1,5 +1,5 @@
 -- MySQL 8.0 compatible dump of `lomo`
--- Generated: 2026-04-06 01:07:29
+-- Generated: 2026-04-06 10:04:34
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -389,13 +389,16 @@ CREATE TABLE `hero_settings` (
   `overlay_opacity` decimal(10,2) NOT NULL DEFAULT '0.50',
   `autoplay` tinyint(1) NOT NULL DEFAULT '1',
   `transition_speed` bigint NOT NULL DEFAULT '5000',
+  `hero_safari_ids` json DEFAULT NULL,
+  `button_text` json DEFAULT NULL,
+  `button_link` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `hero_settings` (`id`, `background_video`, `video_poster`, `overlay_opacity`, `autoplay`, `transition_speed`, `created_at`, `updated_at`) VALUES
-('1', 'accommodations/olU2N1yUihT8S2t0F9wszPVn8q6IJGGvKPDpzmEf.jpg', 'safaris/Sy6BdtdamfKGcVioraGTB6dbwtjfjZwRwVyYibru.png', '0.50', '1', '5000', '2026-04-02 23:42:57', '2026-04-02 23:43:19');
+INSERT INTO `hero_settings` (`id`, `background_video`, `video_poster`, `overlay_opacity`, `autoplay`, `transition_speed`, `hero_safari_ids`, `button_text`, `button_link`, `created_at`, `updated_at`) VALUES
+('1', 'accommodations/olU2N1yUihT8S2t0F9wszPVn8q6IJGGvKPDpzmEf.jpg', 'safaris/Sy6BdtdamfKGcVioraGTB6dbwtjfjZwRwVyYibru.png', '0.50', '1', '5000', NULL, NULL, NULL, '2026-04-02 23:42:57', '2026-04-02 23:43:19');
 
 DROP TABLE IF EXISTS `hero_slides`;
 CREATE TABLE `hero_slides` (
@@ -604,7 +607,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` bigint NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 ('1', '0001_01_01_000000_create_users_table', '1'),
@@ -673,7 +676,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 ('64', '2026_04_05_011102_add_safari_type_to_safari_packages_table', '62'),
 ('65', '2026_04_05_150200_add_branding_and_search_engine_fields_to_settings_table', '63'),
 ('66', '2026_04_05_150300_create_menu_items_table', '63'),
-('67', '2026_04_05_100000_create_mockup_tables', '64');
+('67', '2026_04_05_100000_create_mockup_tables', '64'),
+('68', '2026_04_06_200000_add_hero_safari_selection_and_button_to_hero_settings', '65');
 
 DROP TABLE IF EXISTS `mockup_categories`;
 CREATE TABLE `mockup_categories` (
@@ -1240,8 +1244,10 @@ CREATE TABLE `sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('5JzJxVgm1Dhn32c7ALM4jOPN0BkMg1niG1aCL3Q5', '1', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Avira/145.0.34271.162', 'eyJfdG9rZW4iOiJRUHZQcEdHWUVzTDRka0RpRG9KV2I0MlpCVmVFb3FjaVJXSFhwWWtpIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9ub3RpZmljYXRpb25zXC9mZXRjaCIsInJvdXRlIjoiYWRtaW4ubm90aWZpY2F0aW9ucy5mZXRjaCJ9LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=', '1775437641'),
-('fKihzSSwRLiAy0vduPCUhyP04b8Ghs7idyQ8ZyUU', '1', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Avira/145.0.34271.162', 'eyJfdG9rZW4iOiJQY0NiUzhEemlRVVpsdlU4blk1aVlHdERyR2pDc3JFT2owOFJiM3M2IiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9jaGF0XC80In0sIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYWRtaW5cL25vdGlmaWNhdGlvbnNcL2ZldGNoIiwicm91dGUiOiJhZG1pbi5ub3RpZmljYXRpb25zLmZldGNoIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', '1775437641');
+('fKihzSSwRLiAy0vduPCUhyP04b8Ghs7idyQ8ZyUU', '1', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Avira/145.0.34271.162', 'eyJfdG9rZW4iOiJQY0NiUzhEemlRVVpsdlU4blk1aVlHdERyR2pDc3JFT2owOFJiM3M2IiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9jaGF0XC80In0sIl9wcmV2aW91cyI6eyJ1cmwiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYWRtaW5cL25vdGlmaWNhdGlvbnNcL2ZldGNoIiwicm91dGUiOiJhZG1pbi5ub3RpZmljYXRpb25zLmZldGNoIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9', '1775465601'),
+('Fmnwec9ALOOHlZZEcWqxiYzHR9HFXlGTgeVWb85r', '1', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Avira/145.0.34271.162', 'eyJfdG9rZW4iOiJicHphQ0ZKQTdSV2VDbW42Q3EwRnpaeUtHSzBMVHpYV1ZyNzMyd0N6IiwidXJsIjp7ImludGVuZGVkIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9ub3RpZmljYXRpb25zXC9mZXRjaCJ9LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2FkbWluXC9ub3RpZmljYXRpb25zXC9mZXRjaCIsInJvdXRlIjoiYWRtaW4ubm90aWZpY2F0aW9ucy5mZXRjaCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX0sImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjoxfQ==', '1775469861'),
+('n0h8im7tgHDd8AupuyYzQIVRtWLEB7VaYNYXzsMa', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Avira/145.0.34271.162', 'eyJfdG9rZW4iOiJ2bWVDNURyaHkwMTJyTjFjWHM2T056QjE1MGpuWVY0b3lva1pRSjVjIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2xvbW8tbG9naW4iLCJyb3V0ZSI6InN1cGVyLWFkbWluLmxvZ2luIn19', '1775465781'),
+('nYUEiYLskyCSqktUPcInqtn19GhwQovmrMGaOjOL', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'eyJfdG9rZW4iOiI3aDhiMkFkQTZvNnlBSmdFc3BuN0oxenpIb0ZvRjhPc25GR0hPVTNGIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9lblwvc2FmYXJpcyIsInJvdXRlIjoic2FmYXJpcy5pbmRleCJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19', '1775462705');
 
 DROP TABLE IF EXISTS `settings`;
 CREATE TABLE `settings` (
@@ -1347,7 +1353,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `profile_image`, `bio`, `pending_email`, `email_change_token`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `role`, `department_id`, `language`, `theme`, `notification_preferences`) VALUES
-('1', 'Super Admin', 'admin@lomotanzania.com', NULL, NULL, NULL, NULL, NULL, '2026-03-27 00:50:37', '$2y$12$w5h/JnA52AZS9YsRMefCVOsbPoCnT5C99a1Iu16EIZbMrNvB9ewu6', 'YM3lrJpe2wHuhaMDXF4GXylhoXOPiq9gi4NhZXHWwKcKuWqjU4Z2LMof05UO', '2026-03-27 00:50:37', '2026-04-04 18:54:31', 'super_admin', NULL, 'en', 'light', NULL),
+('1', 'Super Admin', 'admin@lomotanzania.com', NULL, 'profile-images/vpdfSFHl4rMBcm3FmU4slhe1GFQVzgQgOnvlmHLj.png', NULL, NULL, NULL, '2026-03-27 00:50:37', '$2y$12$w5h/JnA52AZS9YsRMefCVOsbPoCnT5C99a1Iu16EIZbMrNvB9ewu6', '3e9uZwganrPFnG5VgrzRyvlY1bTBW1K0LYq4Hqhd4SySRI4aHTlMvoLHawwp', '2026-03-27 00:50:37', '2026-04-06 10:01:04', 'super_admin', NULL, 'en', 'light', '{\"sound_alerts\": \"1\", \"email_bookings\": \"1\", \"email_inquiries\": \"1\"}'),
 ('2', 'scop', 'scopkariah@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, '$2y$12$DkdovqFSweCAARMsawZ0/eLpK.AhfMKtH.WYeBc4tJP3Asuvihkz6', 'cMclUO5j6XMXEytCqreBwPJMGvSZNUCu3vQ6Iv9Qenexni7i0N1XX6Jo2URA', '2026-04-01 15:17:38', '2026-04-01 15:17:38', 'agent', NULL, 'en', 'light', NULL),
 ('3', 'scop kariah', 'scopkariaa@gmail.com', '+255758273300', NULL, 'scop kariah', NULL, NULL, NULL, '$2y$12$Dt/BMPlEzu.IvLDKibAxV.0ipVKzt3ELZiN7hbsIzo3LrTlWMvsO6', 'kCmlecFD7b2YRBMq44czf9BGlTc9tJoj4YUKyvpmEhhW8PweExOZ4B53SBzi', '2026-04-04 20:50:48', '2026-04-04 23:58:05', 'worker', NULL, 'en', 'light', NULL);
 

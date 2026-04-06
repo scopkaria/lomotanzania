@@ -89,15 +89,21 @@
 
             {{-- Featured Safaris Preview --}}
             <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 mb-4">
-                    Featured Safaris ({{ $featuredSafaris->count() }})
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3 mb-2">
+                    Hero Slider Safaris
                 </h2>
+                <p class="text-xs text-gray-400 mb-4">Tick the safaris you want to appear in the hero slider. Drag to reorder (top = first slide). If none are selected, all featured safaris will show.</p>
 
-                @if($featuredSafaris->count())
-                    <div class="space-y-2">
-                        @foreach($featuredSafaris as $safari)
-                            <div class="flex items-center gap-4 p-3 rounded-lg bg-gray-50">
-                                <span class="text-xs font-bold text-gray-400 w-6 text-center">{{ $safari->featured_order }}</span>
+                @if($allSafaris->count())
+                    <div class="space-y-2" x-data="{ ids: @js(old('hero_safari_ids', $selectedIds)) }">
+                        @foreach($allSafaris as $safari)
+                            <label class="flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors"
+                                   :class="ids.includes({{ $safari->id }}) ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-gray-50 hover:bg-gray-100'">
+                                <input type="checkbox"
+                                       value="{{ $safari->id }}"
+                                       :checked="ids.includes({{ $safari->id }})"
+                                       @change="if ($event.target.checked) { ids.push({{ $safari->id }}) } else { ids = ids.filter(i => i !== {{ $safari->id }}) }"
+                                       class="w-4 h-4 rounded border-gray-300 text-[#083321] focus:ring-[#083321]">
                                 @if($safari->featured_image)
                                     <img src="{{ asset('storage/' . $safari->featured_image) }}" alt="" class="w-10 h-10 rounded object-cover">
                                 @else
@@ -107,20 +113,57 @@
                                 @endif
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-gray-900 truncate">{{ $safari->title }}</p>
-                                    @if($safari->featured_label)
-                                        <span class="text-[10px] font-semibold uppercase tracking-wide text-[#FEBC11]">{{ $safari->featured_label }}</span>
-                                    @endif
                                 </div>
-                                <a href="{{ route('admin.safaris.edit', $safari) }}" class="text-xs text-[#083321] hover:underline">Edit</a>
-                            </div>
+                                <a href="{{ route('admin.safaris.edit', $safari) }}" class="text-xs text-[#083321] hover:underline" @click.stop>Edit</a>
+                            </label>
                         @endforeach
+
+                        {{-- Hidden inputs for form submission --}}
+                        <template x-for="id in ids" :key="id">
+                            <input type="hidden" name="hero_safari_ids[]" :value="id">
+                        </template>
                     </div>
                 @else
                     <div class="text-center py-8">
-                        <p class="text-sm text-gray-400">No featured safaris yet.</p>
-                        <p class="text-xs text-gray-400 mt-1">Mark safaris as "Featured" in the safari editor to display them in the hero.</p>
+                        <p class="text-sm text-gray-400">No published safaris yet.</p>
                     </div>
                 @endif
+            </div>
+
+            {{-- CTA Button --}}
+            <div class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+                <h2 class="text-sm font-semibold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-3">
+                    Call-to-Action Button
+                </h2>
+                <p class="text-xs text-gray-400 -mt-2">The button that appears on each slide. Leave blank to link to each safari's own page.</p>
+
+                @php $locales = ['en' => 'English', 'fr' => 'Français', 'de' => 'Deutsch', 'es' => 'Español']; @endphp
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach($locales as $code => $label)
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">{{ $label }}</label>
+                                <input type="text" name="button_text[{{ $code }}]"
+                                       value="{{ old('button_text.' . $code, $settings->button_text[$code] ?? '') }}"
+                                       placeholder="{{ $code === 'en' ? 'Explore Safari' : '' }}"
+                                       class="w-full rounded-lg border-gray-300 text-sm focus:border-[#FEBC11] focus:ring-[#FEBC11]">
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('button_text') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Button Link (optional)</label>
+                    <input type="text" name="button_link"
+                           value="{{ old('button_link', $settings->button_link ?? '') }}"
+                           placeholder="e.g. /en/safaris  — leave blank to link to each safari"
+                           class="w-full rounded-lg border-gray-300 text-sm focus:border-[#FEBC11] focus:ring-[#FEBC11]">
+                    <p class="text-xs text-gray-400 mt-1">If set, all slides share this link. If blank, each slide links to its own safari page.</p>
+                    @error('button_link') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- Submit --}}

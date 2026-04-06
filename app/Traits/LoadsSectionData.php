@@ -16,10 +16,22 @@ trait LoadsSectionData
 
         return match ($section->section_type) {
             'hero' => [
-                'heroSafaris' => SafariPackage::where('status', 'published')
-                    ->where('featured', true)
-                    ->orderBy('featured_order')
-                    ->get(),
+                'heroSafaris' => (function () {
+                    $settings = HeroSetting::instance();
+                    $selectedIds = $settings->hero_safari_ids ?? [];
+
+                    if (!empty($selectedIds)) {
+                        return SafariPackage::where('status', 'published')
+                            ->whereIn('id', $selectedIds)
+                            ->orderByRaw('FIELD(id, ' . implode(',', array_map('intval', $selectedIds)) . ')')
+                            ->get();
+                    }
+
+                    return SafariPackage::where('status', 'published')
+                        ->where('featured', true)
+                        ->orderBy('featured_order')
+                        ->get();
+                })(),
                 'heroSettings' => HeroSetting::instance(),
             ],
             'split_hero', 'highlight', 'two_column_feature', 'experience_grid' => [],

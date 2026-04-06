@@ -12,6 +12,9 @@
     $overlay       = $heroSettings?->overlay_opacity ?? 0.50;
     $autoplay      = $heroSettings?->autoplay ?? true;
     $speed         = $heroSettings?->transition_speed ?? 5000;
+
+    $btnText       = $heroSettings?->button_text ?? [];
+    $btnLink       = $heroSettings?->button_link;
 @endphp
 
 @if($heroSafaris->count())
@@ -23,7 +26,7 @@
     x-init="start()"
     @keydown.arrow-right.window="next()"
     @keydown.arrow-left.window="prev()"
-    class="relative h-screen min-h-[600px] max-h-[1000px] overflow-hidden bg-[#131414]"
+    class="relative h-[100svh] min-h-[600px] max-h-[900px] overflow-hidden bg-[#131414]"
     x-ref="hero"
 >
     {{-- Background Video --}}
@@ -49,9 +52,10 @@
         <div class="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto px-6 lg:px-12">
 
             {{-- Left: Text Content --}}
-            <div class="flex-1 flex flex-col justify-center py-24 lg:py-32 lg:pr-16">
+            <div class="flex-1 flex flex-col justify-center py-24 lg:py-32 lg:pr-16 relative">
                 @foreach($heroSafaris as $i => $safari)
-                <div x-show="active === {{ $i }}" x-cloak>
+                <div x-show="active === {{ $i }}" x-cloak
+                     class="{{ $i === 0 ? '' : 'absolute inset-0 flex flex-col justify-center py-24 lg:py-32 lg:pr-16' }}">
 
                     {{-- Label --}}
                     @if($safari->featured_label)
@@ -89,9 +93,14 @@
                          x-transition:enter="transition duration-700 delay-500"
                          x-transition:enter-start="opacity-0 translate-y-4"
                          x-transition:enter-end="opacity-100 translate-y-0">
-                        <a href="{{ route('safaris.show', ['locale' => $locale, 'slug' => $safari->slug]) }}"
+                        @php
+                            $safariUrl = route('safaris.show', ['locale' => $locale, 'slug' => $safari->slug]);
+                            $heroUrl   = $btnLink ?: $safariUrl;
+                            $heroLabel = $btnText[$locale] ?? $btnText['en'] ?? __('messages.explore_safari') ?: 'Explore Safari';
+                        @endphp
+                        <a href="{{ $heroUrl }}"
                            class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-wider rounded hover:scale-105 hover:brightness-90 transition-all duration-300 shadow-lg shadow-[#FEBC11]/20">
-                            {{ __('messages.explore_safari') ?: 'Explore Safari' }}
+                            {{ $heroLabel }}
                         </a>
                     </div>
                 </div>

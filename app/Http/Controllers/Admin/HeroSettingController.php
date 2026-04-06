@@ -12,12 +12,13 @@ class HeroSettingController extends Controller
     public function edit()
     {
         $settings = HeroSetting::instance();
-        $featuredSafaris = SafariPackage::where('featured', true)
-            ->where('status', 'published')
-            ->orderBy('featured_order')
-            ->get(['id', 'title', 'featured_order', 'featured_label', 'featured_image', 'slug']);
+        $allSafaris = SafariPackage::where('status', 'published')
+            ->orderBy('title')
+            ->get(['id', 'title', 'featured_image', 'slug']);
 
-        return view('admin.hero-settings.edit', compact('settings', 'featuredSafaris'));
+        $selectedIds = $settings->hero_safari_ids ?? [];
+
+        return view('admin.hero-settings.edit', compact('settings', 'allSafaris', 'selectedIds'));
     }
 
     public function update(Request $request)
@@ -28,9 +29,15 @@ class HeroSettingController extends Controller
             'overlay_opacity'  => 'required|numeric|min:0|max:1',
             'autoplay'         => 'boolean',
             'transition_speed' => 'required|integer|min:1000|max:30000',
+            'hero_safari_ids'  => 'nullable|array',
+            'hero_safari_ids.*'=> 'integer|exists:safari_packages,id',
+            'button_text'      => 'nullable|array',
+            'button_text.*'    => 'nullable|string|max:100',
+            'button_link'      => 'nullable|string|max:500',
         ]);
 
         $validated['autoplay'] = $request->boolean('autoplay');
+        $validated['hero_safari_ids'] = $validated['hero_safari_ids'] ?? [];
 
         $settings = HeroSetting::instance();
         $settings->update($validated);
