@@ -93,6 +93,119 @@ if (isset($_GET['raw_debug'])) {
     }
     exit;
 }
+
+// Storage / image diagnostic
+if (isset($_GET['storage_debug'])) {
+    header('Content-Type: text/plain; charset=utf-8');
+    $base = realpath(__DIR__ . '/..');
+    $publicStorage = __DIR__ . '/storage';
+    $actualStorage = $base . '/storage/app/public';
+
+    echo "=== STORAGE SYMLINK DIAGNOSTIC ===\n\n";
+
+    // 1. Check public/storage
+    echo "1. public/storage exists: " . (file_exists($publicStorage) ? 'YES' : 'NO') . "\n";
+    echo "   Is symlink: " . (is_link($publicStorage) ? 'YES' : 'NO') . "\n";
+    echo "   Is directory: " . (is_dir($publicStorage) ? 'YES' : 'NO') . "\n";
+    if (is_link($publicStorage)) {
+        echo "   Symlink target: " . readlink($publicStorage) . "\n";
+        echo "   Resolved path: " . realpath($publicStorage) . "\n";
+    }
+
+    // 2. Check storage/app/public
+    echo "\n2. storage/app/public exists: " . (is_dir($actualStorage) ? 'YES' : 'NO') . "\n";
+    echo "   Writable: " . (is_writable($actualStorage) ? 'YES' : 'NO') . "\n";
+
+    // 3. Check media subdirectory
+    $mediaDir = $actualStorage . '/media';
+    echo "\n3. storage/app/public/media/ exists: " . (is_dir($mediaDir) ? 'YES' : 'NO') . "\n";
+    if (is_dir($mediaDir)) {
+        echo "   Writable: " . (is_writable($mediaDir) ? 'YES' : 'NO') . "\n";
+        $files = scandir($mediaDir);
+        $files = array_diff($files, ['.', '..', '.gitignore']);
+        echo "   Files (" . count($files) . "):\n";
+        foreach ($files as $f) {
+            $fp = $mediaDir . '/' . $f;
+            $size = filesize($fp);
+            $readable = is_readable($fp) ? 'readable' : 'NOT readable';
+            echo "     - $f ($size bytes, $readable)\n";
+        }
+    }
+
+    // 4. Check the specific broken file
+    $brokenFile = 'media/LYqkjVtuKY1ZoinnvAMVEeXsNgsXVn4o1oqhnURf.png';
+    echo "\n4. Broken file check: $brokenFile\n";
+    echo "   In storage/app/public: " . (file_exists($actualStorage . '/' . $brokenFile) ? 'EXISTS' : 'MISSING') . "\n";
+    echo "   Via public/storage: " . (file_exists($publicStorage . '/' . $brokenFile) ? 'EXISTS' : 'MISSING') . "\n";
+
+    // 5. Compare: list ALL subdirs in storage/app/public
+    echo "\n5. All directories in storage/app/public/:\n";
+    if (is_dir($actualStorage)) {
+        $items = scandir($actualStorage);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') continue;
+            $p = $actualStorage . '/' . $item;
+            $type = is_dir($p) ? 'DIR' : 'FILE';
+            $rp = is_readable($p) ? '' : ' [NOT READABLE]';
+            echo "   [$type] $item$rp\n";
+        }
+    }
+
+    // 6. Test symlink by writing and reading
+    echo "\n6. Symlink write test:\n";
+    $testFile = $actualStorage . '/.symlink_test_' . time();
+    $testContent = 'symlink_test';
+    if (@file_put_contents($testFile, $testContent)) {
+        echo "   Wrote test file to storage/app/public/ : OK\n";
+        $viaPublic = $publicStorage . '/' . basename($testFile);
+        if (file_exists($viaPublic) && file_get_contents($viaPublic) === $testContent) {
+            echo "   Read via public/storage/ : OK — SYMLINK WORKS\n";
+        } else {
+            echo "   Read via public/storage/ : FAILED — SYMLINK IS BROKEN!\n";
+            echo "   public/storage is likely a real directory, not a symlink.\n";
+        }
+        @unlink($testFile);
+    } else {
+        echo "   Could not write test file — storage not writable!\n";
+    }
+
+    // 7. Fix option
+    if (isset($_GET['fix_symlink'])) {
+        echo "\n=== ATTEMPTING SYMLINK FIX ===\n";
+        if (is_dir($publicStorage) && !is_link($publicStorage)) {
+            // It's a real directory — need to remove it and create symlink
+            // First backup any files that exist only here
+            echo "public/storage is a real directory. Removing and creating symlink...\n";
+            // Remove the directory (it should only have git-tracked files that also exist in storage/app/public)
+            $cmd = 'rm -rf ' . escapeshellarg($publicStorage);
+            exec($cmd, $output, $ret);
+            echo "Removed directory: " . ($ret === 0 ? 'OK' : "FAILED (code $ret)") . "\n";
+        }
+        if (file_exists($publicStorage)) {
+            @unlink($publicStorage); // remove if it's a broken symlink
+        }
+        if (!file_exists($publicStorage)) {
+            if (symlink($actualStorage, $publicStorage)) {
+                echo "Created symlink: public/storage -> $actualStorage\n";
+                echo "TEST: " . (is_dir($publicStorage) ? 'WORKING' : 'FAILED') . "\n";
+            } else {
+                echo "symlink() failed. Trying relative path...\n";
+                if (symlink('../storage/app/public', $publicStorage)) {
+                    echo "Created relative symlink: public/storage -> ../storage/app/public\n";
+                    echo "TEST: " . (is_dir($publicStorage) ? 'WORKING' : 'FAILED') . "\n";
+                } else {
+                    echo "FAILED — symlink() is not available. Contact hosting support.\n";
+                }
+            }
+        } else {
+            echo "public/storage still exists, cannot recreate.\n";
+        }
+    } else {
+        echo "\n--- To fix, visit: ?storage_debug&fix_symlink ---\n";
+    }
+
+    exit;
+}
 // === END TEMPORARY DEBUG ===
 
 use Illuminate\Foundation\Application;
