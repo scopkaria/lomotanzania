@@ -162,10 +162,11 @@
         }
         .nav-item { position: static; }
 
-        /* â”€â”€ MOBILE OFF-CANVAS â”€â”€ */
+        /* — MOBILE OFF-CANVAS — */
         .mobile-menu {
             transform: translateX(100%);
             transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
         }
         .mobile-menu.open {
             transform: translateX(0);
@@ -569,10 +570,10 @@
     </header>
 
     {{-- ========== MOBILE BACKDROP ========== --}}
-    <div class="mobile-backdrop fixed inset-0 z-40 bg-black/50 xl:hidden" :class="mobileOpen && 'open'" @click="mobileOpen = false"></div>
+    <div class="mobile-backdrop fixed inset-0 z-[90] bg-black/50 xl:hidden" :class="mobileOpen && 'open'" @click="mobileOpen = false"></div>
 
     {{-- ========== MOBILE OFF-CANVAS MENU ========== --}}
-    <div class="mobile-menu fixed top-0 right-0 bottom-0 w-[320px] max-w-[85vw] z-50 bg-white xl:hidden overflow-y-auto"
+    <div class="mobile-menu fixed inset-0 z-[100] bg-white xl:hidden overflow-y-auto"
          :class="mobileOpen && 'open'"
          x-data="{ openSection: null }">
 
