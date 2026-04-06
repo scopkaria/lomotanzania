@@ -49,6 +49,80 @@ use App\Models\Accommodation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Server Diagnostic Route — DELETE after debugging
+|--------------------------------------------------------------------------
+*/
+Route::get('/server-debug', function () {
+    $checks = [];
+
+    // PHP
+    $checks[] = 'PHP ' . PHP_VERSION;
+
+    // Extensions
+    foreach (['pdo_mysql','mbstring','openssl','tokenizer','xml','ctype','fileinfo','curl'] as $ext) {
+        if (!extension_loaded($ext)) $checks[] = "❌ MISSING ext-$ext";
+    }
+
+    // .env
+    $checks[] = 'APP_ENV=' . config('app.env');
+    $checks[] = 'APP_DEBUG=' . (config('app.debug') ? 'true' : 'false');
+    $checks[] = 'APP_URL=' . config('app.url');
+    $checks[] = 'DB=' . config('database.default');
+
+    // DB test
+    try {
+        \DB::connection()->getPdo();
+        $checks[] = '✅ DB connected: ' . \DB::connection()->getDatabaseName();
+        $checks[] = 'Tables: ' . count(\DB::select('SHOW TABLES'));
+    } catch (\Throwable $e) {
+        $checks[] = '❌ DB error: ' . $e->getMessage();
+    }
+
+    // Storage
+    $checks[] = is_writable(storage_path()) ? '✅ storage/ writable' : '❌ storage/ NOT writable';
+    $checks[] = is_writable(storage_path('logs')) ? '✅ storage/logs writable' : '❌ storage/logs NOT writable';
+    $checks[] = is_writable(storage_path('framework/views')) ? '✅ views writable' : '❌ views NOT writable';
+    $checks[] = is_dir(public_path('storage')) ? '✅ public/storage exists' : '❌ public/storage symlink MISSING';
+    $checks[] = file_exists(public_path('build/manifest.json')) ? '✅ build assets exist' : '❌ build/manifest.json MISSING';
+
+    // Paths
+    $checks[] = 'base_path: ' . base_path();
+    $checks[] = 'public_path: ' . public_path();
+    $checks[] = 'storage_path: ' . storage_path();
+
+    // Cached config check
+    if (file_exists(base_path('bootstrap/cache/config.php'))) {
+        $c = file_get_contents(base_path('bootstrap/cache/config.php'));
+        if (str_contains($c, 'wamp64') || str_contains($c, 'C:\\')) {
+            $checks[] = '❌ STALE CONFIG CACHE with Windows paths — deleting...';
+            @unlink(base_path('bootstrap/cache/config.php'));
+            $checks[] = '✅ Deleted stale config cache';
+        } else {
+            $checks[] = '✅ Config cache OK';
+        }
+    }
+
+    // Log tail
+    $logFile = storage_path('logs/laravel.log');
+    $logTail = '';
+    if (file_exists($logFile) && filesize($logFile) > 0) {
+        $lines = file($logFile);
+        $logTail = implode('', array_slice($lines, -50));
+    }
+
+    return response(
+        '<html><head><title>Debug</title><style>body{font-family:monospace;background:#111;color:#eee;padding:20px;max-width:900px;margin:0 auto}'
+        . 'h1{color:#FEBC11}pre{background:#222;padding:12px;border-radius:6px;overflow-x:auto;font-size:13px;max-height:500px;overflow-y:auto}</style></head>'
+        . '<body><h1>Lomo Server Debug</h1>'
+        . '<pre>' . e(implode("\n", $checks)) . '</pre>'
+        . '<h2>Log Tail</h2><pre>' . e($logTail) . '</pre>'
+        . '<p style="color:#f66"><strong>DELETE this route from routes/web.php after debugging!</strong></p>'
+        . '</body></html>'
+    );
+});
+
 // Root → redirect to default locale
 Route::get('/', fn () => redirect('/en'));
 
