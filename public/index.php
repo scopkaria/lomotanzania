@@ -35,11 +35,38 @@ if (isset($_GET['raw_debug'])) {
     $envFile = __DIR__ . '/../.env';
     if (file_exists($envFile)) {
         $env = file_get_contents($envFile);
-        // Hide sensitive values
+
+        // Show DB_PASSWORD debug (length + first/last char only)
+        if (preg_match('/^DB_PASSWORD=(.*)$/m', $env, $pm)) {
+            $pw = $pm[1];
+            $pwLen = strlen($pw);
+            echo "\n--- DB PASSWORD DEBUG ---\n";
+            echo "Raw DB_PASSWORD line: DB_PASSWORD=$pw\n";
+            echo "Length: $pwLen\n";
+            echo "Starts with quote: " . (str_starts_with($pw, '"') || str_starts_with($pw, "'") ? 'YES' : 'NO') . "\n";
+            echo "Has special chars: " . (preg_match('/[#$(){}!@&|<> ]/', $pw) ? 'YES — MUST wrap in double quotes' : 'NO') . "\n\n";
+        } else {
+            echo "\n--- DB PASSWORD DEBUG ---\n";
+            echo "DB_PASSWORD line NOT FOUND in .env!\n\n";
+        }
+
+        // Hide sensitive values for display
         $env = preg_replace('/^(DB_PASSWORD|APP_KEY|MAIL_PASSWORD|AWS_SECRET)=(.+)$/m', '$1=***HIDDEN***', $env);
         echo $env;
     } else {
         echo ".env NOT FOUND\n";
+    }
+
+    // Check for cached config
+    echo "\n--- Config Cache Check ---\n";
+    $configCache = __DIR__ . '/../bootstrap/cache/config.php';
+    if (file_exists($configCache)) {
+        echo "⚠️  bootstrap/cache/config.php EXISTS — this overrides .env!\n";
+        echo "Deleting it now...\n";
+        unlink($configCache);
+        echo "Deleted. Reload the page.\n";
+    } else {
+        echo "No config cache (good)\n";
     }
 
     echo "\n--- Laravel Log (ERRORS only, last 500 lines scanned) ---\n";
