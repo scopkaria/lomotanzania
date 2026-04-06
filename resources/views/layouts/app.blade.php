@@ -17,7 +17,7 @@
         $pageDescription = $seoDescription ?? $defaultDescription;
         $pageKeywords = $seoKeywords ?? 'safari, tanzania, serengeti, kilimanjaro, wildlife, africa, luxury safari, great migration';
         $ogImage = $seoOgImage ?? (optional($siteSetting ?? null)->default_og_image ? asset('storage/' . $siteSetting->default_og_image) : 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1200&h=630&fit=crop&q=80');
-        $favicon = optional($siteSetting ?? null)->favicon_path ? asset('storage/' . $siteSetting->favicon_path) : null;
+        $favicon = optional($siteSetting ?? null)->favicon_path ? asset('storage/' . $siteSetting->favicon_path) : asset('favicon.png');
         $headerColor = optional($siteSetting ?? null)->header_color ?: '#083321';
     @endphp
 
@@ -25,11 +25,9 @@
     <meta name="keywords" content="{{ $pageKeywords }}">
     <meta name="theme-color" content="{{ $headerColor }}">
     <link rel="canonical" href="{{ $canonicalUrl }}">
-    @if($favicon)
-        <link rel="icon" type="image/png" href="{{ $favicon }}">
-        <link rel="shortcut icon" href="{{ $favicon }}">
-        <link rel="apple-touch-icon" href="{{ $favicon }}">
-    @endif
+    <link rel="icon" type="image/png" href="{{ $favicon }}">
+    <link rel="shortcut icon" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
 
     {{-- Search engine verification --}}
     @if(optional($siteSetting ?? null)->google_search_console)
