@@ -192,6 +192,13 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-a
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
+    // Sync media & storage link (run once on server)
+    Route::get('sync-media', function () {
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\MediaSyncSeeder', '--force' => true]);
+        return redirect()->route('admin.dashboard')->with('success', 'Media synced & storage link created.');
+    })->name('sync-media');
+
     // Hero settings (under Pages)
     Route::get('pages/hero-settings', [HeroSettingController::class, 'edit'])->name('pages.hero-settings.edit');
     Route::put('pages/hero-settings', [HeroSettingController::class, 'update'])->name('pages.hero-settings.update');
