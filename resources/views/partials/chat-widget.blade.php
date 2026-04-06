@@ -143,9 +143,15 @@ function liveChatWidget() {
         lastMessageId: 0,
         typingTimeout: null,
         storageKey: 'lomo-live-chat-state',
+        audioCtx: null,
+        hasInteracted: false,
 
         init() {
             this.restoreState();
+            // Enable audio after first user interaction
+            ['click', 'keydown', 'touchstart'].forEach(evt => {
+                document.addEventListener(evt, () => { this.hasInteracted = true; }, { once: true });
+            });
 
             if (!this.visitorId) {
                 this.visitorId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `visitor-${Date.now()}`;
@@ -266,14 +272,48 @@ function liveChatWidget() {
                 const res = await fetch(`/api/chat/${this.sessionId}/poll?after=${this.lastMessageId}`);
                 const data = await res.json();
                 if (data.messages && data.messages.length > 0) {
+                    const hasAgentMsg = data.messages.some(m => m.sender_type === 'agent');
                     this.mergeMessages(data.messages);
                     this.$nextTick(() => this.scrollToBottom());
+                    if (hasAgentMsg && (!document.hasFocus() || !this.open)) {
+                        this.playNotificationSound();
+                    }
                 }
                 this.agentTyping = !!data.agent_typing;
                 if (data.agent_info) {
                     this.agentInfo = data.agent_info;
                     this.persistState();
                 }
+            } catch (e) {}
+        },
+
+        playNotificationSound() {
+            if (!this.hasInteracted) return;
+            try {
+                if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = this.audioCtx;
+                const now = ctx.currentTime;
+                // Safari-inspired gentle bird-like chime (two-tone)
+                const gain = ctx.createGain();
+                gain.connect(ctx.destination);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+                const osc1 = ctx.createOscillator();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, now);
+                osc1.frequency.exponentialRampToValueAtTime(1100, now + 0.15);
+                osc1.connect(gain);
+                osc1.start(now);
+                osc1.stop(now + 0.3);
+
+                const osc2 = ctx.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1320, now + 0.15);
+                osc2.frequency.exponentialRampToValueAtTime(1100, now + 0.4);
+                osc2.connect(gain);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 0.6);
             } catch (e) {}
         },
 

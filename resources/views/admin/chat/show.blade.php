@@ -189,7 +189,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-gray-400 uppercase font-medium mb-1">Current Page</p>
-                    <p class="text-sm text-[#083321] font-medium truncate" x-text="currentPage || 'Unknown'"></p>
+                    <p class="text-sm text-[#083321] font-medium truncate" x-text="parsePageTitle(currentPage)"></p>
                 </div>
                 <div>
                     <p class="text-xs text-gray-400 uppercase font-medium mb-1">User Journey</p>
@@ -197,7 +197,8 @@
                         <template x-for="(page, index) in pageHistory" :key="index">
                             <div class="flex items-start gap-2">
                                 <span class="w-1.5 h-1.5 rounded-full bg-[#FEBC11] shrink-0 mt-1.5"></span>
-                                <span class="text-xs text-gray-600 break-all" x-text="page"></span>
+                                <a :href="parsePageUrl(page)" target="_blank" class="text-xs text-[#083321] hover:underline truncate block" :title="page" x-text="parsePageTitle(page)"></a>
+                            </div>
                             </div>
                         </template>
                         <p x-show="pageHistory.length === 0" class="text-xs text-gray-400">No pages tracked</p>
@@ -259,6 +260,8 @@
             assignedDeptColor: @json($chatSession->department?->color ?? $chatSession->assignedAgent?->department?->color),
             pollInterval: null,
             typingTimeout: null,
+            audioCtx: null,
+            notificationPermission: Notification.permission || 'default',
 
             // Whisper mode
             whisperMode: false,
@@ -273,6 +276,10 @@
             init() {
                 this.$nextTick(() => this.scrollToBottom());
                 this.pollInterval = setInterval(() => this.poll(), 1000);
+                // Request browser notification permission
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().then(p => this.notificationPermission = p);
+                }
             },
 
             async poll() {
@@ -282,6 +289,7 @@
                     });
                     const data = await res.json();
                     if (data.messages.length > 0) {
+                        const hasVisitorMsg = data.messages.some(m => m.sender_type === 'visitor');
                         data.messages.forEach(m => {
                             if (!this.messages.find(x => x.id === m.id)) {
                                 this.messages.push(m);
@@ -289,16 +297,29 @@
                             }
                         });
                         this.$nextTick(() => this.scrollToBottom());
-                        this.playNotificationSound();
+                        if (hasVisitorMsg) {
+                            this.playNotificationSound();
+                            this.showBrowserNotification(data.messages.filter(m => m.sender_type === 'visitor'));
+                        }
                     }
                     this.isVisitorTyping = data.is_visitor_typing;
                     this.visitorTypingText = data.visitor_typing_text || '';
                     this.pageHistory = data.page_history || [];
                     this.currentPage = data.current_page;
-                    // Update real-time visitor name/email
                     if (data.visitor_name) this.visitorName = data.visitor_name;
                     if (data.visitor_email) this.visitorEmail = data.visitor_email;
                 } catch (e) {}
+            },
+
+            showBrowserNotification(visitorMessages) {
+                if (!document.hasFocus() && 'Notification' in window && Notification.permission === 'granted') {
+                    const last = visitorMessages[visitorMessages.length - 1];
+                    new Notification('New message from ' + this.visitorName, {
+                        body: last.message.substring(0, 100),
+                        icon: '{{ asset("favicon.png") }}',
+                        tag: 'chat-' + this.sessionId,
+                    });
+                }
             },
 
             async sendMessage() {
@@ -391,17 +412,44 @@
                 if (el) el.scrollTop = el.scrollHeight;
             },
 
+            parsePageTitle(entry) {
+                if (!entry) return 'Unknown';
+                // Format: "Page Title — https://example.com/path"
+                const sep = entry.indexOf(' — ');
+                if (sep > 0) return entry.substring(0, sep);
+                // Fallback: extract path from URL
+                try {
+                    const url = new URL(entry);
+                    return url.pathname === '/' ? 'Home' : decodeURIComponent(url.pathname.replace(/^\/|\/$/g, '').replace(/[-_]/g, ' '));
+                } catch(e) { return entry; }
+            },
+
+            parsePageUrl(entry) {
+                if (!entry) return '#';
+                const sep = entry.indexOf(' — ');
+                if (sep > 0) return entry.substring(sep + 3);
+                return entry.startsWith('http') ? entry : '#';
+            },
+
             playNotificationSound() {
                 try {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator();
+                    if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const ctx = this.audioCtx;
+                    const now = ctx.currentTime;
+                    // Warm three-note safari chime
                     const gain = ctx.createGain();
-                    osc.connect(gain);
                     gain.connect(ctx.destination);
-                    osc.frequency.value = 800;
-                    gain.gain.value = 0.1;
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+                    [523.25, 659.25, 783.99].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        osc.connect(gain);
+                        osc.start(now + i * 0.12);
+                        osc.stop(now + i * 0.12 + 0.25);
+                    });
                 } catch(e) {}
             }
         };

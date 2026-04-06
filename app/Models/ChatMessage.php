@@ -32,6 +32,12 @@ class ChatMessage extends Model
 
     public function scopeVisible($query, $userId = null)
     {
+        // Super admin sees ALL messages including all whispers
+        $user = $userId ? \App\Models\User::find($userId) : null;
+        if ($user && $user->isSuperAdmin()) {
+            return $query;
+        }
+
         return $query->where(function ($q) use ($userId) {
             $q->where('message_type', 'normal')
               ->orWhere(function ($q2) use ($userId) {

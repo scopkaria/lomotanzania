@@ -33,7 +33,7 @@ class ChatController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        $workers = User::whereIn('role', ['worker', 'admin', 'super_admin'])
+        $workers = User::whereIn('role', ['worker', 'admin'])
             ->with('department')
             ->where('id', '!=', Auth::id())
             ->orderBy('name')->get();
@@ -155,6 +155,14 @@ class ChatController extends Controller
             'whisper_to' => 'nullable|exists:users,id',
         ]);
 
+        // Prevent whispering directly to super_admin
+        if ($request->whisper_to) {
+            $recipient = User::find($request->whisper_to);
+            if ($recipient && $recipient->isSuperAdmin()) {
+                return response()->json(['error' => 'Cannot send whispers to super admin.'], 403);
+            }
+        }
+
         $message = ChatMessage::create([
             'chat_session_id' => $chatSession->id,
             'user_id' => Auth::id(),
@@ -221,7 +229,7 @@ class ChatController extends Controller
      */
     public function onlineWorkers(): JsonResponse
     {
-        $workers = User::whereIn('role', ['worker', 'admin', 'super_admin'])
+        $workers = User::whereIn('role', ['worker', 'admin'])
             ->with('department:id,name,color')
             ->select('id', 'name', 'role', 'department_id', 'profile_image')
             ->orderBy('name')

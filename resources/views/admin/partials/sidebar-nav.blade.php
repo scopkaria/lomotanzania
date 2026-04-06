@@ -10,6 +10,12 @@
                 border-radius: 0.75rem;
             }
 
+            textarea {
+                min-height: 120px;
+                line-height: 1.6;
+                resize: vertical;
+            }
+
             input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
             select:focus,
             textarea:focus {
