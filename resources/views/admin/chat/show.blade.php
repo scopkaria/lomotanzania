@@ -182,7 +182,7 @@
                              class="absolute bottom-full left-0 mb-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
                             @foreach($quickPages as $qp)
                                 <button @click="newMessage += '{{ url('/' . $qp->slug) }}'; qaOpen = null" type="button"
-                                        class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qp->title }}</button>
+                                        class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qp->translatedTitle() }}</button>
                             @endforeach
                         </div>
                     </div>
