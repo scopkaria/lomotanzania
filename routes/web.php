@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuBuilderController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\TripadvisorReviewController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CustomTourController;
 use App\Http\Controllers\HomeController;
@@ -225,6 +226,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('countries', CountryController::class)->except(['show']);
     Route::resource('destinations', DestinationController::class)->except(['show']);
     Route::resource('testimonials', TestimonialController::class)->except(['show']);
+
+    // TripAdvisor Reviews
+    Route::get('tripadvisor-reviews', [TripadvisorReviewController::class, 'index'])->name('tripadvisor.index');
+    Route::post('tripadvisor-reviews/pull', [TripadvisorReviewController::class, 'pull'])->name('tripadvisor.pull');
+    Route::post('tripadvisor-reviews/{review}/toggle', [TripadvisorReviewController::class, 'togglePublish'])->name('tripadvisor.toggle');
+    Route::post('tripadvisor-reviews/{review}/order', [TripadvisorReviewController::class, 'updateOrder'])->name('tripadvisor.order');
+    Route::delete('tripadvisor-reviews/{review}', [TripadvisorReviewController::class, 'destroy'])->name('tripadvisor.destroy');
+    Route::post('tripadvisor-reviews/bulk-action', [TripadvisorReviewController::class, 'bulkAction'])->name('tripadvisor.bulk-action');
+
     Route::resource('pages', AdminPageController::class)->except(['show']);
     Route::post('pages/upload-image', [AdminPageController::class, 'uploadImage'])->name('pages.upload-image');
 

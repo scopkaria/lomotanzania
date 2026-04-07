@@ -13,3 +13,6 @@ Schedule::command('seo:check-rankings')->dailyAt('06:00');
 
 // Weekly full SEO analysis on Sundays at 3 AM
 Schedule::command('seo:analyze-all')->weeklyOn(0, '03:00');
+
+// Daily TripAdvisor review pull at 7 AM
+Schedule::command('tripadvisor:pull')->dailyAt('07:00');

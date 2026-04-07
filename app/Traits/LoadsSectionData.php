@@ -7,6 +7,7 @@ use App\Models\HeroSetting;
 use App\Models\Post;
 use App\Models\SafariPackage;
 use App\Models\Testimonial;
+use App\Models\TripadvisorReview;
 
 trait LoadsSectionData
 {
@@ -62,6 +63,13 @@ trait LoadsSectionData
                 'posts' => Post::where('status', 'published')
                     ->latest('published_at')
                     ->limit((int) ($data['count'] ?? 3))
+                    ->get(),
+            ],
+            'tripadvisor_reviews' => [
+                'tripadvisorReviews' => TripadvisorReview::published()
+                    ->orderByDesc('display_order')
+                    ->orderByDesc('rating')
+                    ->limit((int) ($data['count'] ?? 10))
                     ->get(),
             ],
             default => [],
