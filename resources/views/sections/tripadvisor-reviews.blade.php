@@ -25,16 +25,17 @@
         </div>
 
         @if($reviews->count())
-        <div class="relative overflow-hidden">
+        <div class="relative" style="min-height: 280px;">
             @foreach($reviews as $i => $review)
             <div x-show="current === {{ $i }}"
                  x-transition:enter="transition ease-out duration-500"
-                 x-transition:enter-start="opacity-0 translate-x-8"
-                 x-transition:enter-end="opacity-100 translate-x-0"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
                  x-transition:leave="transition ease-in duration-300"
                  x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0 -translate-x-8"
-                 class="text-center">
+                 x-transition:leave-end="opacity-0"
+                 class="absolute inset-0 text-center"
+                 @if($i > 0) style="display: none;" @endif>
 
                 {{-- Stars --}}
                 @if($review->rating)
