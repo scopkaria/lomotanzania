@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\Booking;
+use App\Models\ChatSession;
+use App\Models\Conversation;
 use App\Models\Country;
 use App\Models\Destination;
 use App\Models\Inquiry;
 use App\Models\SafariPackage;
 use App\Models\Testimonial;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -30,6 +33,8 @@ class DashboardController extends Controller
             'active_agents'        => Agent::where('status', 'active')->count(),
             'inquiries'            => Inquiry::count(),
             'new_inquiries'        => Inquiry::where('status', 'new')->count(),
+            'active_chats'         => ChatSession::where('status', 'active')->count(),
+            'today_chats'          => ChatSession::whereDate('created_at', today())->count(),
         ];
 
         $recentSafaris = SafariPackage::with('destinations')

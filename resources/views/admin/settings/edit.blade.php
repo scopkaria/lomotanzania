@@ -195,6 +195,26 @@
                            class="rounded border-gray-300 text-brand-gold focus:ring-brand-gold">
                     <label for="chat_enabled" class="text-sm font-medium text-gray-700">Enable Live Chat Widget</label>
                 </div>
+
+                {{-- Notification Sound --}}
+                <div class="mb-5 flex items-center gap-3">
+                    <input type="hidden" name="notification_sound_enabled" value="0">
+                    <input type="checkbox" name="notification_sound_enabled" id="notification_sound_enabled" value="1"
+                           {{ old('notification_sound_enabled', $setting->notification_sound_enabled ?? true) ? 'checked' : '' }}
+                           class="rounded border-gray-300 text-brand-gold focus:ring-brand-gold">
+                    <label for="notification_sound_enabled" class="text-sm font-medium text-gray-700">Enable Notification Sounds</label>
+                </div>
+
+                {{-- Notification Volume --}}
+                <div class="mb-5">
+                    <label for="notification_sound_volume" class="block text-sm font-medium text-gray-700 mb-1">Notification Volume</label>
+                    <select name="notification_sound_volume" id="notification_sound_volume"
+                            class="w-full sm:w-48 rounded-lg border-gray-300 text-sm focus:border-brand-gold focus:ring-brand-gold">
+                        <option value="low" {{ old('notification_sound_volume', $setting->notification_sound_volume ?? 'medium') === 'low' ? 'selected' : '' }}>Low</option>
+                        <option value="medium" {{ old('notification_sound_volume', $setting->notification_sound_volume ?? 'medium') === 'medium' ? 'selected' : '' }}>Medium</option>
+                        <option value="high" {{ old('notification_sound_volume', $setting->notification_sound_volume ?? 'medium') === 'high' ? 'selected' : '' }}>High</option>
+                    </select>
+                </div>
             </div>
 
             <div class="pt-4 border-t border-gray-200">

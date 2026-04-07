@@ -29,6 +29,8 @@ class Setting extends Model
         'phone_number',
         'chat_greeting',
         'chat_enabled',
+        'notification_sound_enabled',
+        'notification_sound_volume',
     ];
 
     protected $casts = [
@@ -37,5 +39,6 @@ class Setting extends Model
         'notify_safari_request' => 'boolean',
         'notify_safari_plan'    => 'boolean',
         'chat_enabled'          => 'boolean',
+        'notification_sound_enabled' => 'boolean',
     ];
 }

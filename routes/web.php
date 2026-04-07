@@ -378,6 +378,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('chat/{chatSession}/typing', [AdminChatController::class, 'typing'])->name('chat.typing');
     Route::post('chat/{chatSession}/close', [AdminChatController::class, 'close'])->name('chat.close');
 
+    // Internal Conversations
+    Route::get('conversations', [\App\Http\Controllers\Admin\ConversationController::class, 'index'])->name('conversations.index');
+    Route::post('conversations', [\App\Http\Controllers\Admin\ConversationController::class, 'store'])->name('conversations.store');
+    Route::get('conversations/unread-count', [\App\Http\Controllers\Admin\ConversationController::class, 'unreadCount'])->name('conversations.unread-count');
+    Route::post('conversations/heartbeat', [\App\Http\Controllers\Admin\ConversationController::class, 'heartbeat'])->name('conversations.heartbeat');
+    Route::get('conversations/{conversation}', [\App\Http\Controllers\Admin\ConversationController::class, 'show'])->name('conversations.show');
+    Route::post('conversations/{conversation}/send', [\App\Http\Controllers\Admin\ConversationController::class, 'sendMessage'])->name('conversations.send');
+    Route::get('conversations/{conversation}/poll', [\App\Http\Controllers\Admin\ConversationController::class, 'poll'])->name('conversations.poll');
+    Route::post('conversations/{conversation}/typing', [\App\Http\Controllers\Admin\ConversationController::class, 'typing'])->name('conversations.typing');
+
     // Team Management — Admin Users (Super Admin only)
     Route::get('workers/admins', [WorkerController::class, 'admins'])->name('workers.admins');
     Route::get('workers/admins/create', [WorkerController::class, 'createAdmin'])->name('workers.admin-create');
@@ -455,12 +465,14 @@ Route::middleware('auth')->group(function () {
 });
 
 // Public Chat API (no auth - visitor side)
-Route::prefix('api/chat')->name('api.chat.')->group(function () {
-    Route::post('start', [ApiChatController::class, 'startSession'])->name('start');
-    Route::post('{chatSession}/message', [ApiChatController::class, 'sendMessage'])->name('message');
+Route::prefix('api/chat')->name('api.chat.')->middleware('throttle:60,1')->group(function () {
+    Route::post('start', [ApiChatController::class, 'startSession'])->name('start')->middleware('throttle:10,1');
+    Route::post('{chatSession}/message', [ApiChatController::class, 'sendMessage'])->name('message')->middleware('throttle:30,1');
     Route::get('{chatSession}/poll', [ApiChatController::class, 'pollMessages'])->name('poll');
     Route::post('{chatSession}/track-page', [ApiChatController::class, 'trackPage'])->name('track-page');
     Route::post('{chatSession}/typing', [ApiChatController::class, 'typing'])->name('typing');
+    Route::post('{chatSession}/lead', [ApiChatController::class, 'lead'])->name('lead')->middleware('throttle:5,1');
+    Route::post('{chatSession}/ai-response', [ApiChatController::class, 'aiResponse'])->name('ai-response')->middleware('throttle:20,1');
     Route::post('{chatSession}/end', [ApiChatController::class, 'endSession'])->name('end');
 });
 

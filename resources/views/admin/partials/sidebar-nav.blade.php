@@ -203,6 +203,19 @@
     " x-show="count > 0" x-text="count" class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"></span>
 </a>
 
+{{-- Internal Conversations --}}
+@php $convActive = $current && fnmatch('admin.conversations.*', $current); @endphp
+<a href="{{ route('admin.conversations.index') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+          {{ $convActive ? 'bg-[#083321]/10 text-[#083321] font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+    <svg class="w-5 h-5 shrink-0 {{ $convActive ? 'text-[#083321]' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+    <span class="flex-1">Conversations</span>
+    <span x-data="{ count: 0 }" x-init="
+        fetch('{{ route('admin.conversations.unread-count') }}').then(r => r.json()).then(d => count = d.count);
+        setInterval(() => fetch('{{ route('admin.conversations.unread-count') }}').then(r => r.json()).then(d => count = d.count), 15000);
+    " x-show="count > 0" x-text="count" class="bg-[#FEBC11] text-[#131414] text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"></span>
+</a>
+
 {{-- Team Management --}}
 @if(Auth::user()->isSuperAdmin())
 @php $teamActive = $current && fnmatch('admin.workers.*', $current); @endphp

@@ -230,6 +230,101 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ── GLOBAL FORM INPUT STYLES ── */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="url"],
+        input[type="tel"],
+        input[type="search"],
+        input[type="date"],
+        input[type="datetime-local"],
+        input[type="time"],
+        input[type="month"],
+        input[type="week"],
+        select,
+        textarea {
+            display: block;
+            width: 100%;
+            min-height: 44px !important;
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #1f2937;
+            background-color: #ffffff;
+            border: 1.5px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: border-color 150ms ease, box-shadow 150ms ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="text"]:hover,
+        input[type="email"]:hover,
+        input[type="password"]:hover,
+        input[type="number"]:hover,
+        input[type="url"]:hover,
+        input[type="tel"]:hover,
+        input[type="search"]:hover,
+        input[type="date"]:hover,
+        input[type="datetime-local"]:hover,
+        input[type="time"]:hover,
+        input[type="month"]:hover,
+        input[type="week"]:hover,
+        select:hover,
+        textarea:hover {
+            border-color: #9ca3af;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        input[type="url"]:focus,
+        input[type="tel"]:focus,
+        input[type="search"]:focus,
+        input[type="date"]:focus,
+        input[type="datetime-local"]:focus,
+        input[type="time"]:focus,
+        input[type="month"]:focus,
+        input[type="week"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none !important;
+            border-color: #FEBC11 !important;
+            box-shadow: 0 0 0 3px rgba(254, 188, 17, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        select {
+            padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+        }
+        input::placeholder,
+        textarea::placeholder {
+            color: #9ca3af;
+            opacity: 1;
+        }
+        input:disabled,
+        select:disabled,
+        textarea:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        input[type="checkbox"],
+        input[type="radio"] {
+            min-height: auto;
+            padding: 0;
+            border-width: 1.5px;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-brand-light text-brand-dark">
@@ -275,7 +370,7 @@
         };
 
         $navCountryCard = $navTanzania ?? (($navCountries ?? collect())->first());
-        $navDestinationItems = ($navTanzaniaDestinations ?? collect())->take(6);
+        $navDestinationItems = ($navTanzaniaDestinations ?? collect())->take(3);
         $navFeatureItem = $navFeaturedDestination ?? $navDestinationItems->first();
     @endphp
 
@@ -422,7 +517,7 @@
                                             </div>
 
                                             <div class="col-span-4">
-                                                <p class="mb-4 text-[11px] font-bold uppercase tracking-[0.25em] text-brand-gold">Tanzania destinations</p>
+                                                <p class="mb-4 text-[11px] font-bold uppercase tracking-[0.25em] text-brand-gold">Destinations</p>
                                                 <div class="space-y-2">
                                                     @forelse($navDestinationItems as $dest)
                                                         <a href="{{ route('destinations.show', ['locale' => $currentLocale, 'slug' => $dest->slug]) }}" class="group flex items-center gap-3 rounded-xl border border-gray-100 px-3 py-3 transition hover:border-brand-green/20 hover:bg-brand-light">
@@ -441,6 +536,11 @@
                                                         <p class="text-xs text-gray-400">{{ __('messages.coming_soon') }}</p>
                                                     @endforelse
                                                 </div>
+                                                @if($navDestinationItems->isNotEmpty())
+                                                    <a href="{{ route('destinations.tanzania', ['locale' => $currentLocale]) }}" class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-green hover:text-brand-dark transition">
+                                                        View All Destinations →
+                                                    </a>
+                                                @endif
                                             </div>
 
                                             <div class="col-span-4">

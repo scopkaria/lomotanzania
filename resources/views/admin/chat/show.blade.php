@@ -139,6 +139,54 @@
             {{-- Reply Box --}}
             @if($chatSession->status === 'active')
             <div class="px-5 py-3 border-t border-gray-100 shrink-0">
+                {{-- Quick action shortcuts --}}
+                <div class="flex gap-2 mb-2" x-data="{ qaOpen: null }">
+                    {{-- Packages --}}
+                    <div class="relative">
+                        <button @click="qaOpen = qaOpen === 'safaris' ? null : 'safaris'" type="button"
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+                            Packages
+                        </button>
+                        <div x-show="qaOpen === 'safaris'" @click.away="qaOpen = null" x-cloak x-transition
+                             class="absolute bottom-full left-0 mb-1 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
+                            @foreach($quickSafaris as $qs)
+                                <button @click="newMessage += '{{ url('/safaris/' . $qs->slug) }}'; qaOpen = null" type="button"
+                                        class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qs->title }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                    {{-- Destinations --}}
+                    <div class="relative">
+                        <button @click="qaOpen = qaOpen === 'dest' ? null : 'dest'" type="button"
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                            Destinations
+                        </button>
+                        <div x-show="qaOpen === 'dest'" @click.away="qaOpen = null" x-cloak x-transition
+                             class="absolute bottom-full left-0 mb-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
+                            @foreach($quickDestinations as $qd)
+                                <button @click="newMessage += '{{ url('/destinations/' . $qd->slug) }}'; qaOpen = null" type="button"
+                                        class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qd->name }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                    {{-- Pages --}}
+                    <div class="relative">
+                        <button @click="qaOpen = qaOpen === 'pages' ? null : 'pages'" type="button"
+                                class="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            Pages
+                        </button>
+                        <div x-show="qaOpen === 'pages'" @click.away="qaOpen = null" x-cloak x-transition
+                             class="absolute bottom-full left-0 mb-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
+                            @foreach($quickPages as $qp)
+                                <button @click="newMessage += '{{ url('/' . $qp->slug) }}'; qaOpen = null" type="button"
+                                        class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qp->title }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
                 {{-- Whisper mode indicator --}}
                 <div x-show="whisperMode" x-cloak class="flex items-center gap-2 mb-2 px-3 py-1.5 bg-purple-50 rounded-lg">
                     <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
@@ -479,14 +527,17 @@
             },
 
             playNotificationSound() {
+                if (!{{ json_encode($soundSettings?->notification_sound_enabled ?? true) }}) return;
                 try {
                     if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     const ctx = this.audioCtx;
                     const now = ctx.currentTime;
+                    const volMap = { low: 0.06, medium: 0.15, high: 0.3 };
+                    const vol = volMap[@json($soundSettings?->notification_sound_volume ?? 'medium')] || 0.15;
                     // Warm three-note safari chime
                     const gain = ctx.createGain();
                     gain.connect(ctx.destination);
-                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.setValueAtTime(vol, now);
                     gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
 
                     [523.25, 659.25, 783.99].forEach((freq, i) => {

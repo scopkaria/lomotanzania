@@ -43,6 +43,7 @@ class SafariPackage extends Model
         'status',
         'safari_type',
         'featured',
+        'is_popular',
         'featured_order',
         'featured_label',
         'meta_title',
@@ -65,6 +66,7 @@ class SafariPackage extends Model
         return [
             'price' => 'decimal:2',
             'featured' => 'boolean',
+            'is_popular' => 'boolean',
             'highlights' => 'array',
             'included' => 'array',
             'excluded' => 'array',

@@ -72,7 +72,7 @@ class AppServiceProvider extends ServiceProvider
                 'navMenuItems' => $navMenuItems,
                 'navCategories' => Category::orderBy('name')->get(),
                 'navTourTypes' => TourType::orderBy('name')->get(),
-                'navSafaris' => SafariPackage::whereNotNull('featured_image')->where('status', 'published')->inRandomOrder()->take(4)->get(),
+                'navSafaris' => SafariPackage::whereNotNull('featured_image')->where('status', 'published')->orderByDesc('is_popular')->inRandomOrder()->take(4)->get(),
             ]);
         });
 

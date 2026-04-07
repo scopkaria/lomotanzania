@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
 use App\Models\Department;
+use App\Models\Destination;
+use App\Models\Page;
+use App\Models\SafariPackage;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +43,14 @@ class ChatController extends Controller
 
         $departments = Department::where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.chat.show', compact('chatSession', 'workers', 'departments'));
+        // Quick action data for insert shortcuts
+        $quickPages = Page::select('title', 'slug')->orderBy('title')->get();
+        $quickSafaris = SafariPackage::where('status', 'published')->select('title', 'slug')->orderBy('title')->take(20)->get();
+        $quickDestinations = Destination::select('name', 'slug')->orderBy('name')->get();
+
+        $soundSettings = \App\Models\Setting::first();
+
+        return view('admin.chat.show', compact('chatSession', 'workers', 'departments', 'quickPages', 'quickSafaris', 'quickDestinations', 'soundSettings'));
     }
 
     /**

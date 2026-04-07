@@ -845,6 +845,16 @@
                         <span class="text-xs text-gray-400">Show on homepage</span>
                     </div>
                 </label>
+                <label class="flex items-center gap-2.5 p-3 rounded-lg border border-gray-200 hover:border-[#083321]/30 cursor-pointer transition">
+                    <input type="hidden" name="is_popular" value="0">
+                    <input type="checkbox" name="is_popular" value="1"
+                           @checked(old('is_popular', $safari->is_popular ?? false))
+                           class="w-4 h-4 rounded border-gray-300 text-[#083321] focus:ring-[#083321]">
+                    <div>
+                        <span class="text-sm font-medium text-gray-700 block">Popular</span>
+                        <span class="text-xs text-gray-400">Show in navigation menu</span>
+                    </div>
+                </label>
             </div>
 
             {{-- Featured Order & Label (shown when featured) --}}

@@ -236,6 +236,7 @@ document.addEventListener('alpine:init', () => {
         loading: false,
         loadingMore: false,
         drawerOpen: false,
+        openFilter: 'country',
         totalCount: {{ $safaris->total() }},
         nextPageUrl: @json($safaris->nextPageUrl()),
 
