@@ -47,25 +47,12 @@
             </div>
 
             <div class="flex items-center gap-3">
-                {{-- Pull button --}}
-                <form method="POST" action="{{ route('admin.tripadvisor.pull') }}">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-[#34E0A1] text-[#083321] text-sm font-semibold rounded-lg hover:bg-[#34E0A1]/80 transition shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-                        Pull Reviews
-                    </button>
-                </form>
+                <a href="{{ route('admin.tripadvisor.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#083321] text-white text-sm font-semibold rounded-lg hover:bg-[#083321]/90 transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    Add Review
+                </a>
             </div>
         </div>
-
-        {{-- TripAdvisor URL notice --}}
-        @if(empty($settings?->tripadvisor_url))
-            <div class="mb-4 px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
-                <strong>Setup required:</strong> Add your TripAdvisor URL in
-                <a href="{{ route('admin.settings.edit') }}" class="underline font-medium">Settings</a>
-                to enable review pulling.
-            </div>
-        @endif
 
         {{-- Stats bar --}}
         <div class="grid grid-cols-3 gap-4 mb-6">
@@ -154,6 +141,11 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    {{-- Edit --}}
+                                    <a href="{{ route('admin.tripadvisor.edit', $review) }}" class="text-gray-400 hover:text-blue-500 transition" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                    </a>
+
                                     {{-- Toggle publish --}}
                                     <form method="POST" action="{{ route('admin.tripadvisor.toggle', $review) }}" class="inline">
                                         @csrf
@@ -179,7 +171,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-gray-400 text-sm">
-                                No reviews yet. Click <strong>"Pull Reviews"</strong> to fetch from TripAdvisor.
+                                No reviews yet. <a href="{{ route('admin.tripadvisor.create') }}" class="text-[#083321] font-semibold underline">Add your first review</a>
                             </td>
                         </tr>
                     @endforelse

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\TripadvisorReview;
-use App\Services\TripAdvisorScraper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TripadvisorReviewController extends Controller
 {
@@ -37,27 +37,60 @@ class TripadvisorReviewController extends Controller
         return view('admin.tripadvisor.index', compact('reviews', 'settings'));
     }
 
-    public function pull()
+    public function create()
     {
-        $settings = Setting::first();
-        $url = $settings?->tripadvisor_url;
+        return view('admin.tripadvisor.form');
+    }
 
-        if (empty($url)) {
-            return back()->with('error', 'Please set your TripAdvisor URL in Settings first.');
-        }
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'reviewer_name'     => 'required|string|max:100',
+            'reviewer_location' => 'nullable|string|max:255',
+            'title'             => 'nullable|string|max:200',
+            'review_text'       => 'required|string',
+            'rating'            => 'required|integer|min:1|max:5',
+            'review_date'       => 'nullable|date',
+            'trip_type'         => 'nullable|string|max:255',
+            'published'         => 'boolean',
+            'display_order'     => 'integer|min:0',
+        ]);
 
-        $scraper = new TripAdvisorScraper();
-        $result = $scraper->scrape($url);
+        $validated['tripadvisor_id'] = 'manual_' . Str::random(16);
+        $validated['published'] = $request->boolean('published');
+        $validated['display_order'] = $validated['display_order'] ?? 0;
 
-        if (!empty($result['errors'])) {
-            return back()->with('error', implode(' ', $result['errors']));
-        }
+        TripadvisorReview::create($validated);
 
-        if ($result['new'] === 0) {
-            return back()->with('info', "Checked {$result['total']} reviews — no new reviews found.");
-        }
+        return redirect()->route('admin.tripadvisor.index')
+            ->with('success', 'Review added successfully!');
+    }
 
-        return back()->with('success', "Pulled {$result['new']} new review(s) from TripAdvisor!");
+    public function edit(TripadvisorReview $review)
+    {
+        return view('admin.tripadvisor.form', compact('review'));
+    }
+
+    public function update(Request $request, TripadvisorReview $review)
+    {
+        $validated = $request->validate([
+            'reviewer_name'     => 'required|string|max:100',
+            'reviewer_location' => 'nullable|string|max:255',
+            'title'             => 'nullable|string|max:200',
+            'review_text'       => 'required|string',
+            'rating'            => 'required|integer|min:1|max:5',
+            'review_date'       => 'nullable|date',
+            'trip_type'         => 'nullable|string|max:255',
+            'published'         => 'boolean',
+            'display_order'     => 'integer|min:0',
+        ]);
+
+        $validated['published'] = $request->boolean('published');
+
+        $review->update($validated);
+
+        return redirect()->route('admin.tripadvisor.index')
+            ->with('success', 'Review updated successfully!');
     }
 
     public function togglePublish(TripadvisorReview $review)

@@ -229,7 +229,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // TripAdvisor Reviews
     Route::get('tripadvisor-reviews', [TripadvisorReviewController::class, 'index'])->name('tripadvisor.index');
-    Route::post('tripadvisor-reviews/pull', [TripadvisorReviewController::class, 'pull'])->name('tripadvisor.pull');
+    Route::get('tripadvisor-reviews/create', [TripadvisorReviewController::class, 'create'])->name('tripadvisor.create');
+    Route::post('tripadvisor-reviews', [TripadvisorReviewController::class, 'store'])->name('tripadvisor.store');
+    Route::get('tripadvisor-reviews/{review}/edit', [TripadvisorReviewController::class, 'edit'])->name('tripadvisor.edit');
+    Route::put('tripadvisor-reviews/{review}', [TripadvisorReviewController::class, 'update'])->name('tripadvisor.update');
     Route::post('tripadvisor-reviews/{review}/toggle', [TripadvisorReviewController::class, 'togglePublish'])->name('tripadvisor.toggle');
     Route::post('tripadvisor-reviews/{review}/order', [TripadvisorReviewController::class, 'updateOrder'])->name('tripadvisor.order');
     Route::delete('tripadvisor-reviews/{review}', [TripadvisorReviewController::class, 'destroy'])->name('tripadvisor.destroy');
