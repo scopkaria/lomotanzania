@@ -68,11 +68,11 @@ class SettingController extends Controller
         $setting->notify_safari_request    = $request->boolean('notify_safari_request');
         $setting->notify_safari_plan       = $request->boolean('notify_safari_plan');
 
-        $setting->logo_path        = $validated['logo'] ?: null;
-        $setting->favicon_path     = $validated['favicon'] ?? null;
+        $setting->logo_path        = $validated['logo'] ?? $setting->logo_path;
+        $setting->favicon_path     = $validated['favicon'] ?? $setting->favicon_path;
         $setting->logo_width       = $validated['logo_width'] ?? 176;
         $setting->header_color     = $validated['header_color'] ?? '#083321';
-        $setting->default_og_image = $validated['default_og_image'] ?: null;
+        $setting->default_og_image = $validated['default_og_image'] ?? $setting->default_og_image;
 
         $setting->phone_number     = $validated['phone_number'] ?? null;
         $setting->whatsapp_number  = $validated['whatsapp_number'] ?? null;
