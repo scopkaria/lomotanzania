@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Traits\HasBulkActions;
+use App\Traits\SanitizesHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CountryController extends Controller
 {
-    use HasBulkActions;
+    use HasBulkActions, SanitizesHtml;
 
     protected function bulkModel(): string { return Country::class; }
 
@@ -43,11 +44,16 @@ class CountryController extends Controller
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
             'og_image'         => 'nullable|string|max:500',
+            'focus_keyword'    => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
-        Country::create($validated);
+        $country = Country::create(collect($validated)->except('focus_keyword')->toArray());
+        $country->saveSeoMeta($validated);
 
         return redirect()->route('admin.countries.index')
             ->with('success', 'Country created successfully.');
@@ -71,11 +77,16 @@ class CountryController extends Controller
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
             'og_image'         => 'nullable|string|max:500',
+            'focus_keyword'    => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
-        $country->update($validated);
+        $country->update(collect($validated)->except('focus_keyword')->toArray());
+        $country->saveSeoMeta($validated);
 
         return redirect()->route('admin.countries.index')
             ->with('success', 'Country updated successfully.');

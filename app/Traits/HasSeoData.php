@@ -10,7 +10,7 @@ trait HasSeoData
 {
     protected function seoData(?object $model = null, ?string $fallbackTitle = null, ?string $fallbackDescription = null, ?string $fallbackImage = null): array
     {
-        $siteName = optional(\App\Models\Setting::first())->site_name ?? 'Lomo Tanzania Safari';
+        $siteName = optional(\App\Models\Setting::first())->site_name ?? 'Lomo Tanzania Safaris';
 
         $title = null;
         $description = null;

@@ -22,6 +22,8 @@ class SafariPlan extends Model
         'contact_methods',
         'wants_updates',
         'know_destination',
+        'travel_start_date',
+        'travel_end_date',
     ];
 
     protected function casts(): array
@@ -32,6 +34,8 @@ class SafariPlan extends Model
             'interests' => 'array',
             'contact_methods' => 'array',
             'wants_updates' => 'boolean',
+            'travel_start_date' => 'date',
+            'travel_end_date' => 'date',
         ];
     }
 

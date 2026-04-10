@@ -92,20 +92,25 @@
 
 @push('styles')
 <style>
-    .blog-content { font-family: 'Inter', sans-serif; }
+    .blog-content { font-family: 'Lato', sans-serif; font-size: 1.0625rem; line-height: 1.85; color: rgba(45,45,45,0.85); }
     .blog-content h2, .blog-content h3 { scroll-margin-top: 120px; }
-    .blog-content h2 { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; color: #131414; }
-    .blog-content h3 { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600; margin: 1.75rem 0 0.75rem; color: #131414; }
-    .blog-content p { margin-bottom: 1.25rem; line-height: 1.8; color: rgba(19,20,20,0.7); }
-    .blog-content ul, .blog-content ol { margin-bottom: 1.25rem; padding-left: 1.5rem; color: rgba(19,20,20,0.7); }
-    .blog-content li { margin-bottom: 0.5rem; line-height: 1.7; }
+    .blog-content h2 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.75rem; font-weight: 700; margin: 2.5rem 0 1rem; color: #131414; line-height: 1.2; letter-spacing: 0.01em; }
+    .blog-content h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.375rem; font-weight: 600; margin: 2rem 0 0.75rem; color: #131414; line-height: 1.25; letter-spacing: 0.01em; }
+    .blog-content p { margin-bottom: 1.5rem; line-height: 1.85; color: rgba(45,45,45,0.82); }
+    .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; color: rgba(45,45,45,0.82); }
+    .blog-content li { margin-bottom: 0.5rem; line-height: 1.75; }
     .blog-content ul li { list-style: disc; }
     .blog-content ol li { list-style: decimal; }
-    .blog-content blockquote { border-left: 4px solid #FEBC11; padding: 1rem 1.5rem; margin: 1.5rem 0; background: rgba(254,188,17,0.05); font-style: italic; color: rgba(19,20,20,0.6); }
-    .blog-content img { display: block; width: 100%; max-width: 100%; height: auto; object-fit: cover; border-radius: 0.9rem; margin: 1.5rem 0; }
+    .blog-content blockquote { border-left: 4px solid #FEBC11; padding: 1.25rem 1.5rem; margin: 2rem 0; background: rgba(254,188,17,0.04); font-style: italic; color: rgba(45,45,45,0.65); font-size: 1.125rem; line-height: 1.7; }
+    .blog-content img { display: block; width: 100%; max-width: 100%; height: auto; object-fit: cover; border-radius: 0.9rem; margin: 2rem 0; }
     .blog-content a { color: #083321; text-decoration: underline; text-underline-offset: 3px; }
     .blog-content a:hover { color: #FEBC11; }
-    .toc-link { display: block; border-left: 2px solid transparent; padding: 0.35rem 0 0.35rem 0.75rem; color: rgba(19,20,20,0.75); transition: all 160ms ease; }
+    @media (min-width: 768px) {
+        .blog-content { font-size: 1.125rem; }
+        .blog-content h2 { font-size: 2.125rem; }
+        .blog-content h3 { font-size: 1.5rem; }
+    }
+    .toc-link { display: block; border-left: 2px solid transparent; padding: 0.35rem 0 0.35rem 0.75rem; color: rgba(45,45,45,0.65); font-size: 0.9375rem; transition: all 160ms ease; }
     .toc-link:hover { border-left-color: #FEBC11; color: #083321; background: rgba(8,51,33,0.04); }
     .toc-link-sub { margin-left: 0.75rem; font-size: 0.875rem; }
 </style>
@@ -115,7 +120,7 @@
 
 {{-- â”€â”€ Hero / Featured Image â”€â”€ --}}
 <section class="relative bg-brand-dark">
-    <div class="relative aspect-[21/9] max-h-[480px] overflow-hidden">
+    <div class="relative aspect-[16/7] min-h-[400px] md:min-h-[480px] lg:min-h-[540px] overflow-hidden">
         @if($post->featured_image)
             <img src="{{ asset('storage/' . $post->featured_image) }}" alt="{{ $post->translatedTitle() }}"
                  class="w-full h-full object-cover opacity-60">
@@ -174,13 +179,13 @@
                     </a>
 
                     <div class="rounded-2xl border border-gray-200 bg-[#F9F7F3] p-5">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">On this page</p>
+                        <p class="text-kicker tracking-kicker uppercase text-gray-500">{{ __('messages.on_this_page') }}</p>
                         <nav id="blog-toc" class="mt-3 space-y-1"></nav>
-                        <p id="blog-toc-empty" class="mt-3 text-sm text-gray-400">Table of contents will appear when the article has headings.</p>
+                        <p id="blog-toc-empty" class="mt-3 text-sm text-gray-400">{{ __('messages.toc_empty') }}</p>
                     </div>
 
                     <div class="rounded-2xl border border-gray-200 bg-white p-5" x-data="shareLinks()">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-500">{{ __('messages.share') }}</p>
+                        <p class="text-kicker tracking-kicker uppercase text-gray-500">{{ __('messages.share') }}</p>
                         <div class="mt-3 flex flex-wrap items-center gap-2">
                             <a :href="fbUrl" target="_blank" rel="noopener" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center transition" title="{{ __('messages.share_facebook') }}">
                                 <svg class="w-4 h-4 text-gray-500 hover:text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
@@ -215,6 +220,83 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- ── Comments Section ── --}}
+                <div class="mt-14 pt-8 border-t border-gray-100" id="comments">
+                    <h3 class="font-heading text-xl font-bold text-brand-dark mb-6">
+                        {{ __('messages.comments') }}
+                        @if(isset($comments) && $comments->count())
+                            <span class="text-base font-normal text-gray-400">({{ $comments->count() }})</span>
+                        @endif
+                    </h3>
+
+                    {{-- Approved Comments List --}}
+                    @if(isset($comments) && $comments->count())
+                        <div class="space-y-6 mb-10">
+                            @foreach($comments as $comment)
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-sm font-bold text-brand-dark shrink-0">
+                                        {{ strtoupper(substr($comment->name, 0, 1)) }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-baseline gap-2">
+                                            <span class="font-semibold text-gray-900 text-sm">{{ $comment->name }}</span>
+                                            <time class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</time>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-600 leading-relaxed">{{ $comment->body }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-400 mb-8">{{ __('messages.no_comments') }}</p>
+                    @endif
+
+                    {{-- Leave a Comment Form --}}
+                    @if(session('comment_success'))
+                        <div class="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 text-sm text-green-800">
+                            {{ session('comment_success') }}
+                        </div>
+                    @endif
+
+                    <div class="rounded-2xl border border-gray-200 bg-[#F9F7F3] p-6">
+                        <h4 class="font-heading text-lg font-bold text-brand-dark mb-4">{{ __('messages.leave_comment') }}</h4>
+                        <form method="POST" action="{{ route('blog.comment.store', ['slug' => $post->slug]) }}">
+                            @csrf
+                            {{-- Honeypot (hidden from real users) --}}
+                            <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;" aria-hidden="true">
+                                <label for="website_url">Leave this empty</label>
+                                <input type="text" name="website_url" id="website_url" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <div class="grid sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label for="comment_name" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.full_name') }} <span class="text-red-500">*</span></label>
+                                    <input type="text" name="name" id="comment_name" value="{{ old('name') }}" required maxlength="100"
+                                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-[#083321] focus:ring-[#083321]">
+                                    @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label for="comment_email" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.email') }} <span class="text-red-500">*</span></label>
+                                    <input type="email" name="email" id="comment_email" value="{{ old('email') }}" required maxlength="150"
+                                           class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-[#083321] focus:ring-[#083321]">
+                                    <p class="text-xs text-gray-400 mt-1">{{ __('messages.email_not_published') }}</p>
+                                    @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="comment_body" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.comments') }} <span class="text-red-500">*</span></label>
+                                <textarea name="body" id="comment_body" rows="4" required maxlength="2000"
+                                          class="w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-[#083321] focus:ring-[#083321]">{{ old('body') }}</textarea>
+                                @error('body') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <button type="submit"
+                                    class="px-6 py-2.5 bg-brand-green text-white text-sm font-semibold rounded-lg hover:bg-brand-dark transition-colors duration-200">
+                                {{ __('messages.submit_comment') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -314,7 +396,9 @@ function shareLinks() {
         waUrl: `https://wa.me/?text=${title}%20${url}`,
         copyLink() {
             navigator.clipboard.writeText(window.location.href).then(() => {
-                alert({!! json_encode(__('messages.link_copied')) !!});
+                if (window.showLomoToast) {
+                    window.showLomoToast({!! json_encode(__('messages.link_copied')) !!}, 'success', 2000);
+                }
             });
         }
     };

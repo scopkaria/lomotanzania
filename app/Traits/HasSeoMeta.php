@@ -32,6 +32,22 @@ trait HasSeoMeta
     }
 
     /**
+     * Save focus_keyword to seo_meta table.
+     */
+    public function saveSeoMeta(array $data, string $locale = 'en'): void
+    {
+        $focusKeyword = $data['focus_keyword'] ?? null;
+
+        // Only create/update if there's something to save
+        if ($focusKeyword !== null) {
+            $this->seoMetas()->updateOrCreate(
+                ['locale' => $locale],
+                ['focus_keyword' => $focusKeyword ?: null]
+            );
+        }
+    }
+
+    /**
      * Get the average SEO score across all locales.
      */
     public function averageSeoScore(): float

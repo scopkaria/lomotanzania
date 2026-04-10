@@ -2,6 +2,10 @@
 
 @section('title', (__('messages.destinations') ?: 'Destinations') . ' - ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
+@php
+    $destinationsBaseUrl = route('destinations.index', ['locale' => app()->getLocale()]);
+@endphp
+
 @push('styles')
 <style>
     .dest-card { opacity: 0; transform: translateY(24px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
@@ -12,13 +16,14 @@
 @section('content')
 
 {{-- Hero --}}
+@php $indexHero = \App\Models\IndexHeroImage::forSection('destinations'); @endphp
 <section class="relative bg-brand-dark py-16 md:py-24 overflow-hidden">
     <div class="absolute inset-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&h=500&fit=crop&q=60" alt="" class="w-full h-full object-cover">
+        <img src="{{ $indexHero->image_url ?? 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&h=500&fit=crop&q=60' }}" alt="" class="w-full h-full object-cover">
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/60 to-brand-dark/90"></div>
     <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
-        <p class="text-[11px] font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.explore') ?: 'Explore' }}</p>
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">{{ __('messages.explore') ?: 'Explore' }}</p>
         <h1 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-4">{{ __('messages.destinations') ?: 'Destinations' }}</h1>
         <p class="text-base text-white/80 max-w-lg mx-auto">Discover the most breathtaking safari destinations across Africa</p>
     </div>
@@ -35,12 +40,12 @@
         <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm">
             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div class="xl:col-span-1">
-                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">Search</label>
+                    <label class="mb-1.5 block text-kicker tracking-kicker uppercase text-gray-500">Search</label>
                     <input type="text" x-model.debounce.400ms="search" @input="resetAndFetch()" placeholder="Search destinations"
                            class="w-full rounded-lg border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand-gold focus:ring-brand-gold">
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">Country</label>
+                    <label class="mb-1.5 block text-kicker tracking-kicker uppercase text-gray-500">Country</label>
                     <select x-model="selectedCountry" @change="resetAndFetch()" class="w-full rounded-lg border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand-gold focus:ring-brand-gold">
                         <option value="">All countries</option>
                         @foreach($countries as $country)
@@ -49,7 +54,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">Experience</label>
+                    <label class="mb-1.5 block text-kicker tracking-kicker uppercase text-gray-500">Experience</label>
                     <select x-model="selectedTourType" @change="resetAndFetch()" class="w-full rounded-lg border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand-gold focus:ring-brand-gold">
                         <option value="">All experiences</option>
                         @foreach($tourTypes as $tourType)
@@ -58,7 +63,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">Budget</label>
+                    <label class="mb-1.5 block text-kicker tracking-kicker uppercase text-gray-500">Budget</label>
                     <select x-model="selectedCategory" @change="resetAndFetch()" class="w-full rounded-lg border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand-gold focus:ring-brand-gold">
                         <option value="">All budgets</option>
                         @foreach($categories as $category)
@@ -99,13 +104,38 @@
     </div>
 </section>
 
+{{-- ADDED CTA: Plan Your Tanzania Safari --}}
+<section class="relative py-20 md:py-28 bg-brand-dark overflow-hidden">
+    <div class="absolute inset-0 opacity-15">
+        <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&h=600&fit=crop&q=60" alt="" class="w-full h-full object-cover">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/70 to-brand-dark/95"></div>
+    <div class="relative z-10 max-w-2xl mx-auto px-6 text-center scroll-reveal">
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">Ready to explore?</p>
+        <h2 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-6">Plan Your Tanzania Safari</h2>
+        <p class="text-white/70 text-base md:text-lg mb-10 max-w-lg mx-auto">From the Serengeti plains to Zanzibar's shores — let us help you craft the perfect African adventure.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ route('safaris.index', ['locale' => app()->getLocale()]) }}"
+               class="px-8 py-3.5 bg-brand-gold text-brand-dark text-sm font-bold uppercase tracking-wider hover:bg-white transition-all duration-300 inline-flex items-center gap-2">
+                View Safaris
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+            <a href="{{ route('plan-safari', ['locale' => app()->getLocale()]) }}"
+               class="px-8 py-3.5 border-2 border-white/30 text-white text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-brand-dark transition-all duration-300 inline-flex items-center gap-2">
+                Plan Trip
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+        </div>
+    </div>
+</section>
+
 @endsection
 
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('destinationExplorer', () => ({
-        baseUrl: @json(route('destinations.index', ['locale' => app()->getLocale()])),
+        baseUrl: @json($destinationsBaseUrl),
         nextUrl: @json($destinations->nextPageUrl()),
         totalCount: {{ $destinations->total() }},
         loading: false,

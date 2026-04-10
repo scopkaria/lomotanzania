@@ -1,3 +1,4 @@
+{{-- UPDATED DESTINATION CARD --}}
 @foreach($destinations as $destination)
     <article class="dest-card group flex h-full flex-col overflow-hidden border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
         <a href="{{ route('destinations.show', ['locale' => app()->getLocale(), 'slug' => $destination->slug]) }}" class="block">
@@ -17,21 +18,23 @@
 
         <div class="flex flex-1 flex-col p-5">
             @if($destination->country)
-                <p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-green/70">{{ $destination->country->name }}</p>
+                <p class="mb-2 text-kicker uppercase tracking-kicker text-brand-green/70">{{ $destination->country->name }}</p>
             @endif
 
-            <h2 class="font-heading text-xl font-bold text-brand-dark transition-colors group-hover:text-brand-green">
-                {{ $destination->translated('name') }}
+            <h2 class="font-heading text-2xl font-bold text-brand-dark transition-colors group-hover:text-brand-green">
+                <a href="{{ route('destinations.show', ['locale' => app()->getLocale(), 'slug' => $destination->slug]) }}">
+                    {{ $destination->translated('name') }}
+                </a>
             </h2>
 
             @if($destination->translated('description'))
                 <p class="mt-3 line-clamp-3 text-sm leading-6 text-gray-600">{{ Str::limit(strip_tags($destination->translated('description')), 160) }}</p>
             @endif
 
-            <span class="mt-auto pt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-brand-green transition-all group-hover:gap-3">
-                Explore destination
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </span>
+            <a href="{{ route('destinations.show', ['locale' => app()->getLocale(), 'slug' => $destination->slug]) }}"
+               class="mt-auto pt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-brand-green transition-all group-hover:gap-3">
+                <span class="inline-block transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
+            </a>
         </div>
     </article>
 @endforeach

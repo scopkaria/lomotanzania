@@ -10,12 +10,12 @@
     <div class="max-w-7xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Testimonials</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Testimonials</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
@@ -40,16 +40,16 @@
                 {{-- Quote --}}
                 <svg class="w-8 h-8 text-[#083321]/10 mb-3" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z"/></svg>
 
-                <p class="text-sm text-[#131414]/70 leading-relaxed mb-6">{{ $testimonial->message }}</p>
+                <p class="text-sm text-brand-dark/70 leading-relaxed mb-6">{{ $testimonial->message }}</p>
 
                 <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
                     <div class="w-10 h-10 rounded-full bg-[#083321]/10 flex items-center justify-center text-[#083321] font-bold text-sm">
                         {{ strtoupper(substr($testimonial->name, 0, 1)) }}
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-[#131414]">{{ $testimonial->name }}</p>
+                        <p class="text-sm font-semibold text-brand-dark">{{ $testimonial->name }}</p>
                         @if($testimonial->safariPackage)
-                        <p class="text-xs text-[#131414]/40">{{ $testimonial->safariPackage->translated('title') }}</p>
+                        <p class="text-xs text-brand-dark/40">{{ $testimonial->safariPackage->translated('title') }}</p>
                         @endif
                     </div>
                 </div>

@@ -217,6 +217,106 @@
                 </div>
             </div>
 
+            {{-- ═══════════ SAFARI CARD DISPLAY ═══════════ --}}
+            <div class="pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Safari Card Display</h3>
+                <p class="text-xs text-gray-400 mb-5">Control how safari cards appear across the site — price badges, season, and group size.</p>
+
+                {{-- Show Price Badge --}}
+                <div class="mb-5 flex items-center gap-3">
+                    <input type="hidden" name="show_card_price_badge" value="0">
+                    <input type="checkbox" name="show_card_price_badge" id="show_card_price_badge" value="1"
+                           {{ old('show_card_price_badge', $setting->show_card_price_badge ?? true) ? 'checked' : '' }}
+                           class="rounded border-gray-300 text-brand-gold focus:ring-brand-gold">
+                    <label for="show_card_price_badge" class="text-sm font-medium text-gray-700">Show Price Badge on Safari Cards</label>
+                </div>
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    {{-- Price Season --}}
+                    <div>
+                        <label for="card_price_season" class="block text-sm font-medium text-gray-700 mb-1">Badge Price Season</label>
+                        <select name="card_price_season" id="card_price_season"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-gold focus:ring-brand-gold">
+                            <option value="low" {{ old('card_price_season', $setting->card_price_season ?? 'low') === 'low' ? 'selected' : '' }}>Low Season</option>
+                            <option value="mid" {{ old('card_price_season', $setting->card_price_season ?? 'low') === 'mid' ? 'selected' : '' }}>Mid Season</option>
+                            <option value="high" {{ old('card_price_season', $setting->card_price_season ?? 'low') === 'high' ? 'selected' : '' }}>High Season</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-400">Which season's price to display on cards.</p>
+                    </div>
+
+                    {{-- Price Pax --}}
+                    <div>
+                        <label for="card_price_pax" class="block text-sm font-medium text-gray-700 mb-1">Badge Price Group Size</label>
+                        <select name="card_price_pax" id="card_price_pax"
+                                class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-gold focus:ring-brand-gold">
+                            <option value="pax_2" {{ old('card_price_pax', $setting->card_price_pax ?? 'pax_6') === 'pax_2' ? 'selected' : '' }}>2 Travellers</option>
+                            <option value="pax_4" {{ old('card_price_pax', $setting->card_price_pax ?? 'pax_6') === 'pax_4' ? 'selected' : '' }}>4 Travellers</option>
+                            <option value="pax_6" {{ old('card_price_pax', $setting->card_price_pax ?? 'pax_6') === 'pax_6' ? 'selected' : '' }}>6 Travellers</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-400">Which group size price to display on cards.</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ═══════════ MAP & LOCATION ═══════════ --}}
+            <div class="pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Map & Office Location</h3>
+                <p class="text-xs text-gray-400 mb-5">Configure the map pin and office address shown on the Contact page.</p>
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    {{-- Latitude --}}
+                    <div>
+                        <label for="map_latitude" class="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                        <input type="text" name="map_latitude" id="map_latitude"
+                               value="{{ old('map_latitude', $setting->map_latitude ?? '-3.3869') }}"
+                               placeholder="-3.3869"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">
+                        <p class="mt-1 text-xs text-gray-400">E.g. -3.3869 for Arusha</p>
+                        @error('map_latitude')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Longitude --}}
+                    <div>
+                        <label for="map_longitude" class="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                        <input type="text" name="map_longitude" id="map_longitude"
+                               value="{{ old('map_longitude', $setting->map_longitude ?? '36.6686') }}"
+                               placeholder="36.6686"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">
+                        <p class="mt-1 text-xs text-gray-400">E.g. 36.6686 for Arusha</p>
+                        @error('map_longitude')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Map Embed --}}
+                <div class="mt-5">
+                    <label for="map_embed" class="block text-sm font-medium text-gray-700 mb-1">Google Maps Embed URL <span class="text-gray-400">(optional)</span></label>
+                    <textarea name="map_embed" id="map_embed" rows="2"
+                              placeholder="https://www.google.com/maps/embed?pb=..."
+                              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">{{ old('map_embed', $setting->map_embed) }}</textarea>
+                    <p class="mt-1 text-xs text-gray-400">Paste the embed URL from Google Maps (src value from iframe). If empty, a default Arusha map will be used.</p>
+                    @error('map_embed')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Office Location --}}
+                <div class="mt-5">
+                    <label for="office_location" class="block text-sm font-medium text-gray-700 mb-1">Office Location Text</label>
+                    <input type="text" name="office_location" id="office_location"
+                           value="{{ old('office_location', $setting->office_location ?? 'Arusha, Tanzania') }}"
+                           placeholder="Arusha, Tanzania"
+                           class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">
+                    <p class="mt-1 text-xs text-gray-400">Displayed as the office address on the Contact page.</p>
+                    @error('office_location')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
             <div class="pt-4 border-t border-gray-200">
                 <button type="submit"
                         class="px-6 py-2.5 bg-brand-gold text-brand-dark text-sm font-bold uppercase tracking-wide rounded-lg hover:brightness-90 transition">

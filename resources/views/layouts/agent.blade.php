@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Agent Portal — Lomo Tanzania Safari</title>
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,13 +17,15 @@
                     colors: {
                         brand: { dark: '#131414', gold: '#FEBC11', light: '#F9F7F3', green: '#083321' },
                     },
-                    fontFamily: { body: ['Inter', 'sans-serif'] },
+                    fontFamily: { heading: ['"Cormorant Garamond"', 'Georgia', 'serif'], body: ['Lato', 'sans-serif'] },
                 }
             }
         }
     </script>
     <style>
         [x-cloak] { display: none !important; }
+        body { font-family: 'Lato', sans-serif; font-size: 0.9375rem; line-height: 1.6; color: #2D2D2D; -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; color: #131414; letter-spacing: 0.01em; line-height: 1.2; }
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
 

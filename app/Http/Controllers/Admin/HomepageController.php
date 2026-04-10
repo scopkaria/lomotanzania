@@ -166,7 +166,7 @@ class HomepageController extends Controller
      */
     public function uploadImage(Request $request)
     {
-        $request->validate(['image' => 'required|image|max:4096']);
+        $request->validate(['image' => 'required|image|max:'.config('uploads.max_upload_kb', 20480)]);
 
         $path = $request->file('image')->store('homepage', 'public');
 

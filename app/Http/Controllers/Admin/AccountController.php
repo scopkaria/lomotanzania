@@ -28,7 +28,7 @@ class AccountController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'bio' => 'nullable|string|max:255',
-            'profile_image' => 'nullable|image|max:2048',
+            'profile_image' => 'nullable|image|max:'.config('uploads.max_upload_kb', 20480),
             'language' => 'nullable|string|in:en,fr,de,es',
             'notification_preferences' => 'nullable|array',
         ]);

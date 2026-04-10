@@ -18,7 +18,7 @@
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/50 to-brand-dark/90"></div>
     <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
-        <p class="text-[11px] font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">Adventures</p>
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">Adventures</p>
         <h1 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-4">Mountain Trekking</h1>
         <p class="text-base text-white/80 max-w-lg mx-auto">Conquer Africa's highest peaks with our expert-guided trekking expeditions</p>
     </div>
@@ -40,7 +40,7 @@
                             {{ $safari->translated('title') }}
                         </h2>
                         @if($safari->duration)
-                            <p class="text-[11px] font-semibold uppercase tracking-widest text-brand-dark/60 mb-2">{{ $safari->duration }} Days</p>
+                            <p class=\"text-kicker uppercase tracking-kicker text-brand-dark/60 mb-2\">{{ $safari->duration }} Days</p>
                         @endif
                         @if($safari->translated('short_description'))
                             <p class="text-sm text-brand-dark/70 leading-relaxed line-clamp-3">{{ Str::limit(strip_tags($safari->translated('short_description')), 200) }}</p>

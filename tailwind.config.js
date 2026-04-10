@@ -12,7 +12,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Lato', ...defaultTheme.fontFamily.sans],
+                heading: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+                body: ['Lato', 'sans-serif'],
+                accent: ['"Great Vibes"', 'cursive'],
             },
         },
     },

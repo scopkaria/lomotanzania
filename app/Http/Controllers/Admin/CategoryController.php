@@ -49,6 +49,7 @@ class CategoryController extends Controller
         $category = Category::create(collect($validated)->except(['translations', 'focus_keyword'])->toArray());
 
         $this->saveTranslations($category, $request->input('translations', []));
+        $category->saveSeoMeta($validated);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category created successfully.');
@@ -79,6 +80,7 @@ class CategoryController extends Controller
         $category->update(collect($validated)->except(['translations', 'focus_keyword'])->toArray());
 
         $this->saveTranslations($category, $request->input('translations', []));
+        $category->saveSeoMeta($validated);
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category updated successfully.');

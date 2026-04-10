@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">Media Library</x-slot>
 
-    <div x-data="mediaLibrary()" x-init="init()">
+    <div x-data="mediaLibrary(@js($media->pluck('id')->values()), {{ (int) config('uploads.max_upload_mb', 20) }})" x-init="init()">
 
         {{-- Header --}}
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Media Library</h1>
-                <p class="text-sm text-gray-500 mt-1">{{ $media->total() }} file(s) total &middot; Upload and manage your images and files.</p>
+                <p class="text-sm text-gray-500 mt-1">{{ $media->total() }} file(s) total &middot; Upload and manage images, videos, and files up to {{ (int) config('uploads.max_upload_mb', 20) }}MB each.</p>
             </div>
             <button @click="showUpload = !showUpload"
                     class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#FEBC11] text-[#131414] text-sm font-bold rounded-lg hover:bg-yellow-400 transition">
@@ -15,10 +15,6 @@
                 Upload Files
             </button>
         </div>
-
-        @if(session('success'))
-            <div class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">{{ session('success') }}</div>
-        @endif
 
         {{-- Bulk action bar --}}
         <div x-show="selected.length > 0" x-transition class="mb-4 flex items-center gap-3 px-4 py-3 bg-[#083321]/5 border border-[#083321]/20 rounded-xl">
@@ -42,8 +38,8 @@
                  @drop.prevent="handleDrop($event)"
                  :class="dragOver && 'border-[#FEBC11] bg-yellow-50'">
                 <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                <p class="text-sm text-gray-500 mb-3">Drag and drop files here, or click to browse</p>
-                <input type="file" multiple accept="image/*,.pdf,.mp4" class="hidden" x-ref="fileInput" @change="uploadFiles($refs.fileInput.files)">
+                <p class="text-sm text-gray-500 mb-3">Drag and drop files here, or click to browse. Images, videos, documents, and archives are supported.</p>
+                <input type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.mp4,.webm,.mov" class="hidden" x-ref="fileInput" @change="uploadFiles($refs.fileInput.files)">
                 <button type="button" @click="$refs.fileInput.click()" class="px-6 py-2 bg-[#083321] text-white text-sm font-bold rounded-lg hover:bg-[#083321]/90 transition">Browse Files</button>
             </div>
             {{-- Upload progress --}}
@@ -87,8 +83,13 @@
                     </label>
 
                     <div class="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-                        @if(str_starts_with($item->mime_type, 'image/'))
+                        @if($item->isImage())
                             <img src="{{ asset('storage/' . $item->path) }}" alt="{{ $item->alt_text ?? $item->filename }}" class="w-full h-full object-cover" loading="lazy">
+                        @elseif($item->isVideo())
+                            <div class="relative h-full w-full bg-[#131414]">
+                                <video src="{{ asset('storage/' . $item->path) }}" class="w-full h-full object-cover" muted playsinline preload="metadata"></video>
+                                <span class="absolute bottom-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-[#131414]">Video</span>
+                            </div>
                         @else
                             <div class="text-center p-4">
                                 <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
@@ -99,7 +100,7 @@
 
                     {{-- Overlay actions --}}
                     <div class="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition">
-                        <button type="button" @click="openDetail({ id: {{ $item->id }}, url: '{{ asset('storage/' . $item->path) }}', filename: '{{ e($item->filename) }}', alt_text: '{{ e($item->alt_text ?? '') }}', size: '{{ number_format($item->size / 1024, 1) }} KB', mime: '{{ $item->mime_type }}', path: '{{ $item->path }}', created: '{{ $item->created_at->format('M d, Y') }}' })"
+                        <button type="button" @click="openDetail({ id: {{ $item->id }}, url: '{{ asset('storage/' . $item->path) }}', filename: '{{ e($item->filename) }}', alt_text: '{{ e($item->alt_text ?? '') }}', size: '{{ $item->size >= 1048576 ? number_format($item->size / 1048576, 1) . ' MB' : number_format($item->size / 1024, 1) . ' KB' }}', mime: '{{ $item->mime_type }}', path: '{{ $item->path }}', created: '{{ $item->created_at->format('M d, Y') }}' })"
                                 class="p-2 bg-white/90 rounded-lg hover:bg-white transition" title="Details">
                             <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </button>
@@ -147,6 +148,10 @@
                         <img :src="detailItem.url" :alt="detailItem.alt_text" class="w-full rounded-lg mb-4 max-h-64 object-contain bg-gray-50">
                     </template>
 
+                    <template x-if="detailItem.mime && detailItem.mime.startsWith('video/')">
+                        <video :src="detailItem.url" controls class="w-full rounded-lg mb-4 max-h-64 bg-[#131414]"></video>
+                    </template>
+
                     <dl class="space-y-3 text-sm">
                         <div><dt class="text-xs font-medium text-gray-400 uppercase">Filename</dt><dd class="text-gray-700 mt-0.5" x-text="detailItem.filename"></dd></div>
                         <div><dt class="text-xs font-medium text-gray-400 uppercase">Size</dt><dd class="text-gray-700 mt-0.5" x-text="detailItem.size"></dd></div>
@@ -189,7 +194,7 @@
 
     @push('scripts')
     <script>
-        function mediaLibrary() {
+        function mediaLibrary(allIds = [], maxUploadMb = 20) {
             return {
                 showUpload: false,
                 dragOver: false,
@@ -197,10 +202,16 @@
                 detailItem: {},
                 selected: [],
                 uploads: [],
-                allIds: @json($media->pluck('id')),
-                copyNotice: '',
+                allIds: allIds || [],
+                maxUploadMb: maxUploadMb || 20,
 
                 init() {},
+
+                notify(message, type = 'info', duration = 4500) {
+                    if (window.showLomoToast) {
+                        window.showLomoToast(message, type, duration);
+                    }
+                },
 
                 openDetail(data) { this.detailItem = data; this.detailOpen = true; },
 
@@ -219,7 +230,15 @@
 
                 async bulkDelete() {
                     if (!this.selected.length) return;
-                    if (!confirm('Permanently delete ' + this.selected.length + ' file(s)? This cannot be undone.')) return;
+                    const confirmed = await window.showLomoConfirm({
+                        title: 'Delete selected files',
+                        message: 'Permanently delete ' + this.selected.length + ' file(s)? This cannot be undone.',
+                        confirmText: 'Delete files',
+                        tone: 'danger',
+                    });
+
+                    if (!confirmed) return;
+
                     const token = document.querySelector('meta[name="csrf-token"]')?.content;
                     try {
                         const res = await fetch('/admin/media/bulk-destroy', {
@@ -227,17 +246,34 @@
                             headers: { 'X-CSRF-TOKEN': token, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                             body: JSON.stringify({ ids: this.selected }),
                         });
-                        if (res.ok) { window.location.reload(); }
-                        else { alert('Delete failed.'); }
-                    } catch (e) { alert('Delete failed.'); console.error(e); }
+
+                        if (!res.ok) {
+                            let message = 'Delete failed.';
+                            try {
+                                const data = await res.json();
+                                message = data.message || message;
+                            } catch (error) {
+                                console.error('Delete response parse error:', error);
+                            }
+                            throw new Error(message);
+                        }
+
+                        this.notify('Selected files deleted.', 'success', 3000);
+                        window.setTimeout(() => window.location.reload(), 250);
+                    } catch (e) {
+                        this.notify(e.message || 'Delete failed.', 'error');
+                        console.error(e);
+                    }
                 },
 
                 copyPath(path) { this.copyToClipboard(path); },
 
                 copyToClipboard(text) {
                     navigator.clipboard.writeText(text).then(() => {
-                        // Brief visual feedback could be added here
-                    }).catch(() => {});
+                        this.notify('Copied to clipboard.', 'success', 2000);
+                    }).catch(() => {
+                        this.notify('Unable to copy that value.', 'error');
+                    });
                 },
 
                 handleDrop(e) {
@@ -247,13 +283,30 @@
 
                 async uploadFiles(files) {
                     if (!files || !files.length) return;
+
                     const token = document.querySelector('meta[name="csrf-token"]')?.content;
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
+                    const maxBytes = this.maxUploadMb * 1024 * 1024;
+                    const queue = Array.from(files).filter(file => {
+                        if (file.size > maxBytes) {
+                            this.notify(`${file.name} is too large. Maximum file size is ${this.maxUploadMb}MB.`, 'warning');
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (!queue.length) {
+                        return;
+                    }
+
+                    let uploadedCount = 0;
+
+                    for (let i = 0; i < queue.length; i++) {
+                        const file = queue[i];
                         const upIdx = this.uploads.length;
                         this.uploads.push({ name: file.name, progress: 0 });
                         const fd = new FormData();
                         fd.append('files[]', file);
+
                         try {
                             const xhr = new XMLHttpRequest();
                             await new Promise((resolve, reject) => {
@@ -261,21 +314,48 @@
                                     if (e.lengthComputable) this.uploads[upIdx].progress = Math.round((e.loaded / e.total) * 100);
                                 });
                                 xhr.addEventListener('load', () => {
+                                    if (xhr.status < 200 || xhr.status >= 300) {
+                                        let message = `Upload failed. Files can be up to ${this.maxUploadMb}MB.`;
+                                        try {
+                                            const data = JSON.parse(xhr.responseText || '{}');
+                                            message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                                        } catch (error) {
+                                            console.error('Upload response parse error:', error);
+                                        }
+                                        reject(new Error(message));
+                                        return;
+                                    }
+
                                     this.uploads[upIdx].progress = 100;
                                     resolve();
                                 });
-                                xhr.addEventListener('error', reject);
+                                xhr.addEventListener('error', () => reject(new Error('Upload failed. Please try again.')));
                                 xhr.open('POST', '/admin/media');
                                 xhr.setRequestHeader('X-CSRF-TOKEN', token);
                                 xhr.setRequestHeader('Accept', 'application/json');
                                 xhr.send(fd);
                             });
-                        } catch (e) { console.error('Upload error:', e); }
+
+                            uploadedCount += 1;
+                        } catch (e) {
+                            this.notify(e.message || 'Upload failed. Please try again.', 'error');
+                            console.error('Upload error:', e);
+                        }
                     }
-                    setTimeout(() => window.location.reload(), 500);
+
+                    if (uploadedCount > 0) {
+                        this.notify(`${uploadedCount} file${uploadedCount === 1 ? '' : 's'} uploaded successfully.`, 'success', 3000);
+                        window.setTimeout(() => window.location.reload(), 400);
+                    }
                 },
             };
         }
     </script>
     @endpush
 </x-app-layout>
+*** Delete File: c:\wamp64\www\lomo\resources\views\partials\chat-widget.blade.php.bak
+*** Delete File: c:\wamp64\www\lomo\resources\views\admin\safaris\_form.blade.php.bak
+*** Delete File: c:\wamp64\www\lomo\resources\views\admin\partials\sidebar-nav.blade.php.bak
+*** Delete File: c:\wamp64\www\lomo\resources\views\admin\pages\index.blade.php.bak
+*** Delete File: c:\wamp64\www\lomo\resources\views\admin\pages\form.blade.php.bak
+*** Delete File: c:\wamp64\www\lomo\resources\views\admin\dashboard.blade.php.bak

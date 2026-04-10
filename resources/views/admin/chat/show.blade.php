@@ -1,3 +1,5 @@
+@php($chatLocale = $chatSession->inferredLocale())
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-3">
@@ -114,7 +116,7 @@
                                             ? 'bg-[#083321] text-white rounded-2xl rounded-br-md'
                                             : 'bg-gray-100 text-gray-900 rounded-2xl rounded-bl-md'"
                                          class="px-4 py-2.5">
-                                        <p class="text-sm whitespace-pre-wrap" x-text="msg.message"></p>
+                                        <p class="text-sm whitespace-pre-wrap" x-html="linkify(msg.message)"></p>
                                         <p class="text-[10px] mt-1 opacity-60" x-text="msg.time"></p>
                                     </div>
                                 </div>
@@ -151,7 +153,7 @@
                         <div x-show="qaOpen === 'safaris'" @click.away="qaOpen = null" x-cloak x-transition
                              class="absolute bottom-full left-0 mb-1 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
                             @foreach($quickSafaris as $qs)
-                                <button @click="newMessage += '{{ url('/safaris/' . $qs->slug) }}'; qaOpen = null" type="button"
+                                <button @click="newMessage += '{{ route('safaris.show', ['locale' => $chatLocale, 'slug' => $qs->slug]) }}'; qaOpen = null" type="button"
                                         class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qs->title }}</button>
                             @endforeach
                         </div>
@@ -166,7 +168,7 @@
                         <div x-show="qaOpen === 'dest'" @click.away="qaOpen = null" x-cloak x-transition
                              class="absolute bottom-full left-0 mb-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
                             @foreach($quickDestinations as $qd)
-                                <button @click="newMessage += '{{ url('/destinations/' . $qd->slug) }}'; qaOpen = null" type="button"
+                                <button @click="newMessage += '{{ route('destinations.show', ['locale' => $chatLocale, 'slug' => $qd->slug]) }}'; qaOpen = null" type="button"
                                         class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qd->name }}</button>
                             @endforeach
                         </div>
@@ -181,7 +183,7 @@
                         <div x-show="qaOpen === 'pages'" @click.away="qaOpen = null" x-cloak x-transition
                              class="absolute bottom-full left-0 mb-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-1 max-h-48 overflow-y-auto z-20">
                             @foreach($quickPages as $qp)
-                                <button @click="newMessage += '{{ url('/' . $qp->slug) }}'; qaOpen = null" type="button"
+                                <button @click="newMessage += '{{ route('page.show', ['locale' => $chatLocale, 'slug' => $qp->slug]) }}'; qaOpen = null" type="button"
                                         class="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 truncate">{{ $qp->translatedTitle() }}</button>
                             @endforeach
                         </div>
@@ -327,6 +329,8 @@
             assignedTo: @json($chatSession->assignedAgent?->name),
             assignedDepartment: @json($chatSession->department?->name ?? $chatSession->assignedAgent?->department?->name),
             assignedDeptColor: @json($chatSession->department?->color ?? $chatSession->assignedAgent?->department?->color),
+            publicLocale: @json($chatLocale),
+            supportedLocales: @json(\App\Http\Middleware\SetLocale::SUPPORTED),
             pollInterval: null,
             typingTimeout: null,
             audioCtx: null,
@@ -502,6 +506,58 @@
                 });
             },
 
+            normalizePublicHref(url) {
+                if (!url) return '#';
+
+                const candidate = url.replace(/&amp;/g, '&');
+                if (/^(mailto:|tel:|#|javascript:)/i.test(candidate)) {
+                    return candidate;
+                }
+
+                try {
+                    const parsed = new URL(candidate, window.location.origin);
+                    if (!/^https?:$/i.test(parsed.protocol)) {
+                        return candidate;
+                    }
+
+                    if (parsed.origin !== window.location.origin) {
+                        return parsed.toString();
+                    }
+
+                    const segments = parsed.pathname.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
+                    const firstSegment = segments[0] || '';
+
+                    if (segments.length === 0) {
+                        parsed.pathname = '/' + this.publicLocale;
+                    } else if (!['admin', 'api', 'storage', 'build'].includes(firstSegment)) {
+                        if (this.supportedLocales.includes(firstSegment)) {
+                            segments.shift();
+                        }
+
+                        parsed.pathname = '/' + this.publicLocale + (segments.length ? '/' + segments.join('/') : '');
+                    }
+
+                    if (/^https?:\/\//i.test(candidate)) {
+                        return parsed.toString();
+                    }
+
+                    return parsed.pathname + parsed.search + parsed.hash;
+                } catch (e) {
+                    return candidate;
+                }
+            },
+
+            linkify(text) {
+                if (!text) return '';
+
+                const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+                return escaped.replace(
+                    /((?:https?:\/\/[^\s<"']+)|(?:\/(?!\/)[^\s<"']+))/gi,
+                    (match) => '<a href="' + this.normalizePublicHref(match) + '" target="_blank" rel="noopener" class="underline font-medium hover:opacity-80 break-all">' + match + '</a>'
+                );
+            },
+
             scrollToBottom() {
                 const el = this.$refs.messagesContainer;
                 if (el) el.scrollTop = el.scrollHeight;
@@ -514,7 +570,7 @@
                 if (sep > 0) return entry.substring(0, sep);
                 // Fallback: extract path from URL
                 try {
-                    const url = new URL(entry);
+                    const url = new URL(entry, window.location.origin);
                     return url.pathname === '/' ? 'Home' : decodeURIComponent(url.pathname.replace(/^\/|\/$/g, '').replace(/[-_]/g, ' '));
                 } catch(e) { return entry; }
             },
@@ -522,8 +578,8 @@
             parsePageUrl(entry) {
                 if (!entry) return '#';
                 const sep = entry.indexOf(' — ');
-                if (sep > 0) return entry.substring(sep + 3);
-                return entry.startsWith('http') ? entry : '#';
+                if (sep > 0) return this.normalizePublicHref(entry.substring(sep + 3));
+                return this.normalizePublicHref(entry);
             },
 
             playNotificationSound() {

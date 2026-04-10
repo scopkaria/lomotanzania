@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Destination;
 use App\Traits\HasBulkActions;
+use App\Traits\SanitizesHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DestinationController extends Controller
 {
-    use HasBulkActions;
+    use HasBulkActions, SanitizesHtml;
 
     protected function bulkModel(): string { return Destination::class; }
 
@@ -25,7 +26,10 @@ class DestinationController extends Controller
         if ($request->filled('country_id')) {
             $query->where('country_id', $request->integer('country_id'));
         }
-        $destinations = $query->latest()->paginate($request->integer('per_page', 15))->withQueryString();
+        $sortable = ['name', 'created_at', 'safari_packages_count'];
+        $sort = in_array($request->input('sort'), $sortable) ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $destinations = $query->orderBy($sort, $direction)->paginate($request->integer('per_page', 15))->withQueryString();
         $countries = Country::orderBy('name')->get();
         return view('admin.destinations.index', compact('destinations', 'countries'));
     }
@@ -51,14 +55,17 @@ class DestinationController extends Controller
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
             'og_image'         => 'nullable|string|max:500',
+            'focus_keyword'    => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
-        Destination::create($validated);
-
-        $destination = Destination::where('slug', $validated['slug'])->first();
+        $destination = Destination::create(collect($validated)->except('focus_keyword')->toArray());
         $this->saveTranslations($destination, $request);
+        $destination->saveSeoMeta($validated);
 
         return redirect()->route('admin.destinations.index')
             ->with('success', 'Destination created successfully.');
@@ -85,14 +92,19 @@ class DestinationController extends Controller
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
             'og_image'         => 'nullable|string|max:500',
+            'focus_keyword'    => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
-        $destination->update($validated);
+        $destination->update(collect($validated)->except('focus_keyword')->toArray());
         $this->saveTranslations($destination, $request);
+        $destination->saveSeoMeta($validated);
 
-        return redirect()->route('admin.destinations.index')
+        return redirect()->route('admin.destinations.edit', $destination)
             ->with('success', 'Destination updated successfully.');
     }
 
@@ -117,7 +129,7 @@ class DestinationController extends Controller
             foreach ($locales as $locale) {
                 $value = $request->input("translations.{$locale}.{$field}");
                 if (filled($value)) {
-                    $translations[$locale] = $value;
+                    $translations[$locale] = $field === 'description' ? $this->sanitizeRichText($value) : $value;
                 }
             }
             if (! empty($translations)) {

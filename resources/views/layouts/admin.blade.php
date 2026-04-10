@@ -10,8 +10,9 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,13 +21,15 @@
                     colors: {
                         brand: { dark: '#131414', gold: '#FEBC11', light: '#F9F7F3', green: '#083321' },
                     },
-                    fontFamily: { body: ['Inter', 'sans-serif'] },
+                    fontFamily: { heading: ['"Cormorant Garamond"', 'Georgia', 'serif'], body: ['Lato', 'sans-serif'] },
                 }
             }
         }
     </script>
     <style>
         [x-cloak] { display: none !important; }
+        body { font-family: 'Lato', sans-serif; font-size: 0.9375rem; line-height: 1.6; color: #2D2D2D; -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; color: #131414; letter-spacing: 0.01em; line-height: 1.2; }
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
         .admin-table th { position: sticky; top: 0; z-index: 10; }
@@ -233,25 +236,6 @@
 
             {{-- Content --}}
             <main class="flex-1 overflow-y-auto p-6">
-
-                {{-- Flash messages --}}
-                @if(session('success'))
-                    <div class="mb-6">
-                        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            {{ session('success') }}
-                        </div>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="mb-6">
-                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                            {{ session('error') }}
-                        </div>
-                    </div>
-                @endif
-
                 {{-- Page content --}}
                 {{ $slot }}
             </main>
@@ -261,12 +245,18 @@
 
     <script>
     document.addEventListener('alpine:init', () => {
+        // UPDATED: Enhanced adminTable with sorting, screen options, clickable rows
         Alpine.data('adminTable', (config = {}) => ({
             selected: [],
             selectAll: false,
             allIds: config.ids || [],
             columns: JSON.parse(localStorage.getItem('cols_' + (config.key || 'default')) || 'null') || config.columns || {},
             showColumnMenu: false,
+            // ADDED: sorting
+            sortField: config.sortField || '',
+            sortDir: config.sortDir || 'asc',
+            // ADDED: screen options
+            showScreenOptions: false,
 
             toggleSelectAll() {
                 this.selectAll = !this.selectAll;
@@ -297,9 +287,39 @@
                 localStorage.setItem('cols_' + (config.key || 'default'), JSON.stringify(this.columns));
             },
 
-            submitBulk(action) {
+            // ADDED: sorting via URL params
+            sortBy(field) {
+                const url = new URL(window.location);
+                if (this.sortField === field) {
+                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortField = field;
+                    this.sortDir = 'asc';
+                }
+                url.searchParams.set('sort', this.sortField);
+                url.searchParams.set('direction', this.sortDir);
+                url.searchParams.delete('page');
+                window.location = url.toString();
+            },
+
+            // ADDED: clickable row navigation
+            rowClick(editUrl, event) {
+                if (event.target.closest('a, button, input, form, [x-on\\:click], [\\@click]')) return;
+                window.location = editUrl;
+            },
+
+            async submitBulk(action) {
                 if (this.selected.length === 0) return;
-                if (action === 'delete' && !confirm('Delete ' + this.selected.length + ' selected item(s)?')) return;
+                if (action === 'delete') {
+                    const confirmed = await window.showLomoConfirm({
+                        title: 'Delete selected items',
+                        message: 'Delete ' + this.selected.length + ' selected item(s)?',
+                        confirmText: 'Delete items',
+                        tone: 'danger',
+                    });
+
+                    if (!confirmed) return;
+                }
 
                 const form = this.$refs.bulkForm;
                 form.querySelector('[name="action"]').value = action;
@@ -319,43 +339,15 @@
     });
     </script>
 
-    {{-- ============ GLOBAL TOAST NOTIFICATIONS ============ --}}
-    <div x-data x-init="$store.toast || Alpine.store('toast', { items: [], show(msg, type='success', dur=4000) { const id=Date.now(); this.items.push({id,msg,type}); setTimeout(()=>this.items=this.items.filter(t=>t.id!==id), dur); } })"
-         class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none" style="max-width:380px">
-        <template x-for="t in $store.toast.items" :key="t.id">
-            <div x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-x-8"
-                 x-transition:enter-end="opacity-100 translate-x-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-x-0"
-                 x-transition:leave-end="opacity-0 translate-x-8"
-                 :class="{
-                    'bg-green-600': t.type==='success',
-                    'bg-red-600': t.type==='error',
-                    'bg-blue-600': t.type==='info',
-                    'bg-amber-500': t.type==='warning',
-                    'bg-[#083321]': t.type==='chat'
-                 }"
-                 class="text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-3 pointer-events-auto">
-                <template x-if="t.type==='success'">
-                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                </template>
-                <template x-if="t.type==='error'">
-                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                </template>
-                <template x-if="t.type==='chat'">
-                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                </template>
-                <template x-if="t.type==='info' || t.type==='warning'">
-                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                </template>
-                <span x-text="t.msg" class="flex-1"></span>
-                <button @click="$store.toast.items = $store.toast.items.filter(i=>i.id!==t.id)" class="text-white/60 hover:text-white shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        </template>
-    </div>
+    @include('partials.global-toast')
+
+    @if(session('success'))
+        <div x-data x-init="setTimeout(() => window.showLomoToast(@js(session('success')), 'success'), 30)" class="hidden"></div>
+    @endif
+
+    @if(session('error'))
+        <div x-data x-init="setTimeout(() => window.showLomoToast(@js(session('error')), 'error'), 30)" class="hidden"></div>
+    @endif
 
     {{-- ============ GLOBAL CHAT NOTIFICATION SOUND ============ --}}
     <div x-data="{

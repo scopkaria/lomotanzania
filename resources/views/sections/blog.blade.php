@@ -10,12 +10,12 @@
     <div class="max-w-7xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Blog</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Stories & Guides</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
@@ -42,13 +42,13 @@
                 </div>
                 <div class="p-6">
                     @if($post->published_at)
-                    <p class="text-xs text-[#131414]/40 mb-2">{{ $post->published_at->format('M d, Y') }}</p>
+                    <p class="text-xs text-brand-dark/40 mb-2">{{ $post->published_at->format('M d, Y') }}</p>
                     @endif
-                    <h3 class="font-heading text-lg font-bold text-[#131414] mb-2 group-hover:text-[#083321] transition-colors">
+                    <h3 class="font-body text-base font-bold text-brand-dark uppercase tracking-wider mb-2 group-hover:text-[#083321] transition-colors leading-snug">
                         {{ $postTitle }}
                     </h3>
                     @if($postExcerpt)
-                    <p class="text-sm text-[#131414]/50 leading-relaxed">{{ Str::limit($postExcerpt, 120) }}</p>
+                    <p class="text-sm text-brand-dark/50 leading-relaxed">{{ Str::limit($postExcerpt, 120) }}</p>
                     @endif
                 </div>
             </a>

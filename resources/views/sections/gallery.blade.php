@@ -11,7 +11,7 @@
 <section class="py-16 md:py-24 bg-white">
     <div class="max-w-7xl mx-auto px-6">
         @if($heading)
-            <h2 class="font-heading text-3xl md:text-4xl font-bold text-[#131414] mb-10 text-center">
+            <h2 class="font-heading text-3xl md:text-4xl font-bold text-brand-dark leading-heading tracking-safari mb-10 text-center">
                 {{ $heading }}
             </h2>
         @endif

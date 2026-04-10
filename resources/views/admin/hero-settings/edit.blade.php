@@ -8,12 +8,6 @@
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 p-4">
-                <p class="text-sm font-medium text-emerald-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
         <form method="POST" action="{{ route('admin.pages.hero-settings.update') }}" class="space-y-8">
             @csrf
             @method('PUT')
@@ -79,8 +73,9 @@
                         'name'  => 'background_video',
                         'value' => old('background_video', $settings->background_video ?? ''),
                         'label' => 'Background Video',
+                        'mode'  => 'video',
                     ])
-                    <p class="text-xs text-gray-400 mt-1">Upload an MP4 video. Recommended: 1920×1080, under 15 MB, short loop (10-30s).</p>
+                    <p class="text-xs text-gray-400 mt-1">Upload an MP4, WebM, or MOV video up to 20 MB. Recommended: 1920×1080, short loop (10-30s).</p>
                     @error('background_video') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
 

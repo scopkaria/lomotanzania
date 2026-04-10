@@ -22,12 +22,12 @@
 
     <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
         @if($heading)
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-heading tracking-safari mb-4">
                 {{ $heading }}
             </h2>
         @endif
         @if($subheading)
-            <p class="text-lg text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p class="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
                 {{ $subheading }}
             </p>
         @endif

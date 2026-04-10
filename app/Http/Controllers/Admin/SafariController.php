@@ -9,9 +9,11 @@ use App\Models\Destination;
 use App\Models\Itinerary;
 use App\Models\SafariImage;
 use App\Models\SafariPackage;
+use App\Models\TourCategory;
 use App\Models\TourType;
 use App\Models\Category;
 use App\Traits\HasBulkActions;
+use App\Traits\SanitizesHtml;
 use DOMDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +21,7 @@ use Illuminate\Support\Str;
 
 class SafariController extends Controller
 {
-    use HasBulkActions;
+    use HasBulkActions, SanitizesHtml;
 
     protected function bulkModel(): string { return SafariPackage::class; }
     protected function allowedBulkActions(): array { return ['delete', 'publish', 'draft']; }
@@ -35,7 +37,10 @@ class SafariController extends Controller
             $query->where('status', $request->status);
         }
 
-        $safaris = $query->latest()->paginate($request->integer('per_page', 15))->withQueryString();
+        $sortable = ['title', 'status', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable) ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $safaris = $query->orderBy($sort, $direction)->paginate($request->integer('per_page', 15))->withQueryString();
 
         return view('admin.safaris.index', compact('safaris'));
     }
@@ -48,7 +53,9 @@ class SafariController extends Controller
         $tourTypes    = TourType::orderBy('name')->get();
         $categories   = Category::orderBy('name')->get();
 
-        return view('admin.safaris.create', compact('countries', 'destinations', 'accommodations', 'tourTypes', 'categories'));
+        $tourCategoriesList = TourCategory::orderBy('display_order')->get();
+
+        return view('admin.safaris.create', compact('countries', 'destinations', 'accommodations', 'tourTypes', 'categories', 'tourCategoriesList'));
     }
 
     public function store(Request $request)
@@ -146,21 +153,28 @@ class SafariController extends Controller
         $destinationIds = $safari->itineraries()->whereNotNull('destination_id')->pluck('destination_id')->unique()->values()->all();
         $safari->destinations()->sync($destinationIds);
 
+        // ADDED: Sync tour categories
+        $safari->tourCategories()->sync($request->input('tour_categories', []));
+
+        // Save SEO meta (focus_keyword)
+        $safari->saveSeoMeta($validated);
+
         return redirect()->route('admin.safaris.index')
             ->with('success', 'Safari package created successfully.');
     }
 
     public function edit(SafariPackage $safari)
     {
-        $safari->load(['countries', 'destinations', 'itineraries' => fn ($q) => $q->with('accommodationRelation')->orderBy('day_number')]);
+        $safari->load(['countries', 'destinations', 'tourCategories', 'itineraries' => fn ($q) => $q->with('accommodationRelation')->orderBy('day_number')]);
 
         $countries    = Country::orderBy('name')->get();
         $destinations = Destination::orderBy('name')->get();
         $accommodations = Accommodation::orderBy('name')->get();
         $tourTypes    = TourType::orderBy('name')->get();
         $categories   = Category::orderBy('name')->get();
+        $tourCategoriesList = TourCategory::orderBy('display_order')->get();
 
-        return view('admin.safaris.edit', compact('safari', 'countries', 'destinations', 'accommodations', 'tourTypes', 'categories'));
+        return view('admin.safaris.edit', compact('safari', 'countries', 'destinations', 'accommodations', 'tourTypes', 'categories', 'tourCategoriesList'));
     }
 
     public function update(Request $request, SafariPackage $safari)
@@ -259,6 +273,12 @@ class SafariController extends Controller
         $destinationIds = $safari->itineraries()->whereNotNull('destination_id')->pluck('destination_id')->unique()->values()->all();
         $safari->destinations()->sync($destinationIds);
 
+        // ADDED: Sync tour categories
+        $safari->tourCategories()->sync($request->input('tour_categories', []));
+
+        // Save SEO meta (focus_keyword)
+        $safari->saveSeoMeta($validated);
+
         return redirect()->back()
             ->with('success', 'Safari updated successfully.');
     }
@@ -325,104 +345,6 @@ class SafariController extends Controller
         }
 
         return $normalized !== [] ? $normalized : null;
-    }
-
-    protected function sanitizeRichText(?string $html): ?string
-    {
-        $html = trim((string) $html);
-
-        if ($html === '') {
-            return null;
-        }
-
-        $allowedTags = ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'ul', 'ol', 'li', 'a', 'h3', 'h4', 'blockquote'];
-        $allowedAttributes = ['a' => ['href', 'target', 'rel']];
-
-        $dom = new DOMDocument('1.0', 'UTF-8');
-        $previousState = libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="utf-8" ?><div id="safari-description-root">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previousState);
-
-        $root = $dom->getElementById('safari-description-root');
-
-        if (! $root) {
-            return strip_tags($html, '<p><br><strong><em><b><i><u><ul><ol><li><a><h3><h4><blockquote>');
-        }
-
-        $nodes = [];
-        foreach ($root->getElementsByTagName('*') as $node) {
-            $nodes[] = $node;
-        }
-
-        for ($index = count($nodes) - 1; $index >= 0; $index--) {
-            $node = $nodes[$index];
-
-            if (! in_array($node->nodeName, $allowedTags, true)) {
-                $this->unwrapNode($node);
-                continue;
-            }
-
-            if ($node->hasAttributes()) {
-                for ($i = $node->attributes->length - 1; $i >= 0; $i--) {
-                    $attribute = $node->attributes->item($i);
-                    $isAllowedAttribute = in_array($attribute->nodeName, $allowedAttributes[$node->nodeName] ?? [], true);
-
-                    if (! $isAllowedAttribute) {
-                        $node->removeAttribute($attribute->nodeName);
-                    }
-                }
-            }
-
-            if ($node->nodeName === 'a') {
-                $href = $this->sanitizeLinkHref($node->getAttribute('href'));
-
-                if ($href === null) {
-                    $node->removeAttribute('href');
-                    $node->removeAttribute('target');
-                    $node->removeAttribute('rel');
-                } else {
-                    $node->setAttribute('href', $href);
-                    if ($node->getAttribute('target') === '_blank') {
-                        $node->setAttribute('rel', 'noopener noreferrer');
-                    } else {
-                        $node->removeAttribute('target');
-                        $node->removeAttribute('rel');
-                    }
-                }
-            }
-        }
-
-        $cleanHtml = '';
-        foreach ($root->childNodes as $child) {
-            $cleanHtml .= $dom->saveHTML($child);
-        }
-
-        return trim($cleanHtml) ?: null;
-    }
-
-    protected function unwrapNode(\DOMNode $node): void
-    {
-        while ($node->firstChild) {
-            $node->parentNode?->insertBefore($node->firstChild, $node);
-        }
-
-        $node->parentNode?->removeChild($node);
-    }
-
-    protected function sanitizeLinkHref(?string $href): ?string
-    {
-        $href = trim((string) $href);
-
-        if ($href === '') {
-            return null;
-        }
-
-        if (Str::startsWith($href, ['/', '#'])) {
-            return $href;
-        }
-
-        return preg_match('/^(https?:|mailto:|tel:)/i', $href) ? $href : null;
     }
 
     protected function saveTranslations(SafariPackage $safari, Request $request): void

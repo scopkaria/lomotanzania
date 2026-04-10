@@ -31,6 +31,13 @@ class Setting extends Model
         'chat_enabled',
         'notification_sound_enabled',
         'notification_sound_volume',
+        'show_card_price_badge',
+        'card_price_season',
+        'card_price_pax',
+        'map_latitude',
+        'map_longitude',
+        'map_embed',
+        'office_location',
     ];
 
     protected $casts = [
@@ -40,5 +47,6 @@ class Setting extends Model
         'notify_safari_plan'    => 'boolean',
         'chat_enabled'          => 'boolean',
         'notification_sound_enabled' => 'boolean',
+        'show_card_price_badge'      => 'boolean',
     ];
 }

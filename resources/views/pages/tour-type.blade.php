@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $tourType->translated('name') . ' "” ' . ($siteName ?? 'Lomo Tanzania Safari'))
+@section('title', $tourType->translated('name') . ' — ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
 @section('content')
 
@@ -16,9 +16,16 @@
              class="absolute inset-0 w-full h-full object-cover">
     @endif
     <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-brand-dark/30 to-transparent"></div>
-    <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 pb-12">
+    <div class="relative z-10 h-full flex flex-col items-center justify-center max-w-7xl mx-auto px-6 text-center">
         <p class="text-xs font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.tour_type_kicker') }}</p>
         <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">{{ $tourType->translated('name') }}</h1>
+        <nav class="mt-5 flex items-center justify-center gap-2 text-sm text-white/70">
+            <a href="{{ route('home') }}" class="hover:text-white transition">{{ __('messages.home') }}</a>
+            <span class="text-white/40">/</span>
+            <a href="{{ route('experiences.index') }}" class="hover:text-white transition">{{ __('messages.experiences') }}</a>
+            <span class="text-white/40">/</span>
+            <span class="text-white/90">{{ $tourType->translated('name') }}</span>
+        </nav>
     </div>
 </section>
 

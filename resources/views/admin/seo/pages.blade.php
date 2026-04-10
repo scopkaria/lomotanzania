@@ -148,7 +148,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 flex items-center gap-2">
-                            <a href="{{ route('seo.page', ['locale' => 'en', 'slug' => $page->slug]) }}" target="_blank" class="text-blue-500 hover:text-blue-700 text-xs" title="View in new tab">View</a>
+                            <a href="{{ route('seo.page', ['locale' => app()->getLocale(), 'slug' => $page->slug]) }}" target="_blank" class="text-blue-500 hover:text-blue-700 text-xs" title="View in new tab">View</a>
                             <a href="{{ route('admin.seo.pages.edit', $page) }}" class="text-[#083321] hover:text-green-700 text-xs">Edit</a>
                             <form action="{{ route('admin.seo.pages.destroy', $page) }}" method="POST" class="inline" onsubmit="return confirm('Delete this page?')">
                                 @csrf @method('DELETE')

@@ -49,6 +49,7 @@ class TourTypeController extends Controller
         $tourType = TourType::create(collect($validated)->except(['translations', 'focus_keyword'])->toArray());
 
         $this->saveTranslations($tourType, $request->input('translations', []));
+        $tourType->saveSeoMeta($validated);
 
         return redirect()->route('admin.tour-types.index')
             ->with('success', 'Tour type created successfully.');
@@ -79,6 +80,7 @@ class TourTypeController extends Controller
         $tourType->update(collect($validated)->except(['translations', 'focus_keyword'])->toArray());
 
         $this->saveTranslations($tourType, $request->input('translations', []));
+        $tourType->saveSeoMeta($validated);
 
         return redirect()->route('admin.tour-types.index')
             ->with('success', 'Tour type updated successfully.');

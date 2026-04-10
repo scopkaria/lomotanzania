@@ -19,8 +19,8 @@
 
     <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
         @if($heading)
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-4 reveal">Meaning</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 reveal">
+            <p class="font-accent text-2xl md:text-3xl text-[#FEBC11] mb-2 reveal">Our Meaning</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-heading tracking-safari mb-6 reveal">
                 {{ $heading }}
             </h2>
         @endif

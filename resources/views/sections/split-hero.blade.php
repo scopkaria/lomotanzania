@@ -15,19 +15,21 @@
     <div class="max-w-7xl mx-auto px-6 w-full">
         <div class="grid md:grid-cols-2 gap-12 items-center">
             {{-- Text Side --}}
-            <div class="{{ $imgRight ? 'order-1' : 'order-1 md:order-2' }} py-16 md:py-24">
+            <div class="{{ $imgRight ? 'order-1' : 'order-1 md:order-2' }} py-16 md:py-24 reveal-left">
                 @if($heading)
-                    <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+                    <h2 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                         {{ $heading }}
-                    </h1>
+                    </h2>
                 @endif
                 @if($subheading)
-                    <p class="text-lg md:text-xl text-white/90 leading-relaxed mb-6 max-w-lg">
+                    {{-- UPDATED: secondary color for motto/tagline --}}
+                    <p class="text-lg md:text-xl text-[#FEBC11] leading-relaxed mb-6 max-w-lg font-semibold italic">
                         {{ $subheading }}
                     </p>
                 @endif
                 @if($body)
-                    <div class="prose prose-lg prose-invert max-w-none text-white/85 mb-8">
+                    {{-- FIXED: white text on green bg for full contrast --}}
+                    <div class="prose prose-lg prose-invert max-w-none text-white mb-8 [&_p]:text-white [&_strong]:text-[#FEBC11]">
                         {!! $body !!}
                     </div>
                 @endif
@@ -40,7 +42,7 @@
             </div>
 
             {{-- Image Side --}}
-            <div class="{{ $imgRight ? 'order-2' : 'order-2 md:order-1' }} relative">
+            <div class="{{ $imgRight ? 'order-2' : 'order-2 md:order-1' }} relative reveal-right">
                 @if($image)
                     <img src="{{ str_starts_with($image, 'http') ? $image : asset('storage/' . $image) }}"
                          alt="{{ $heading }}" loading="lazy"

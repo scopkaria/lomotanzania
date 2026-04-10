@@ -62,18 +62,19 @@
 
 <div x-data="safariExplorer()" x-init="init()" x-cloak>
 
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     {{-- HERO HEADER --}}
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     <section class="bg-brand-dark py-14 md:py-20 relative overflow-hidden">
+        @php $indexHero = \App\Models\IndexHeroImage::forSection('safaris'); @endphp
         <div class="absolute inset-0 opacity-15">
-            <img src="https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&h=500&fit=crop&q=60"
-                 alt=- class="w-full h-full object-cover">
+            <img src="{{ $indexHero->image_url ?? 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1600&h=500&fit=crop&q=60' }}"
+                 alt="" class="w-full h-full object-cover">
         </div>
         <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/50 to-brand-dark/90"></div>
         <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
-            <p class="text-[11px] font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.safari_listing_kicker') ?: 'Curated Experiences' }}</p>
-            <h1 class="font-heading text-3xl md:text-5xl font-bold uppercase tracking-[0.16em] text-white leading-tight mb-6">Find Your Perfect Safari</h1>
+            <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">{{ __('messages.safari_listing_kicker') ?: 'Curated Experiences' }}</p>
+            <h1 class="font-heading text-3xl md:text-5xl font-bold uppercase tracking-heading text-white leading-tight mb-6">Find Your Perfect Safari</h1>
 
             {{-- Search bar --}}
             <div class="max-w-lg mx-auto relative">
@@ -91,9 +92,9 @@
         @include('partials.render-page-sections', ['sections' => $sections, 'sectionDataMap' => $sectionDataMap ?? []])
     @endif
 
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     {{-- MAIN CONTENT --}}
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     <section class="bg-brand-light min-h-screen">
         <div class="max-w-[1340px] mx-auto px-4 md:px-6 py-8 md:py-12">
 
@@ -110,9 +111,9 @@
 
             <div class="flex gap-8">
 
-                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+                {{-- ═══════════════════════════════════════ --}}
                 {{-- LEFT SIDEBAR (Desktop) --}}
-                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+                {{-- ═══════════════════════════════════════ --}}
                 <aside class="hidden lg:block w-[280px] flex-shrink-0">
                     <div class="filter-sidebar bg-white rounded-lg border border-gray-100 shadow-sm p-5">
                         <div class="flex items-center justify-between mb-5">
@@ -127,9 +128,9 @@
                     </div>
                 </aside>
 
-                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+                {{-- ═══════════════════════════════════════ --}}
                 {{-- RIGHT CONTENT --}}
-                {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+                {{-- ═══════════════════════════════════════ --}}
                 <div class="flex-1 min-w-0">
 
                     {{-- Results info + active pills --}}
@@ -186,9 +187,9 @@
         </div>
     </section>
 
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     {{-- MOBILE FILTER DRAWER --}}
-    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
+    {{-- ═══════════════════════════════════════════════════ --}}
     <div class="lg:hidden fixed inset-0 z-50" x-show="drawerOpen" x-cloak>
         <div class="drawer-backdrop fixed inset-0 bg-black/40"
              :class="drawerOpen && 'open'"
@@ -217,6 +218,74 @@
         </div>
     </div>
 </div>
+
+{{-- ADDED: Reviews Section --}}
+@if(($testimonials ?? collect())->isNotEmpty())
+<section class="py-16 md:py-24 bg-[#F9F7F3]">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-12 scroll-reveal">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Testimonials</p>
+            <h2 class="font-heading text-3xl md:text-4xl font-bold text-brand-dark leading-tight">What Our Guests Say</h2>
+            <p class="mt-3 text-base text-brand-dark/50 max-w-lg mx-auto">Real stories from travellers who experienced the magic of Tanzania with us.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($testimonials as $testimonial)
+            <div class="scroll-reveal bg-white rounded-2xl p-7 shadow-sm hover:shadow-md transition-shadow duration-300">
+                @if($testimonial->rating)
+                <div class="flex items-center gap-1 mb-4">
+                    @for($s = 1; $s <= 5; $s++)
+                    <svg class="w-4 h-4 {{ $s <= $testimonial->rating ? 'text-brand-gold' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    @endfor
+                </div>
+                @endif
+                <svg class="w-7 h-7 text-brand-dark/8 mb-3" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z"/></svg>
+                <p class="text-sm text-brand-dark/70 leading-relaxed mb-5">{{ Str::limit($testimonial->message, 200) }}</p>
+                <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    <div class="w-9 h-9 rounded-full bg-brand-green/10 flex items-center justify-center text-brand-green font-bold text-sm">
+                        {{ strtoupper(substr($testimonial->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-brand-dark">{{ $testimonial->name }}</p>
+                        @if($testimonial->safariPackage)
+                        <p class="text-xs text-brand-dark/40">{{ Str::limit($testimonial->safariPackage->translated('title'), 40) }}</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ADDED CTA: Start Planning Your Safari --}}
+<section class="relative py-20 md:py-28 bg-brand-dark overflow-hidden">
+    <div class="absolute inset-0 opacity-15">
+        <img src="https://images.unsplash.com/photo-1547970810-dc1eac37d174?w=1600&h=600&fit=crop&q=60" alt="" class="w-full h-full object-cover">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/70 to-brand-dark/95"></div>
+    <div class="relative z-10 max-w-2xl mx-auto px-6 text-center scroll-reveal">
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">Let's get started</p>
+        <h2 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-6">Start Planning Your Safari</h2>
+        <p class="text-white/70 text-base md:text-lg mb-10 max-w-lg mx-auto">Whether it's your first or fiftieth adventure — our team is ready to make it unforgettable.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            @if(optional($siteSetting ?? null)->whatsapp_number)
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSetting->whatsapp_number) }}" target="_blank" rel="noopener"
+               class="px-8 py-3.5 bg-green-600 text-white text-sm font-bold uppercase tracking-wider hover:bg-green-500 transition-all duration-300 inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                WhatsApp Us
+            </a>
+            @endif
+            <a href="{{ route('plan-safari', ['locale' => app()->getLocale()]) }}"
+               class="px-8 py-3.5 bg-brand-gold text-brand-dark text-sm font-bold uppercase tracking-wider hover:bg-white transition-all duration-300 inline-flex items-center gap-2">
+                Inquiry Form
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+        </div>
+    </div>
+</section>
 
 @endsection
 

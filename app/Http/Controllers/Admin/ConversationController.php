@@ -122,7 +122,7 @@ class ConversationController extends Controller
 
         $request->validate([
             'message' => 'required_without:attachment|string|max:5000',
-            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,zip',
+            'attachment' => 'nullable|file|max:'.config('uploads.max_upload_kb', 20480).'|mimes:'.implode(',', config('uploads.conversation_attachment_mimes', [])),
         ]);
 
         $attachmentPath = null;

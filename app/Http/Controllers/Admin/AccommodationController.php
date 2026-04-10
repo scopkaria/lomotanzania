@@ -7,13 +7,14 @@ use App\Models\Accommodation;
 use App\Models\Country;
 use App\Models\Destination;
 use App\Traits\HasBulkActions;
+use App\Traits\SanitizesHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AccommodationController extends Controller
 {
-    use HasBulkActions;
+    use HasBulkActions, SanitizesHtml;
 
     protected function bulkModel(): string { return Accommodation::class; }
 
@@ -29,7 +30,10 @@ class AccommodationController extends Controller
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
-        $accommodations = $query->latest()->paginate($request->integer('per_page', 15))->withQueryString();
+        $sortable = ['name', 'created_at', 'category'];
+        $sort = in_array($request->input('sort'), $sortable) ? $request->input('sort') : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $accommodations = $query->orderBy($sort, $direction)->paginate($request->integer('per_page', 15))->withQueryString();
         $countries = Country::orderBy('name')->get();
         return view('admin.accommodations.index', compact('accommodations', 'countries'));
     }
@@ -62,6 +66,9 @@ class AccommodationController extends Controller
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
         $accommodation = Accommodation::create(
             collect($validated)->except(['gallery_paths', 'translations', 'focus_keyword'])->toArray()
@@ -72,6 +79,7 @@ class AccommodationController extends Controller
         }
 
         $this->saveTranslations($accommodation, $request->input('translations', []));
+        $accommodation->saveSeoMeta($validated);
 
         return redirect()->route('admin.accommodations.index')
             ->with('success', 'Accommodation created successfully.');
@@ -106,6 +114,9 @@ class AccommodationController extends Controller
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        if (!empty($validated['description'])) {
+            $validated['description'] = $this->sanitizeRichText($validated['description']);
+        }
 
         $accommodation->update(
             collect($validated)->except(['gallery_paths', 'translations', 'focus_keyword'])->toArray()
@@ -118,6 +129,7 @@ class AccommodationController extends Controller
         }
 
         $this->saveTranslations($accommodation, $request->input('translations', []));
+        $accommodation->saveSeoMeta($validated);
 
         return redirect()->route('admin.accommodations.index')
             ->with('success', 'Accommodation updated successfully.');
@@ -141,7 +153,7 @@ class AccommodationController extends Controller
             $values = [];
             foreach ($translations as $locale => $fields) {
                 if (!empty($fields[$field])) {
-                    $values[$locale] = $fields[$field];
+                    $values[$locale] = $field === 'description' ? $this->sanitizeRichText($fields[$field]) : $fields[$field];
                 }
             }
             if (!empty($values)) {

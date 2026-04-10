@@ -41,13 +41,14 @@
 @section('content')
 
 {{-- Hero --}}
+@php $indexHero = \App\Models\IndexHeroImage::forSection('blog'); @endphp
 <section class="relative bg-brand-dark py-20 md:py-28 overflow-hidden">
     <div class="absolute inset-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=1600&h=500&fit=crop&q=60" alt=- class="w-full h-full object-cover">
+        <img src="{{ $indexHero->image_url ?? 'https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=1600&h=500&fit=crop&q=60' }}" alt="" class="w-full h-full object-cover">
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/60 to-brand-dark/90"></div>
     <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
-        <p class="text-xs font-semibold tracking-[0.3em] uppercase text-brand-gold mb-4">{{ __('messages.our_blog') }}</p>
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-4">{{ __('messages.our_blog') }}</p>
         <h1 class="font-heading text-4xl md:text-5xl font-bold text-white leading-tight mb-4">{{ __('messages.stories_travel_tips') }}</h1>
         <p class="text-lg text-white/85 max-w-xl mx-auto mb-8">{{ __('messages.blog_subtitle') }}</p>
 

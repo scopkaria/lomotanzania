@@ -10,12 +10,12 @@
     <div class="max-w-5xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Packages</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Packages</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
@@ -27,7 +27,7 @@
                style="transition-delay: {{ ($loop->index + 1) * 80 }}ms;">
 
                 {{-- Thumbnail --}}
-                <div class="md:w-72 h-48 md:h-auto flex-shrink-0 overflow-hidden">
+                <div class="md:w-72 h-48 md:h-auto flex-shrink-0 overflow-hidden relative">
                     @if($safari->featured_image)
                         <img src="{{ asset('storage/' . $safari->featured_image) }}"
                              alt="{{ $safari->translated('title') }}" loading="lazy"
@@ -37,19 +37,36 @@
                             <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                     @endif
+                    @php
+                        $badgePrice = null;
+                        if (optional($siteSetting ?? null)->show_card_price_badge ?? true) {
+                            $sp = $safari->seasonal_pricing ?? [];
+                            $season = optional($siteSetting ?? null)->card_price_season ?? 'low';
+                            $pax = optional($siteSetting ?? null)->card_price_pax ?? 'pax_6';
+                            $badgePrice = $sp[$season][$pax] ?? null;
+                            if (!$badgePrice) {
+                                $badgePrice = filled($safari->price) ? (float) $safari->price : null;
+                            }
+                        }
+                    @endphp
+                    @if($badgePrice)
+                        <span class="absolute right-3 top-3 bg-brand-gold px-3 py-1 text-xs font-bold text-brand-dark shadow-sm">
+                            From ${{ number_format((float) $badgePrice, 0) }}
+                        </span>
+                    @endif
                 </div>
 
                 {{-- Content --}}
                 <div class="flex-1 p-6 md:p-8 flex flex-col justify-center">
-                    <h3 class="font-heading text-xl font-bold text-[#131414] group-hover:text-[#083321] transition-colors mb-2">
+                    <h3 class="font-body text-lg md:text-xl font-bold text-brand-dark group-hover:text-brand-green transition-colors mb-2 leading-snug">
                         {{ $safari->translated('title') }}
                     </h3>
                     @if($safari->translated('short_description'))
-                        <p class="text-sm text-[#131414]/50 leading-relaxed mb-4 line-clamp-2">
+                        <p class="text-sm text-brand-dark/50 leading-relaxed mb-4 line-clamp-2">
                             {{ $safari->translated('short_description') }}
                         </p>
                     @endif
-                    <div class="flex items-center gap-6 text-sm text-[#131414]/50">
+                    <div class="flex items-center gap-6 text-sm text-brand-dark/50">
                         @if($safari->duration)
                             <span class="flex items-center gap-1.5">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

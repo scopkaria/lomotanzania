@@ -209,6 +209,88 @@
         transform: translateY(0);
     }
 
+    /* === CREATIVE SCROLL ANIMATIONS === */
+
+    /* Section-level: slides up with a slight scale bloom */
+    .safari-section-reveal {
+        opacity: 0;
+        transform: translateY(48px) scale(0.97);
+        transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .safari-section-reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    /* Child-level: staggered fade-slide from left or right */
+    .safari-child-reveal {
+        opacity: 0;
+        transform: translateX(-32px);
+        transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .safari-child-reveal:nth-child(even) {
+        transform: translateX(32px);
+    }
+    .safari-child-reveal.is-visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* List items: cascade in one by one */
+    .safari-list-item {
+        opacity: 0;
+        transform: translateX(-18px);
+        transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .safari-list-item.is-visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Gold divider grow animation */
+    .safari-divider-grow {
+        width: 0;
+        transition: width 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms;
+    }
+    .safari-divider-grow.is-visible {
+        width: 4rem;
+    }
+
+    /* Image parallax drift */
+    .safari-parallax-img {
+        transition: transform 100ms linear;
+        will-change: transform;
+    }
+
+    /* Highlight cards: pop in with slight rotation */
+    .safari-highlight-pop {
+        opacity: 0;
+        transform: translateY(24px) rotate(-1deg) scale(0.96);
+        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .safari-highlight-pop.is-visible {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg) scale(1);
+    }
+
+    /* Counter number roll-up */
+    @keyframes safariCountUp {
+        from { opacity: 0; transform: translateY(100%); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .safari-count-reveal {
+        display: inline-block;
+        overflow: hidden;
+    }
+    .safari-count-reveal > span {
+        display: inline-block;
+        animation: safariCountUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
     .safari-timeline-line {
         background-color: rgb(229 231 235);
     }
@@ -284,7 +366,7 @@
         min-height: 28rem;
     }
 
-    /* Outer element: Mapbox applies transform on this "” keep it clean */
+    /* Outer element: Mapbox applies transform on this  — keep it clean */
     .safari-map-marker {
         width: 10px;
         height: 10px;
@@ -372,6 +454,22 @@
         background-size: cover;
     }
 
+    @keyframes safariFloat {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-20px) scale(1.05); }
+    }
+
+    @keyframes safariDrift {
+        0% { transform: translateX(-40px) rotate(45deg); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(40px) rotate(45deg); opacity: 0; }
+    }
+
+    @keyframes safariPulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(2.5); opacity: 0.6; }
+    }
+
     @media (min-width: 640px) {
         .safari-slider-card {
             flex-basis: calc(50% - 0.75rem);
@@ -436,7 +534,7 @@
             return [
                 'id' => $accommodation->id,
                 'name' => $accommodation->translated('name'),
-                'description' => $accommodation->translated('description'),
+                'description' => strip_tags((string) ($accommodation->translated('description') ?? ''), '<p><br><strong><em><ul><ol><li><a><h3><h4>'),
                 'images' => $accommodation->images
                     ->map(fn ($image) => asset('storage/' . $image->image_path))
                     ->values()
@@ -482,8 +580,8 @@
             if ($lastIndex >= 0 && ($groupedMapStops[$lastIndex]['destination_id'] ?? null) === $destination->id) {
                 $groupedMapStops[$lastIndex]['day_end'] = $day->day_number;
                 $groupedMapStops[$lastIndex]['label'] = $groupedMapStops[$lastIndex]['day_start'] === $day->day_number
-                    ? 'Day ' . $day->day_number . ' "” ' . $destination->translated('name')
-                    : 'Day ' . $groupedMapStops[$lastIndex]['day_start'] . '-' . $day->day_number . ' "” ' . $destination->translated('name');
+                    ? 'Day ' . $day->day_number . ' — ' . $destination->translated('name')
+                    : 'Day ' . $groupedMapStops[$lastIndex]['day_start'] . '-' . $day->day_number . ' — ' . $destination->translated('name');
                 continue;
             }
 
@@ -494,7 +592,7 @@
                 'name' => $destination->translated('name'),
                 'latitude' => (float) $destination->latitude,
                 'longitude' => (float) $destination->longitude,
-                'label' => 'Day ' . $day->day_number . ' "” ' . $destination->translated('name'),
+                'label' => 'Day ' . $day->day_number . ' — ' . $destination->translated('name'),
             ];
         }
         $hasMapStops = count($groupedMapStops) > 0;
@@ -523,7 +621,7 @@
 
         <div class="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center justify-center text-center">
             @if($safari->duration || $safari->tour_type || $safari->countries->isNotEmpty())
-                <div class="mb-8 flex flex-wrap items-center justify-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/90 sm:text-xs">
+                <div class="mb-8 flex flex-wrap items-center justify-center gap-3 text-kicker tracking-kicker uppercase text-white/90 sm:text-xs">
                     @if($safari->duration)
                         <span>{{ $safari->duration }}</span>
                     @endif
@@ -564,9 +662,9 @@
         })"
         class="bg-brand-light text-brand-dark"
     >
-        <section class="editorial-reveal px-6 py-16 sm:py-20" data-reveal>
+        <section class="safari-section-reveal px-6 py-16 sm:py-20" data-reveal>
             <div class="mx-auto w-full max-w-4xl text-center">
-                <span class="rounded-full border border-brand-gold/30 bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-green shadow-sm">
+                <span class="rounded-full border border-brand-gold/30 bg-white px-4 py-1.5 text-kicker tracking-kicker uppercase text-brand-green shadow-sm">
                     {{ __('messages.editorial_overview') }}
                 </span>
                 <h2 class="mt-6 font-heading text-3xl font-bold text-brand-dark sm:text-4xl md:text-5xl">
@@ -580,10 +678,10 @@
             </div>
         </section>
 
-        <section class="editorial-reveal px-6 pb-16 sm:pb-20" data-reveal>
+        <section class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
             <div class="mx-auto max-w-6xl">
                 <div class="mx-auto max-w-3xl text-center">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-green">{{ __('messages.journey_map') }}</p>
+                    <p class="text-kicker tracking-kicker uppercase text-brand-green">{{ __('messages.journey_map') }}</p>
                     <h3 class="mt-3 font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.route_overview') }}</h3>
                     <p class="mt-5 text-sm leading-7 text-gray-500 sm:text-base">{{ __('messages.route_overview_desc') }}</p>
                 </div>
@@ -592,7 +690,7 @@
                     <div class="lg:col-span-3">
                         <div class="safari-map-shell overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
                             <div class="flex flex-col gap-3 border-b border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <span class="rounded-full bg-brand-green/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-green">
+                                <span class="rounded-full bg-brand-green/5 px-3 py-1 text-kicker tracking-kicker uppercase text-brand-green">
                                     {{ $mapStopCount }} {{ __('messages.stops') }}
                                 </span>
                                 <p class="text-sm leading-6 text-gray-500 sm:text-right">
@@ -609,10 +707,10 @@
                         </div>
                     </div>
 
-                    <aside class="lg:col-span-2">
-                        <div class="lg:sticky lg:top-28">
+                    <aside class="lg:col-span-2 overflow-hidden">
+                        <div class="lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
                             <div class="text-left">
-                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-green">{{ __('messages.route_summary') }}</p>
+                                <p class="text-kicker tracking-kicker uppercase text-brand-green">{{ __('messages.route_summary') }}</p>
                                 <h4 class="mt-3 font-heading text-2xl font-bold text-brand-dark">{{ __('messages.itinerary_stops') }}</h4>
                                 <p class="mt-4 text-sm leading-6 text-gray-500">{{ __('messages.route_summary_desc') }}</p>
                             </div>
@@ -635,16 +733,16 @@
         </section>
 
         @if($highlights->isNotEmpty())
-            <section class="editorial-reveal px-6 pb-16 sm:pb-20" data-reveal>
+            <section class="safari-section-reveal relative z-10 px-6 pt-16 pb-16 sm:pt-20 sm:pb-20" data-reveal>
                 <div class="mx-auto max-w-6xl">
                     <div class="mx-auto max-w-3xl text-center">
                         <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ $highlightsTitle }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
                         <p class="mt-5 text-sm leading-7 text-gray-500 sm:text-base">{{ $highlightsIntro }}</p>
                     </div>
                     <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                         @foreach($highlights as $highlight)
-                            <article class="p-2 sm:p-3">
+                            <article class="safari-highlight-pop p-2 sm:p-3">
                                 <div class="flex items-start gap-2">
                                     <span class="text-xl leading-none text-brand-gold">&#9733;</span>
                                     <p class="text-base leading-8 text-brand-dark">{{ $highlight }}</p>
@@ -657,11 +755,11 @@
         @endif
 
         @if($itineraryDays->isNotEmpty())
-            <section class="px-6 pb-16 sm:pb-20">
+            <section class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
                 <div class="mx-auto max-w-6xl px-6">
                     <div class="mx-auto max-w-3xl text-center">
                         <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.itinerary') }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
                         <p class="mt-5 text-sm leading-7 text-gray-500 sm:text-base">{{ __('messages.itinerary_section_desc') }}</p>
                     </div>
 
@@ -681,10 +779,10 @@
                                 </div>
 
                                 <div class="min-w-0 order-1 {{ $isEven ? 'md:order-1 md:pr-16 md:text-right' : 'md:order-2 md:pl-16 md:text-left' }}">
-                                    <div class="safari-day-badge inline-flex items-center rounded-full bg-[#083321] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white md:hidden">
+                                    <div class="safari-day-badge inline-flex items-center rounded-full bg-[#083321] px-3 py-1 text-kicker tracking-kicker uppercase text-white md:hidden">
                                         {{ __('messages.day_prefix') }} {{ $day->day_number }}
                                     </div>
-                                    <div class="mt-4 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-gray-400 {{ $isEven ? 'md:justify-end' : 'md:justify-start' }}">
+                                    <div class="mt-4 flex flex-wrap items-center gap-3 text-kicker tracking-kicker uppercase text-gray-400 {{ $isEven ? 'md:justify-end' : 'md:justify-start' }}">
                                         @if($day->destination)
                                             <span>{{ $day->destination->translated('name') }}</span>
                                         @endif
@@ -719,7 +817,7 @@
                                 <div class="order-2 {{ $isEven ? 'md:order-2 md:pl-16' : 'md:order-1 md:pr-16' }}">
                                     <div class="overflow-hidden">
                                         @if($dayImage)
-                                            <img src="{{ $dayImage }}" alt="{{ $day->translated('title') }}" loading="lazy" class="h-[240px] w-full object-cover sm:h-[320px] lg:h-[380px]">
+                                            <img src="{{ $dayImage }}" alt="{{ $day->translated('title') }}" loading="lazy" class="safari-parallax-img h-[240px] w-full object-cover sm:h-[320px] lg:h-[380px]">
                                         @else
                                             <div class="flex h-[240px] items-center justify-center bg-gradient-to-br from-brand-green to-brand-dark text-white/90 sm:h-[320px] lg:h-[380px]">
                                                 <span class="text-sm uppercase tracking-[0.3em]">{{ __('messages.safari_day') }}</span>
@@ -735,11 +833,11 @@
         @endif
 
         @if($accommodationCards->isNotEmpty())
-            <section class="editorial-reveal px-6 pb-16 sm:pb-20" data-reveal>
+            <section class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
                 <div class="mx-auto max-w-7xl">
                     <div class="mx-auto max-w-3xl text-center">
                         <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.where_you_stay') }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
                         <p class="mt-5 text-sm leading-7 text-gray-500 sm:text-base">{{ __('messages.where_you_stay_desc') }}</p>
                     </div>
 
@@ -770,7 +868,7 @@
                                         </div>
                                         <div class="border-b border-gray-200 px-1 py-4">
                                             <h3 class="font-heading text-2xl font-bold text-brand-dark">{{ $accommodation->translated('name') }}</h3>
-                                            <p class="one-line-truncate mt-2 text-sm text-gray-600">{{ $accommodation->translated('description') }}</p>
+                                            <p class="one-line-truncate mt-2 text-sm text-gray-600">{{ Str::limit(strip_tags($accommodation->translated('description')), 120) }}</p>
                                         </div>
                                     </div>
                                 </button>
@@ -781,93 +879,103 @@
             </section>
         @endif
 
-        @if($included->isNotEmpty() || $excluded->isNotEmpty() || $hasSeasonalPricing)
-            <section id="pricing-overview" class="editorial-reveal px-6 pb-16 sm:pb-20" data-reveal>
+        @if($hasSeasonalPricing)
+            <section id="pricing-overview" class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
+                <div class="mx-auto max-w-5xl">
+                    <div class="text-center">
+                        <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.pricing') }}</h2>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <p class="mx-auto mt-5 max-w-3xl text-sm leading-7 text-gray-500 sm:text-base">{{ __('messages.pricing_section_desc', ['default' => 'Transparent pricing per person based on group size and travel season.']) }}</p>
+                    </div>
+
+                    <div class="mt-10 mx-auto max-w-3xl">
+                        <div class="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-sm safari-child-reveal" data-child-reveal>
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+                                <h3 class="font-heading text-xl font-bold text-brand-dark">{{ __('messages.seasonal_rates') ?? 'Seasonal Rates' }}</h3>
+                                <label class="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                                    {{ __('messages.currency') }}
+                                    <select x-model="selectedCurrency" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium tracking-normal text-brand-dark focus:border-brand-gold focus:outline-none">
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                        <option value="TZS">TZS</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <p x-show="currencyError" class="mb-3 text-sm text-gray-500" x-text="currencyError"></p>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border-collapse text-left text-sm text-brand-dark">
+                                    <thead>
+                                        <tr class="border-b border-gray-200 text-xs uppercase tracking-[0.18em] text-gray-500">
+                                            <th class="py-3 pr-4 font-semibold">{{ __('messages.season') }}</th>
+                                            <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 2]) }}</th>
+                                            <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 4]) }}</th>
+                                            <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 6]) }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(['low' => __('messages.low_season'), 'mid' => __('messages.mid_season'), 'high' => __('messages.high_season')] as $seasonKey => $seasonLabel)
+                                            @php $row = $seasonalPricing[$seasonKey] ?? []; @endphp
+                                            <tr class="border-b border-gray-100 last:border-b-0">
+                                                <td class="py-4 pr-4 font-medium">{{ $seasonLabel }}</td>
+                                                @foreach(['pax_2', 'pax_4', 'pax_6'] as $band)
+                                                    <td class="px-4 py-4 text-center text-gray-600">
+                                                        @if(filled($row[$band] ?? null))
+                                                            <span x-text="formatMoney({{ (float) $row[$band] }})">{{ $currency }} {{ $formatAmount($row[$band]) }}</span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if($included->isNotEmpty() || $excluded->isNotEmpty())
+            <section class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
                 <div class="mx-auto max-w-6xl">
                     <div class="text-center">
                         <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ $inclusionsTitle }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
                         <p class="mx-auto mt-5 max-w-3xl text-sm leading-7 text-gray-500 sm:text-base">{{ $inclusionsIntro }}</p>
                     </div>
 
-                    <div class="mt-10 {{ $hasSeasonalPricing ? 'grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]' : 'mx-auto max-w-5xl' }}">
-                        <div class="grid grid-cols-1 gap-10 {{ $hasSeasonalPricing ? 'md:grid-cols-2 md:gap-8' : 'md:grid-cols-2 md:gap-12' }}">
-                            @if($included->isNotEmpty())
-                                <section class="{{ $hasSeasonalPricing ? '' : 'mx-auto w-full max-w-md text-left' }}">
-                                    <h3 class="font-heading text-2xl font-bold text-brand-dark">Included</h3>
-                                    <div class="mt-5 space-y-3">
-                                        @foreach($included as $item)
-                                            <div class="flex items-start gap-3 text-sm text-brand-dark sm:text-base">
-                                                <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-brand-green text-brand-green">
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 10.5 18l9-13.5"/></svg>
-                                                </span>
-                                                <span class="leading-7">{{ $item }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </section>
-                            @endif
-
-                            @if($excluded->isNotEmpty())
-                                <section class="{{ $hasSeasonalPricing ? '' : 'mx-auto w-full max-w-md text-left' }}">
-                                    <h3 class="font-heading text-2xl font-bold text-brand-dark">Excluded</h3>
-                                    <div class="mt-5 space-y-3">
-                                        @foreach($excluded as $item)
-                                            <div class="flex items-start gap-3 text-sm text-gray-600 sm:text-base">
-                                                <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-500">
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-                                                </span>
-                                                <span class="leading-7">{{ $item }}</span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </section>
-                            @endif
-                        </div>
-
-                        @if($hasSeasonalPricing)
-                            <section>
-                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <h3 class="font-heading text-2xl font-bold text-brand-dark">{{ __('messages.pricing') }}</h3>
-                                    <label class="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
-                                        {{ __('messages.currency') }}
-                                        <select x-model="selectedCurrency" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium tracking-normal text-brand-dark focus:border-brand-gold focus:outline-none">
-                                            <option value="USD">USD</option>
-                                            <option value="EUR">EUR</option>
-                                            <option value="GBP">GBP</option>
-                                            <option value="TZS">TZS</option>
-                                        </select>
-                                    </label>
+                    <div class="mt-10 mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-2 md:gap-12">
+                        @if($included->isNotEmpty())
+                            <section class="safari-child-reveal" data-child-reveal>
+                                <h3 class="font-heading text-2xl font-bold text-brand-dark">Included</h3>
+                                <div class="mt-5 space-y-3">
+                                    @foreach($included as $item)
+                                        <div class="flex items-start gap-3 text-sm text-brand-dark sm:text-base safari-list-item">
+                                            <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-brand-green text-brand-green">
+                                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 10.5 18l9-13.5"/></svg>
+                                            </span>
+                                            <span class="leading-7">{{ $item }}</span>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <p x-show="currencyError" class="mt-3 text-sm text-gray-500" x-text="currencyError"></p>
-                                <div class="mt-5 overflow-x-auto">
-                                    <table class="min-w-full border-collapse text-left text-sm text-brand-dark">
-                                        <thead>
-                                            <tr class="border-b border-gray-200 text-xs uppercase tracking-[0.18em] text-gray-500">
-                                                <th class="py-3 pr-4 font-semibold">{{ __('messages.season') }}</th>
-                                                <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 2]) }}</th>
-                                                <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 4]) }}</th>
-                                                <th class="px-4 py-3 text-center font-semibold">{{ __('messages.pax_label', ['count' => 6]) }}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach(['low' => __('messages.low_season'), 'mid' => __('messages.mid_season'), 'high' => __('messages.high_season')] as $seasonKey => $seasonLabel)
-                                                @php $row = $seasonalPricing[$seasonKey] ?? []; @endphp
-                                                <tr class="border-b border-gray-100 last:border-b-0">
-                                                    <td class="py-4 pr-4 font-medium">{{ $seasonLabel }}</td>
-                                                    @foreach(['pax_2', 'pax_4', 'pax_6'] as $band)
-                                                        <td class="px-4 py-4 text-center text-gray-600">
-                                                            @if(filled($row[$band] ?? null))
-                                                                <span x-text="formatMoney({{ (float) $row[$band] }})">{{ $currency }} {{ $formatAmount($row[$band]) }}</span>
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
-                                                    @endforeach
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                            </section>
+                        @endif
+
+                        @if($excluded->isNotEmpty())
+                            <section class="safari-child-reveal" data-child-reveal>
+                                <h3 class="font-heading text-2xl font-bold text-brand-dark">Excluded</h3>
+                                <div class="mt-5 space-y-3">
+                                    @foreach($excluded as $item)
+                                        <div class="flex items-start gap-3 text-sm text-gray-600 sm:text-base safari-list-item">
+                                            <span class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gray-300 text-gray-500">
+                                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                            </span>
+                                            <span class="leading-7">{{ $item }}</span>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </section>
                         @endif
@@ -877,11 +985,11 @@
         @endif
 
         @if($relatedSafaris->isNotEmpty())
-            <section class="editorial-reveal px-6 pb-16 sm:pb-20" data-reveal>
+            <section class="safari-section-reveal px-6 pb-16 sm:pb-20" data-reveal>
                 <div class="mx-auto max-w-7xl">
                     <div class="mx-auto max-w-3xl text-center">
                         <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.related_tours') }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
+                        <div class="safari-divider-grow mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
                         <p class="mt-5 text-sm leading-7 text-gray-500 sm:text-base">{{ __('messages.related_tours_desc') }}</p>
                     </div>
 
@@ -897,8 +1005,20 @@
 
                         <div x-ref="relatedToursScroller" class="safari-slider flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 sm:gap-6">
                             @foreach($relatedSafaris as $relatedSafari)
+                                @php
+                                    $relBadgePrice = null;
+                                    if (optional($siteSetting ?? null)->show_card_price_badge ?? true) {
+                                        $rsp = $relatedSafari->seasonal_pricing ?? [];
+                                        $rSeason = optional($siteSetting ?? null)->card_price_season ?? 'low';
+                                        $rPax = optional($siteSetting ?? null)->card_price_pax ?? 'pax_6';
+                                        $relBadgePrice = $rsp[$rSeason][$rPax] ?? null;
+                                        if (!$relBadgePrice) {
+                                            $relBadgePrice = filled($relatedSafari->price) ? (float) $relatedSafari->price : null;
+                                        }
+                                    }
+                                @endphp
                                 <a href="{{ route('safaris.show', $relatedSafari->slug) }}" class="safari-slider-card group shrink-0 snap-start overflow-hidden rounded-xl bg-white text-left shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md">
-                                    <div class="overflow-hidden">
+                                    <div class="relative overflow-hidden">
                                         @if($relatedSafari->featured_image)
                                             <img src="{{ asset('storage/' . $relatedSafari->featured_image) }}" alt="{{ $relatedSafari->translated('title') }}" loading="lazy" class="h-56 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
                                         @else
@@ -906,13 +1026,18 @@
                                                 <span class="text-xs font-semibold uppercase tracking-[0.24em]">Safari</span>
                                             </div>
                                         @endif
+                                        @if($relBadgePrice)
+                                            <span class="absolute right-3 top-3 bg-brand-gold px-3 py-1 text-xs font-bold text-brand-dark shadow-sm">
+                                                From ${{ number_format((float) $relBadgePrice, 0) }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="p-6">
                                         <div class="mb-3 flex items-center gap-2">
                                             <svg class="h-4 w-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                             <span class="text-xs font-semibold uppercase tracking-wider text-brand-dark/90">{{ $relatedSafari->duration ?? __('messages.multi_day') }}</span>
                                         </div>
-                                        <h3 class="mb-2 font-heading text-xl font-bold text-brand-dark">{{ $relatedSafari->translated('title') }}</h3>
+                                        <h3 class="mb-2 font-body text-lg font-bold leading-snug text-brand-dark group-hover:text-brand-green transition-colors">{{ $relatedSafari->translated('title') }}</h3>
                                         <p class="text-sm leading-relaxed text-brand-dark/80">{{ \Illuminate\Support\Str::limit($relatedSafari->translated('short_description'), 140) }}</p>
                                     </div>
                                 </a>
@@ -923,11 +1048,21 @@
             </section>
         @endif
 
-        <section class="editorial-reveal relative overflow-hidden bg-[#083321] px-6 py-20 text-center text-white sm:py-24" data-reveal>
-            <div class="safari-cta-silhouette absolute inset-0 opacity-[0.08]"></div>
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_45%)]"></div>
+        <section class="safari-section-reveal relative overflow-hidden bg-[#083321] px-6 py-20 text-center text-white sm:py-24" data-reveal>
+            {{-- Abstract safari-inspired CSS animations --}}
+            <div class="pointer-events-none absolute inset-0">
+                <div class="absolute -left-20 top-1/4 h-72 w-72 rounded-full bg-white/[0.04] blur-2xl animate-[safariFloat_18s_ease-in-out_infinite]"></div>
+                <div class="absolute -right-16 bottom-1/4 h-56 w-56 rounded-full bg-brand-gold/[0.06] blur-2xl animate-[safariFloat_22s_ease-in-out_infinite_reverse]"></div>
+                <div class="absolute left-1/3 top-12 h-40 w-40 rounded-full bg-white/[0.03] blur-xl animate-[safariFloat_15s_ease-in-out_2s_infinite]"></div>
+                <div class="absolute right-1/4 top-1/3 h-1 w-24 rotate-45 bg-white/[0.08] animate-[safariDrift_12s_linear_infinite]"></div>
+                <div class="absolute bottom-1/3 left-1/4 h-1 w-16 -rotate-12 bg-brand-gold/[0.08] animate-[safariDrift_16s_linear_infinite_reverse]"></div>
+                <div class="absolute bottom-20 right-1/3 h-2 w-2 rounded-full bg-brand-gold/20 animate-[safariPulse_4s_ease-in-out_infinite]"></div>
+                <div class="absolute left-1/2 top-16 h-2 w-2 rounded-full bg-white/15 animate-[safariPulse_5s_ease-in-out_1s_infinite]"></div>
+            </div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_50%)]"></div>
             <div class="relative mx-auto max-w-4xl">
-                <h2 class="font-heading text-3xl font-bold sm:text-4xl">{{ __('messages.ready_to_plan') }}</h2>
+                <h2 class="font-heading text-3xl font-bold text-white sm:text-4xl">{{ __('messages.ready_to_plan') }}</h2>
+                <p class="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70">{{ __('messages.ready_to_plan_desc') }}</p>
                 <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <a href="{{ route('safaris.pdf', $safari->slug) }}"
                        target="_blank"
@@ -943,91 +1078,168 @@
             </div>
         </section>
 
-        <section class="editorial-reveal px-6 py-16 sm:py-20" data-reveal>
-            <div class="mx-auto max-w-6xl">
-                <div class="grid gap-6 lg:grid-cols-[0.85fr,1.15fr]">
-                    <div class="border border-gray-200 bg-brand-light p-8">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-gold">TripAdvisor</p>
-                        <h2 class="mt-3 font-heading text-3xl font-bold text-brand-dark">Trusted by safari travellers</h2>
-                        <p class="mt-4 text-sm leading-7 text-gray-600">Use TripAdvisor to validate the brand, then explore the verified guest feedback below. If live widgets are unavailable, the page falls back to curated review highlights automatically.</p>
-                        @if(optional($siteSetting ?? null)->tripadvisor_url)
-                            <a href="{{ $siteSetting->tripadvisor_url }}" target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 rounded-sm bg-brand-green px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark">
-                                View on TripAdvisor
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H19.5m0 0V12m0-6L10.5 15"/></svg>
-                            </a>
-                        @endif
-                    </div>
+        @php
+            $allReviews = ($tripadvisorReviews ?? collect());
+            $safariTestimonials = $safari->testimonials ?? collect();
+            $mergedReviews = collect();
+            foreach ($allReviews as $r) {
+                $mergedReviews->push((object)[
+                    'name' => $r->reviewer_name,
+                    'location' => $r->reviewer_location,
+                    'rating' => (int) $r->rating,
+                    'title' => $r->title,
+                    'text' => $r->review_text,
+                    'date' => $r->review_date,
+                    'trip_type' => $r->trip_type,
+                    'source' => 'tripadvisor',
+                ]);
+            }
+            foreach ($safariTestimonials as $t) {
+                $mergedReviews->push((object)[
+                    'name' => $t->name,
+                    'location' => null,
+                    'rating' => (int) ($t->rating ?: 5),
+                    'title' => null,
+                    'text' => $t->message,
+                    'date' => $t->created_at,
+                    'trip_type' => null,
+                    'source' => 'guest',
+                ]);
+            }
+            $totalReviewCount = $mergedReviews->count();
+            $allRatings = $mergedReviews->pluck('rating')->filter();
+            $avgRating = $allRatings->isNotEmpty() ? round($allRatings->avg(), 1) : 5.0;
+            $ratingLabels = [5 => 'Excellent', 4 => 'Good', 3 => 'Average', 2 => 'Poor', 1 => 'Terrible'];
+            $ratingBreakdown = [];
+            for ($s = 5; $s >= 1; $s--) {
+                $count = $allRatings->filter(fn($r) => (int) $r === $s)->count();
+                $ratingBreakdown[$s] = $count;
+            }
+            $overallLabel = $avgRating >= 4.5 ? 'Excellent' : ($avgRating >= 3.5 ? 'Very Good' : ($avgRating >= 2.5 ? 'Average' : 'Poor'));
+        @endphp
 
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        @forelse($safari->testimonials->take(2) as $testimonial)
-                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p class="font-semibold text-brand-dark">{{ $testimonial->name }}</p>
-                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Safari guest</p>
+        <section class="safari-section-reveal bg-[#f7f5f0] px-6 py-16 sm:py-20" data-reveal>
+            <div class="mx-auto max-w-6xl">
+                {{-- Section heading --}}
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+                    <div>
+                        <p class="text-kicker tracking-kicker uppercase text-brand-gold">{{ __('messages.guest_reviews') }}</p>
+                        <h2 class="mt-2 font-heading text-3xl font-bold text-brand-dark sm:text-4xl">See What Travellers Are Saying</h2>
+                    </div>
+                    @if(optional($siteSetting ?? null)->tripadvisor_url)
+                        <a href="{{ $siteSetting->tripadvisor_url }}" target="_blank" rel="noopener" class="text-sm font-semibold text-brand-green hover:text-brand-gold transition whitespace-nowrap">
+                            Learn more &rarr;
+                        </a>
+                    @endif
+                </div>
+
+                {{-- Rating summary bar (TripAdvisor-style) --}}
+                <div class="mb-10 rounded-xl bg-white p-6 sm:p-8 shadow-sm border border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-6 sm:gap-10">
+                        {{-- Left: big rating --}}
+                        <div class="text-center sm:text-left sm:pr-8 sm:border-r sm:border-gray-100">
+                            <p class="font-heading text-5xl font-bold text-brand-dark leading-none">{{ number_format($avgRating, 1) }}</p>
+                            <p class="mt-1 text-sm font-semibold text-brand-dark">{{ $overallLabel }}</p>
+                            <div class="mt-2 flex items-center justify-center sm:justify-start gap-0.5">
+                                @for($s = 1; $s <= 5; $s++)
+                                    <span class="inline-block h-4 w-4 rounded-full {{ $s <= round($avgRating) ? 'bg-[#00aa6c]' : 'bg-gray-200' }}"></span>
+                                @endfor
+                            </div>
+                            <p class="mt-1.5 text-xs text-gray-500">({{ $totalReviewCount }})</p>
+                        </div>
+                        {{-- Right: breakdown bars --}}
+                        <div class="space-y-1.5">
+                            @for($s = 5; $s >= 1; $s--)
+                                @php $pct = $totalReviewCount > 0 ? round(($ratingBreakdown[$s] / $totalReviewCount) * 100) : 0; @endphp
+                                <div class="flex items-center gap-3">
+                                    <span class="w-[70px] shrink-0 text-sm text-gray-700">{{ $ratingLabels[$s] }}</span>
+                                    <div class="relative h-3 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                        <div class="absolute inset-y-0 left-0 rounded-full bg-[#00aa6c] transition-all duration-500" style="width: {{ $pct }}%"></div>
                                     </div>
-                                    <span class="text-sm text-brand-gold">{{ str_repeat('★', (int) ($testimonial->rating ?: 5)) }}</span>
+                                    <span class="w-8 text-right text-sm text-gray-500">{{ $ratingBreakdown[$s] }}</span>
                                 </div>
-                                <p class="mt-4 text-sm leading-7 text-gray-600">{{ \Illuminate\Support\Str::limit($testimonial->message, 155) }}</p>
-                            </article>
-                        @empty
-                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p class="font-semibold text-brand-dark">Safari guest</p>
-                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Verified fallback review</p>
-                                    </div>
-                                    <span class="text-sm text-brand-gold">★★★★★</span>
-                                </div>
-                                <p class="mt-4 text-sm leading-7 text-gray-600">“Seamless planning, thoughtful guides, and a polished safari experience from start to finish.”</p>
-                            </article>
-                            <article class="border border-gray-200 bg-white p-6 shadow-sm">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p class="font-semibold text-brand-dark">Returning traveller</p>
-                                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-gray-400">Static review fallback</p>
-                                    </div>
-                                    <span class="text-sm text-brand-gold">★★★★★</span>
-                                </div>
-                                <p class="mt-4 text-sm leading-7 text-gray-600">“Beautiful lodges, fast support, and expertly paced game drives that felt premium on every day of the itinerary.”</p>
-                            </article>
-                        @endforelse
+                            @endfor
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        @if($safari->testimonials->count())
-            <section class="editorial-reveal px-6 py-16 sm:py-20" data-reveal>
-                <div class="mx-auto max-w-6xl">
-                    <div class="mx-auto max-w-3xl text-center">
-                        <h2 class="font-heading text-3xl font-bold text-brand-dark sm:text-4xl">{{ __('messages.guest_reviews') }}</h2>
-                        <div class="mx-auto mt-4 h-px w-16 bg-brand-gold"></div>
-                    </div>
-
-                    <div class="mt-12 grid gap-6 lg:grid-cols-2">
-                        @foreach($safari->testimonials as $testimonial)
-                            <article class="border border-gray-200 bg-white p-8">
-                                <div class="flex items-center justify-between gap-4">
-                                    <div>
-                                        <h3 class="font-heading text-2xl font-bold text-brand-dark">{{ $testimonial->name }}</h3>
-                                        @if($testimonial->rating)
-                                            <div class="mt-3 flex items-center gap-1 text-brand-gold">
-                                                @for($star = 1; $star <= 5; $star++)
-                                                    <span class="text-sm {{ $star <= $testimonial->rating ? 'opacity-100' : 'opacity-20' }}">&#9733;</span>
-                                                @endfor
-                                            </div>
+                {{-- Review cards slider --}}
+                @if($mergedReviews->isNotEmpty())
+                <div x-data="{
+                    currentSlide: 0,
+                    totalSlides: {{ $mergedReviews->count() }},
+                    perPage: 3,
+                    get maxSlide() { return Math.max(0, this.totalSlides - this.perPage) },
+                    init() { this.updatePerPage(); window.addEventListener('resize', () => this.updatePerPage()); },
+                    updatePerPage() {
+                        if (window.innerWidth < 640) this.perPage = 1;
+                        else if (window.innerWidth < 1024) this.perPage = 2;
+                        else this.perPage = 3;
+                        if (this.currentSlide > this.maxSlide) this.currentSlide = this.maxSlide;
+                    },
+                    prev() { if (this.currentSlide > 0) this.currentSlide-- },
+                    next() { if (this.currentSlide < this.maxSlide) this.currentSlide++ },
+                }" class="relative">
+                    {{-- Slider container --}}
+                    <div class="overflow-hidden">
+                        <div class="flex transition-transform duration-500 ease-out" :style="'transform: translateX(-' + (currentSlide * (100 / perPage)) + '%)'">
+                            @foreach($mergedReviews as $idx => $review)
+                            <div class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2">
+                                <article class="h-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col">
+                                    {{-- Reviewer info --}}
+                                    <div class="flex items-start gap-3">
+                                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-brand-dark">{{ strtoupper(substr($review->name, 0, 1)) }}</span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="font-semibold text-brand-dark text-sm truncate">{{ $review->name }}</p>
+                                            @if($review->location)
+                                                <p class="text-xs text-gray-500 truncate">{{ $review->location }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    {{-- Rating dots --}}
+                                    <div class="mt-3 flex items-center gap-0.5">
+                                        @for($s = 1; $s <= 5; $s++)
+                                            <span class="inline-block h-3.5 w-3.5 rounded-full {{ $s <= $review->rating ? 'bg-[#00aa6c]' : 'bg-gray-200' }}"></span>
+                                        @endfor
+                                    </div>
+                                    {{-- Review text --}}
+                                    <div class="mt-3 flex-1">
+                                        <p class="text-sm leading-relaxed text-gray-700 line-clamp-5">{{ $review->text }}</p>
+                                    </div>
+                                    {{-- Read more --}}
+                                    @if(\Illuminate\Support\Str::length($review->text) > 200)
+                                        <button class="mt-2 text-sm font-semibold text-brand-dark hover:text-brand-green transition inline-flex items-center gap-1" @click="$el.closest('article').querySelector('.line-clamp-5')?.classList.toggle('line-clamp-5')">
+                                            Read more <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                        </button>
+                                    @endif
+                                    {{-- Meta --}}
+                                    <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 space-y-0.5">
+                                        @if($review->source === 'tripadvisor')
+                                            <p class="text-[#00aa6c] font-semibold">Review of: {{ $siteName ?? 'Lomo Tanzania Safari' }}</p>
+                                        @endif
+                                        @if($review->date)
+                                            <p>Written {{ \Carbon\Carbon::parse($review->date)->format('F j, Y') }}</p>
+                                        @endif
+                                        @if($review->trip_type)
+                                            <p>Traveled {{ $review->trip_type }}</p>
                                         @endif
                                     </div>
-                                    <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green/10 text-brand-green">{{ strtoupper(substr($testimonial->name, 0, 1)) }}</span>
-                                </div>
-                                <p class="mt-6 text-base leading-8 text-gray-600">{{ $testimonial->message }}</p>
-                            </article>
-                        @endforeach
+                                </article>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
+                    {{-- Navigation arrow --}}
+                    <button @click="next()" x-show="currentSlide < maxSlide" x-transition class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md hover:bg-gray-50 transition">
+                        <svg class="h-5 w-5 text-brand-dark" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button @click="prev()" x-show="currentSlide > 0" x-transition class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md hover:bg-gray-50 transition">
+                        <svg class="h-5 w-5 text-brand-dark" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
                 </div>
-            </section>
-        @endif
+                @endif
+            </div>
+        </section>
 
         <div class="fixed bottom-5 left-4 z-40 md:bottom-6 md:left-auto md:right-6">
             <div class="safari-float-row flex items-center gap-2" :data-expert-visible="showExpertCta ? 'true' : 'false'">
@@ -1036,7 +1248,7 @@
                     <span x-text="durationPriceLabel()">{{ $durationLabel }} | From {{ $startingPriceLabel }}</span>
                 </button>
             @endif
-                <button type="button" @click="openInquiry()" x-cloak x-show="showExpertCta" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 translate-x-3" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-180" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-3" class="inline-flex items-center justify-center rounded-sm bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-brand-dark shadow-[0_18px_40px_-26px_rgba(19,20,20,0.55)] transition hover:-translate-y-0.5 hover:text-brand-green">
+                <button type="button" @click="openInquiry()" x-cloak x-show="showExpertCta" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 translate-x-3" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-180" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-3" class="inline-flex items-center justify-center rounded-sm bg-brand-gold px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-brand-dark shadow-[0_18px_40px_-26px_rgba(19,20,20,0.55)] transition hover:-translate-y-0.5 hover:brightness-110">
                     {{ __('messages.speak_to_expert') }}
                 </button>
             </div>
@@ -1052,7 +1264,7 @@
                      x-transition:leave="transition ease-in duration-200"
                      x-transition:leave-start="opacity-100 scale-100"
                      x-transition:leave-end="opacity-0 scale-95"
-                     class="relative z-10 w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+                     class="relative z-10 w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
                      @click.stop>
                     <button type="button" @click="closeAccommodation()" class="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/5 text-gray-500 transition hover:bg-black/10 hover:text-gray-700">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1061,7 +1273,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
                         <div class="relative bg-brand-dark" @touchstart.passive="touchStart($event)" @touchend.passive="touchEnd($event)">
                             <template x-if="currentAccommodation && currentAccommodation.images.length">
-                                <div class="relative h-[320px] sm:h-[420px] lg:h-[560px]">
+                                <div class="relative h-[280px] sm:h-[360px] lg:h-full">
                                     <template x-for="(image, index) in currentAccommodation.images" :key="image + index">
                                         <img x-show="currentIndex === index" :src="image" :alt="currentAccommodation.name + ' image ' + (index + 1)"
                                              class="absolute inset-0 h-full w-full object-cover"
@@ -1072,7 +1284,7 @@
                                 </div>
                             </template>
                             <template x-if="currentAccommodation && !currentAccommodation.images.length">
-                                <div class="flex h-[320px] items-center justify-center sm:h-[420px] lg:h-[560px]">
+                                <div class="flex h-[280px] items-center justify-center sm:h-[360px] lg:h-full">
                                     <svg class="h-16 w-16 text-white/85" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5M4.5 18V9.75m0 8.25h15m-15 0v-3.375c0-.621.504-1.125 1.125-1.125h12.75c.621 0 1.125.504 1.125 1.125V18m-15-8.25 4.816-4.012a1.125 1.125 0 0 1 1.44 0l4.819 4.012m-6.259 0V21m6-11.25V21"/></svg>
                                 </div>
                             </template>
@@ -1094,11 +1306,11 @@
                             </template>
                         </div>
 
-                        <div class="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+                        <div class="p-6 sm:p-8 lg:p-10">
                             <template x-if="currentAccommodation">
                                 <div>
                                     <h3 class="font-heading text-3xl font-bold text-brand-dark" x-text="currentAccommodation.name"></h3>
-                                    <p class="mt-5 text-base leading-8 text-gray-600" x-text="currentAccommodation.description || 'No description available yet.'"></p>
+                                    <div class="mt-5 text-base leading-8 text-gray-600 prose prose-sm max-w-none" x-html="currentAccommodation.description || '<p>No description available yet.</p>'"></div>
                                 </div>
                             </template>
                         </div>
@@ -1244,7 +1456,7 @@
                                 @endif
                                 <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,51,33,0.2)_0%,rgba(8,51,33,0.72)_55%,rgba(8,51,33,0.9)_100%)]"></div>
                                 <div class="relative flex h-full flex-col justify-end px-5 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-10">
-                                    <p class="text-[11px] uppercase tracking-[0.22em] text-white/85">{{ __('messages.safari_details') }}</p>
+                                    <p class="text-kicker tracking-kicker uppercase text-white/85">{{ __('messages.safari_details') }}</p>
                                     <h3 class="mt-2 font-heading text-2xl font-bold sm:text-3xl">{{ $safari->translated('title') }}</h3>
                                     <div class="mt-5 grid gap-3 text-sm text-white/85">
                                         <div class="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
@@ -1943,24 +2155,66 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        /* ── Section-level reveal (data-reveal) ── */
         const revealItems = document.querySelectorAll('[data-reveal]');
         if (!('IntersectionObserver' in window) || revealItems.length === 0) {
             revealItems.forEach((item) => item.classList.add('is-visible'));
         } else {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
+                    if (!entry.isIntersecting) return;
                     const delayIndex = Number(entry.target.getAttribute('data-reveal-delay') || 0);
                     entry.target.style.transitionDelay = `${delayIndex * 90}ms`;
                     entry.target.classList.add('is-visible');
                     observer.unobserve(entry.target);
                 });
             }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
-
             revealItems.forEach((item) => observer.observe(item));
+        }
+
+        /* ── Staggered child animations ── */
+        const animatedChildren = document.querySelectorAll(
+            '.safari-highlight-pop, .safari-list-item, .safari-divider-grow, [data-child-reveal]'
+        );
+        if (animatedChildren.length > 0 && 'IntersectionObserver' in window) {
+            const sectionMap = new Map();
+            animatedChildren.forEach(el => {
+                const section = el.closest('section, [data-reveal]') || el.parentElement;
+                if (!sectionMap.has(section)) sectionMap.set(section, []);
+                sectionMap.get(section).push(el);
+            });
+
+            const childObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    childObserver.unobserve(entry.target);
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+
+            sectionMap.forEach(items => {
+                items.forEach((item, i) => {
+                    item.style.transitionDelay = `${i * 80}ms`;
+                    childObserver.observe(item);
+                });
+            });
+        } else {
+            animatedChildren.forEach(item => item.classList.add('is-visible'));
+        }
+
+        /* ── Parallax drift for images ── */
+        const parallaxImages = document.querySelectorAll('.safari-parallax-img');
+        if (parallaxImages.length > 0) {
+            const onScroll = () => {
+                parallaxImages.forEach(img => {
+                    const rect = img.getBoundingClientRect();
+                    const vh = window.innerHeight;
+                    const t = (rect.top + rect.height / 2 - vh / 2) / vh;
+                    img.style.transform = `translateY(${(t * -24).toFixed(1)}px)`;
+                });
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
         }
 
         const timelineRoot = document.querySelector('[data-timeline]');

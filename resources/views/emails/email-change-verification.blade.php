@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+<body style="font-family: Lato, Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #083321;">
         <h1 style="color: #083321; margin: 0;">Lomo Tanzania Safari</h1>
     </div>

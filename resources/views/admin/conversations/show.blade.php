@@ -81,7 +81,7 @@
     <div class="bg-white rounded-b-xl border border-t-0 border-gray-200 shadow-sm px-5 py-3">
         <form @submit.prevent="send()" class="flex items-end gap-3" enctype="multipart/form-data">
             <label class="cursor-pointer p-2 text-gray-400 hover:text-gray-600 transition shrink-0" title="Attach file">
-                <input type="file" class="hidden" x-ref="fileInput" @change="attachFile($event)" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.zip">
+                <input type="file" class="hidden" x-ref="fileInput" @change="attachFile($event)" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.zip,.mp4,.webm,.mov,video/mp4,video/webm,video/quicktime">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"/></svg>
             </label>
             <div class="flex-1 min-w-0">
@@ -121,6 +121,7 @@ function conversationChat() {
         otherOnline: {{ cache()->has('user_online_' . ($other ? $other->id : 0)) ? 'true' : 'false' }},
         attachmentFile: null,
         typingTimeout: null,
+        maxAttachmentMb: {{ (int) config('uploads.max_upload_mb', 20) }},
 
         init() {
             this.lastMessageId = this.messages.length > 0 ? Math.max(...this.messages.map(m => m.id)) : 0;
@@ -165,18 +166,30 @@ function conversationChat() {
                     body: formData
                 });
                 const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(Object.values(data.errors || {}).flat()[0] || data.message || 'Failed to send message.');
+                }
+
                 if (data.id && !this.messages.find(m => m.id === data.id)) {
                     this.messages.push(data);
                     if (data.id > this.lastMessageId) this.lastMessageId = data.id;
                     this.$nextTick(() => this.scrollToBottom());
                 }
-            } catch (e) { alert('Failed to send message.'); this.newMessage = text; }
+            } catch (e) {
+                if (window.showLomoToast) {
+                    window.showLomoToast(e.message || 'Failed to send message.', 'error');
+                }
+                this.newMessage = text;
+            }
         },
 
         attachFile(event) {
             const file = event.target.files[0];
-            if (file && file.size > 10 * 1024 * 1024) {
-                alert('File too large. Maximum 10MB.');
+            if (file && file.size > this.maxAttachmentMb * 1024 * 1024) {
+                if (window.showLomoToast) {
+                    window.showLomoToast(`File too large. Maximum ${this.maxAttachmentMb}MB.`, 'warning');
+                }
                 event.target.value = '';
                 return;
             }

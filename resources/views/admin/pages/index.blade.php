@@ -59,7 +59,7 @@
                 <template x-for="id in selected" :key="id">
                     <input type="hidden" name="ids[]" :value="id">
                 </template>
-                <select name="action" @change="if($el.value && confirm('Are you sure?')){ $refs.bulkForm.submit() }" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
+                <select name="action" @change="if(!$el.value) return; window.showLomoConfirm({ title: 'Apply bulk action', message: 'Are you sure?', confirmText: 'Continue' }).then(confirmed => { if (confirmed) { $refs.bulkForm.submit(); } else { $el.value = ''; } })" class="text-sm border border-gray-200 rounded-lg px-3 py-1.5">
                     <option value="">Bulk Actions</option>
                     <option value="publish">Publish</option>
                     <option value="draft">Set as Draft</option>

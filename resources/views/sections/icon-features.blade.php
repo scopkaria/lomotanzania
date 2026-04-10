@@ -10,25 +10,24 @@
     <div class="max-w-7xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Features</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="text-kicker tracking-kicker uppercase text-[#FEBC11] mb-3">Features</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
         @if(count($items))
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ min(count($items), 4) }} gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ min(count($items), 4) }} gap-8 reveal-stagger">
             @foreach($items as $i => $item)
             @php
                 $title = is_array($item['title'] ?? '') ? ($item['title'][$locale] ?? $item['title']['en'] ?? '') : ($item['title'] ?? '');
                 $desc = is_array($item['description'] ?? '') ? ($item['description'][$locale] ?? $item['description']['en'] ?? '') : ($item['description'] ?? '');
                 $icon = $item['icon'] ?? 'star';
             @endphp
-            <div class="text-center p-8 rounded-2xl bg-white border border-gray-100 hover:border-[#FEBC11]/30 hover:shadow-lg transition-all duration-300 reveal"
-                 style="transition-delay: {{ ($i + 1) * 100 }}ms;">
+            <div class="text-center p-8 rounded-2xl bg-white border border-gray-100 hover:border-[#FEBC11]/30 hover:shadow-lg transition-all duration-300">
 
                 <div class="w-14 h-14 mx-auto mb-5 rounded-xl bg-[#083321]/5 flex items-center justify-center">
                     @switch($icon)
@@ -50,10 +49,10 @@
                 </div>
 
                 @if($title)
-                    <h3 class="font-heading text-lg font-bold text-[#131414] mb-3">{{ $title }}</h3>
+                    <h3 class="font-heading text-lg font-bold text-brand-dark mb-3">{{ $title }}</h3>
                 @endif
                 @if($desc)
-                    <p class="text-sm text-[#131414]/50 leading-relaxed">{{ $desc }}</p>
+                    <p class="text-sm text-brand-dark/50 leading-relaxed">{{ $desc }}</p>
                 @endif
             </div>
             @endforeach

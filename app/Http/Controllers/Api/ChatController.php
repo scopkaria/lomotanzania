@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
+use App\Models\Department;
 use App\Models\Destination;
 use App\Models\SafariPackage;
 use App\Models\User;
+use App\Notifications\LiveSupportRequested;
+use App\Support\LocalizedPublicUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -25,8 +28,8 @@ class ChatController extends Controller
             ->where('status', 'active')
             ->first();
 
-        // Auto-close stale sessions (inactive > 20 minutes)
-        if ($session && $session->last_activity_at && $session->last_activity_at->lt(now()->subMinutes(20))) {
+        // Always close any existing active session so each visit starts fresh
+        if ($session) {
             $session->update(['status' => 'closed']);
             $session = null;
         }
@@ -215,6 +218,7 @@ class ChatController extends Controller
 
     /**
      * Generate a smart AI response based on database content.
+     * Uses OpenAI when configured, falls back to keyword matching.
      */
     public function aiResponse(Request $request, ChatSession $chatSession): JsonResponse
     {
@@ -222,6 +226,21 @@ class ChatController extends Controller
             'message' => 'required|string|max:2000',
         ]);
 
+        $locale = $chatSession->inferredLocale();
+
+        // Try AI service first (Gemini / OpenAI)
+        $aiService = app(\App\Services\AiChatService::class);
+        if ($aiService->isEnabled()) {
+            $aiReply = $aiService->respond($request->input('message'), $chatSession);
+            if ($aiReply) {
+                return response()->json([
+                    'response' => $aiReply,
+                    'provider' => $aiService->getProvider(),
+                ]);
+            }
+        }
+
+        // Fallback to keyword-based responses
         $text = mb_strtolower(trim($request->input('message')));
         $searchText = str_replace(['%', '_'], ['\\%', '\\_'], $text);
         $response = null;
@@ -231,7 +250,7 @@ class ChatController extends Controller
             $greetings = [
                 "Hello! 👋 Welcome to Lomo Tanzania Safari! How can I help you plan an unforgettable adventure?",
                 "Hi there! 🌍 Great to have you here. Are you looking to explore Tanzania's amazing wildlife?",
-                "Welcome! 😊 I'm the Safari Assistant. I can help with packages, pricing, and destinations. What interests you?",
+                "Welcome! 😊 I'm the AI Safari Agent. I can help with packages, pricing, and destinations. What interests you?",
             ];
             return response()->json(['response' => $greetings[array_rand($greetings)]]);
         }
@@ -257,7 +276,12 @@ class ChatController extends Controller
             ->get();
 
         if ($safaris->isNotEmpty()) {
-            $links = $safaris->map(fn ($s) => "<a href='/safaris/" . e($s->slug) . "' target='_blank' class='underline font-medium'>" . e($s->title) . "</a>" . ($s->duration ? " (" . e($s->duration) . ")" : ''))->join(', ');
+            $links = $safaris->map(function ($s) use ($locale) {
+                $url = LocalizedPublicUrl::route('safaris.show', ['slug' => $s->slug], $locale);
+
+                return "<a href='" . e($url) . "' target='_blank' class='underline font-medium'>" . e($s->title) . "</a>" . ($s->duration ? " (" . e($s->duration) . ")" : '');
+            })->join(', ');
+
             return response()->json([
                 'response' => "🦁 I found some matching safaris: {$links}. Would you like more details on any of these?",
             ]);
@@ -271,7 +295,12 @@ class ChatController extends Controller
             ->get();
 
         if ($destinations->isNotEmpty()) {
-            $links = $destinations->map(fn ($d) => "<a href='/destinations/" . e($d->slug) . "' target='_blank' class='underline font-medium'>" . e($d->name) . "</a>")->join(', ');
+            $links = $destinations->map(function ($d) use ($locale) {
+                $url = LocalizedPublicUrl::route('destinations.show', ['slug' => $d->slug], $locale);
+
+                return "<a href='" . e($url) . "' target='_blank' class='underline font-medium'>" . e($d->name) . "</a>";
+            })->join(', ');
+
             return response()->json([
                 'response' => "🌅 Check out these destinations: {$links}. They offer incredible wildlife experiences!",
             ]);
@@ -287,31 +316,90 @@ class ChatController extends Controller
         }
 
         if (preg_match('/\b(book|booking|reserve|reservation|confirm|availability|available|when)\b/i', $text)) {
+            $customTourUrl = LocalizedPublicUrl::route('custom-tour', [], $locale);
+
             return response()->json([
-                'response' => "📋 To book, we need travel dates, group size, and preferred destinations. An agent will assist shortly, or <a href='/custom-tour' target='_blank' class='underline font-medium'>plan your custom tour here →</a>",
+                'response' => "📋 To book, we need travel dates, group size, and preferred destinations. An agent will assist shortly, or <a href='" . e($customTourUrl) . "' target='_blank' class='underline font-medium'>plan your custom tour here →</a>",
             ]);
         }
 
         if (preg_match('/\b(package|safari|tour|trip|itinerary)\b/i', $text)) {
             $count = SafariPackage::where('status', 'published')->count();
+            $safarisUrl = LocalizedPublicUrl::route('safaris.index', [], $locale);
+
             return response()->json([
-                'response' => "🦁 We have {$count} safari packages available! <a href='/safaris' target='_blank' class='underline font-medium'>Browse all packages →</a> or tell me your preferences (duration, budget, interests).",
+                'response' => "🦁 We have {$count} safari packages available! <a href='" . e($safarisUrl) . "' target='_blank' class='underline font-medium'>Browse all packages →</a> or tell me your preferences (duration, budget, interests).",
             ]);
         }
 
         if (preg_match('/\b(serengeti|ngorongoro|tarangire|kilimanjaro|zanzibar|manyara|selous|ruaha|destination)\b/i', $text)) {
+            $destinationsUrl = LocalizedPublicUrl::route('destinations.index', [], $locale);
+
             return response()->json([
-                'response' => "🌅 Tanzania has world-class destinations! Top picks: Serengeti (migration), Ngorongoro Crater (Big Five), Kilimanjaro, and Zanzibar. <a href='/destinations' target='_blank' class='underline font-medium'>Explore all destinations →</a>",
+                'response' => "🌅 Tanzania has world-class destinations! Top picks: Serengeti (migration), Ngorongoro Crater (Big Five), Kilimanjaro, and Zanzibar. <a href='" . e($destinationsUrl) . "' target='_blank' class='underline font-medium'>Explore all destinations →</a>",
             ]);
         }
 
-        // 6. Fallback
-        $fallbacks = [
-            "Thanks for your message! A safari specialist will be with you shortly. Browse our <a href='/safaris' target='_blank' class='underline font-medium'>safari packages</a> while you wait. 🌍",
-            "I've noted your question! Our team is being notified. Explore our <a href='/destinations' target='_blank' class='underline font-medium'>destinations</a> while you wait. ✨",
-        ];
+        // 6. Fallback — ask what they need and offer live support
+        return response()->json([
+            'response' => "I'm not sure I fully understand your question. 🤔 Could you tell me more about what you're looking for? I can help with safari packages, destinations, pricing, and bookings. Or if you'd prefer, I can connect you with our live support team!",
+            'offer_support' => true,
+        ]);
+    }
 
-        return response()->json(['response' => $fallbacks[array_rand($fallbacks)]]);
+    /**
+     * Return active departments for live support selection.
+     */
+    public function departments(): JsonResponse
+    {
+        $departments = Department::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
+        return response()->json(['departments' => $departments]);
+    }
+
+    /**
+     * Request live support — assigns department, notifies admin agents.
+     */
+    public function requestSupport(Request $request, ChatSession $chatSession): JsonResponse
+    {
+        $request->validate([
+            'department_id' => 'required|exists:departments,id',
+        ]);
+
+        $department = Department::find($request->department_id);
+
+        $chatSession->update([
+            'department_id' => $department->id,
+            'last_activity_at' => now(),
+        ]);
+
+        // Add system message so admins see the request
+        ChatMessage::create([
+            'chat_session_id' => $chatSession->id,
+            'sender_type' => 'visitor',
+            'message_type' => 'system',
+            'message' => '🔔 ' . ($chatSession->visitor_name ?: 'Visitor') . ' requested live support from ' . $department->name . ' department.',
+        ]);
+
+        // Notify all admin agents in this department (or all admins if none in dept)
+        $agents = User::where('department_id', $department->id)->get();
+        if ($agents->isEmpty()) {
+            $agents = User::whereNotNull('email')->get();
+        }
+        foreach ($agents as $agent) {
+            $agent->notify(new LiveSupportRequested($chatSession, $department));
+        }
+
+        return response()->json([
+            'ok' => true,
+            'department' => [
+                'id' => $department->id,
+                'name' => $department->name,
+                'color' => $department->color,
+            ],
+        ]);
     }
 
     /**

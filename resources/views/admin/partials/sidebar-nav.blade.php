@@ -87,6 +87,9 @@
         <a href="{{ route('admin.tour-types.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Experiences</a>
         @php $a = $current && fnmatch('admin.categories.*', $current); @endphp
         <a href="{{ route('admin.categories.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Budget</a>
+        {{-- ADDED: Tour Categories --}}
+        @php $a = $current && fnmatch('admin.tour-categories.*', $current); @endphp
+        <a href="{{ route('admin.tour-categories.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Tour Categories</a>
     </div>
 </div>
 
@@ -147,11 +150,13 @@
         <a href="{{ route('admin.pages.create') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Add New Page</a>
         @php $a = $current && fnmatch('admin.pages.hero-settings.*', $current); @endphp
         <a href="{{ route('admin.pages.hero-settings.edit') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Hero Settings</a>
+        @php $a = $current && fnmatch('admin.pages.index-hero-images.*', $current); @endphp
+        <a href="{{ route('admin.pages.index-hero-images.edit') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Index Hero Images</a>
     </div>
 </div>
 
 {{-- Blog Section --}}
-@php $blogActive = $current && (fnmatch('admin.posts.*', $current) || fnmatch('admin.blog-categories.*', $current)); @endphp
+@php $blogActive = $current && (fnmatch('admin.posts.*', $current) || fnmatch('admin.blog-categories.*', $current) || fnmatch('admin.blog-comments.*', $current)); @endphp
 <div x-data="{ open: {{ $blogActive ? 'true' : 'false' }} }">
     <button @click="open = !open" type="button"
             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
@@ -167,6 +172,12 @@
         <a href="{{ route('admin.posts.create') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Add New</a>
         @php $a = $current && fnmatch('admin.blog-categories.*', $current); @endphp
         <a href="{{ route('admin.blog-categories.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">Categories</a>
+        @php $a = $current && fnmatch('admin.blog-comments.*', $current); @endphp
+        <a href="{{ route('admin.blog-comments.index') }}" class="block px-3 py-1.5 rounded-lg text-sm transition-colors {{ $a ? 'text-[#083321] font-semibold' : 'text-gray-500 hover:text-gray-800' }}">
+            Comments
+            @php $pc = \App\Models\BlogComment::where('status','pending')->count(); @endphp
+            @if($pc > 0) <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded-full bg-yellow-400 text-yellow-900">{{ $pc }}</span> @endif
+        </a>
     </div>
 </div>
 

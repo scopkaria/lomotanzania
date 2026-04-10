@@ -10,12 +10,12 @@
     <div class="max-w-7xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Our Promise</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Our Promise</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
@@ -59,8 +59,8 @@
                     @endswitch
                 </div>
 
-                <h3 class="font-heading text-lg font-bold text-[#131414] mb-2">{{ $title }}</h3>
-                <p class="text-sm text-[#131414]/50 leading-relaxed">{{ $desc }}</p>
+                <h3 class="font-heading text-lg font-bold text-brand-dark mb-2">{{ $title }}</h3>
+                <p class="text-sm text-brand-dark/50 leading-relaxed">{{ $desc }}</p>
             </div>
             @endforeach
         </div>

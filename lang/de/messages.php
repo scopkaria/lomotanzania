@@ -16,6 +16,7 @@ return [
     'countries'     => 'Länder',
     'categories'    => 'Budget',
     'safari_types'  => 'Erlebnisse',
+    'popular_safaris' => 'Beliebte Safaris',
     'explore'       => 'Entdecken',
     'mega_dest_text'=> 'Entdecken Sie Tansanias atemberaubendste Wildtier-Reiseziele.',
     'mega_safari_text'=> 'Maßgeschneiderte Safari-Reisen ins Herz Ostafrikas.',
@@ -93,8 +94,10 @@ return [
     'itinerary_stops'        => 'Reiseverlauf-Stationen',
     'itinerary_map_note'     => 'Fügen Sie Reiseziele mit Koordinaten hinzu, um die Routenzusammenfassung anzuzeigen.',
     'highlights_intro'       => 'Die Höhepunkte dieser Safari.',
-    'pricing_inclusions'     => 'Preise, Inklusiv- & Exklusivleistungen',
-    'pricing_inclusions_desc'=> 'Alles, was Sie über die enthaltenen Leistungen, nicht enthaltene Leistungen und die saisonale Preisgestaltung wissen müssen.',
+    'pricing_inclusions'     => 'Inklusiv- & Exklusivleistungen',
+    'pricing_inclusions_desc'=> 'Ein klarer Überblick über das, was abgedeckt ist und was separat geplant werden muss.',
+    'pricing_section_desc'   => 'Transparente Preise pro Person basierend auf Gruppengröße und Reisesaison.',
+    'seasonal_rates'         => 'Saisonpreise',
     'itinerary_section_desc' => 'Eine redaktionelle Reise durch jeden Safari-Tag mit Reisezielen, Bildern und Unterkünften.',
     'day_prefix'             => 'Tag',
     'safari_day'             => 'Safari-Tag',
@@ -310,4 +313,31 @@ return [
     'lang_fr' => 'Français',
     'lang_de' => 'Deutsch',
     'lang_es' => 'Español',
+
+    // ADDED: Destination CTA
+    'plan_safari_to'        => 'Planen Sie Ihre Safari nach :destination',
+    'destination_cta_text'  => 'Lassen Sie unsere lokalen Experten eine personalisierte Reiseroute erstellen, die auf Ihre Interessen, Ihr Budget und Ihre Reisedaten zugeschnitten ist.',
+    'plan_my_safari'        => 'Meine Safari planen',
+
+    // Safari CTA
+    'ready_to_plan_desc'    => 'Laden Sie die vollständige Reiseroute herunter, um sie mit Ihren Reisebegleitern zu teilen, oder beginnen Sie, diese Safari an Ihre Termine, Gruppengröße und Vorlieben anzupassen.',
+    'no_description_available' => 'Noch keine Beschreibung verfügbar.',
+
+    // Beach Holidays
+    'coastal_paradise'      => 'Küstenparadies',
+    'beach_holidays'        => 'Strandurlaub',
+    'beach_subtitle'        => 'Entdecken Sie atemberaubende Strandziele entlang der ostafrikanischen Küste und Inseln.',
+    'no_beach_holidays'     => 'Noch keine Strandurlaubsangebote verfügbar. Schauen Sie bald wieder vorbei!',
+
+    // Blog Comments
+    'comments'              => 'Kommentare',
+    'no_comments'           => 'Noch keine Kommentare. Teilen Sie als Erster Ihre Gedanken!',
+    'leave_comment'         => 'Kommentar hinterlassen',
+    'email_not_published'   => 'Ihre E-Mail wird nicht veröffentlicht.',
+    'submit_comment'        => 'Kommentar absenden',
+    'comment_success'       => 'Vielen Dank! Ihr Kommentar wartet auf Freigabe.',
+
+    // TOC
+    'on_this_page'          => 'Auf dieser Seite',
+    'toc_empty'             => 'Das Inhaltsverzeichnis erscheint, wenn der Artikel Überschriften enthält.',
 ];

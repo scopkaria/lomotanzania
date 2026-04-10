@@ -10,6 +10,7 @@ use App\Models\MenuItem;
 use App\Models\SafariPackage;
 use App\Models\Setting;
 use App\Models\TourType;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -26,7 +27,9 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             if (! isset($view->getData()['siteSetting'])) {
-                $setting = Setting::first();
+                // Cache as array to avoid unserialize issues with Eloquent models
+                $attrs = Cache::remember('site_setting', 300, fn () => Setting::first()?->toArray());
+                $setting = $attrs ? (new Setting())->forceFill($attrs)->syncOriginal() : null;
                 $view->with('siteSetting', $setting);
                 $view->with('siteName', optional($setting)->site_name ?: 'Lomo Tanzania Safari');
                 $view->with('siteTagline', optional($setting)->tagline ?: 'Less On Ourselves, More On Others');
@@ -60,7 +63,8 @@ class AppServiceProvider extends ServiceProvider
                 ->first();
 
             $navMenuItems = Schema::hasTable('menu_items')
-                ? MenuItem::enabled()->ordered()->get()
+                ? collect(Cache::remember('nav_menu_items', 300, fn () => MenuItem::enabled()->ordered()->get()->toArray()))
+                    ->map(fn ($row) => (new MenuItem())->forceFill($row)->syncOriginal())
                 : collect();
 
             $view->with([
@@ -70,8 +74,10 @@ class AppServiceProvider extends ServiceProvider
                 'navFeaturedDestination' => $featuredDestination,
                 'navFeaturedSafari' => $featuredSafari,
                 'navMenuItems' => $navMenuItems,
-                'navCategories' => Category::orderBy('name')->get(),
-                'navTourTypes' => TourType::orderBy('name')->get(),
+                'navCategories' => collect(Cache::remember('nav_categories', 300, fn () => Category::orderBy('name')->get()->toArray()))
+                    ->map(fn ($row) => (new Category())->forceFill($row)->syncOriginal()),
+                'navTourTypes' => collect(Cache::remember('nav_tour_types', 300, fn () => TourType::orderBy('name')->get()->toArray()))
+                    ->map(fn ($row) => (new TourType())->forceFill($row)->syncOriginal()),
                 'navSafaris' => SafariPackage::whereNotNull('featured_image')->where('status', 'published')
                     ->when(Schema::hasColumn('safari_packages', 'is_popular'), fn ($q) => $q->orderByDesc('is_popular'))
                     ->inRandomOrder()->take(4)->get(),

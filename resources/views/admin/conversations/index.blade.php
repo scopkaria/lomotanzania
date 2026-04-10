@@ -139,8 +139,12 @@ function conversationList() {
                 });
                 const data = await res.json();
                 if (data.redirect) window.location.href = data.redirect;
-                else if (data.error) alert(data.error);
-            } catch (e) { alert('Failed to start conversation.'); }
+                else if (data.error && window.showLomoToast) window.showLomoToast(data.error, 'error');
+            } catch (e) {
+                if (window.showLomoToast) {
+                    window.showLomoToast('Failed to start conversation.', 'error');
+                }
+            }
             this.sending = false;
         }
     }

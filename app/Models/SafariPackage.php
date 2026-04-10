@@ -150,4 +150,10 @@ class SafariPackage extends Model
     {
         return $this->belongsToMany(Destination::class);
     }
+
+    // ADDED: Tour categories (Safari, Trekking, Beach) - many-to-many for combo support
+    public function tourCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(TourCategory::class, 'safari_package_tour_category');
+    }
 }

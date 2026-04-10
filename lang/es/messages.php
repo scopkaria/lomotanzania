@@ -16,6 +16,7 @@ return [
     'countries'     => 'Países',
     'categories'    => 'Presupuesto',
     'safari_types'  => 'Experiencias',
+    'popular_safaris' => 'Safaris Populares',
     'explore'       => 'Explorar',
     'mega_dest_text'=> 'Descubra los destinos de vida salvaje más impresionantes de Tanzania.',
     'mega_safari_text'=> 'Viajes de safari a medida al corazón del África Oriental.',
@@ -93,8 +94,10 @@ return [
     'itinerary_stops'        => 'Paradas del itinerario',
     'itinerary_map_note'     => 'Agregue destinos con coordenadas para mostrar el resumen de la ruta.',
     'highlights_intro'       => 'Los momentos destacados de este safari.',
-    'pricing_inclusions'     => 'Precios, Inclusiones y Exclusiones',
-    'pricing_inclusions_desc'=> 'Todo lo que necesita saber sobre lo que está incluido, lo que no y la estructura de precios por temporada.',
+    'pricing_inclusions'     => 'Inclusiones y Exclusiones',
+    'pricing_inclusions_desc'=> 'Una vista clara de lo que está cubierto y lo que debe planificar por separado.',
+    'pricing_section_desc'   => 'Precios transparentes por persona según el tamaño del grupo y la temporada.',
+    'seasonal_rates'         => 'Tarifas por Temporada',
     'itinerary_section_desc' => 'Un viaje editorial a través de cada día del safari, con destinos, imágenes y alojamientos.',
     'day_prefix'             => 'Día',
     'safari_day'             => 'Día de safari',
@@ -310,4 +313,31 @@ return [
     'lang_fr' => 'Français',
     'lang_de' => 'Deutsch',
     'lang_es' => 'Español',
+
+    // ADDED: Destination CTA
+    'plan_safari_to'        => 'Planifica tu safari a :destination',
+    'destination_cta_text'  => 'Deja que nuestros expertos locales creen un itinerario personalizado adaptado a tus intereses, presupuesto y fechas de viaje.',
+    'plan_my_safari'        => 'Planificar mi safari',
+
+    // Safari CTA
+    'ready_to_plan_desc'    => 'Descarga el itinerario completo para compartir con tus compañeros de viaje, o comienza a personalizar este safari según tus fechas, tamaño de grupo y preferencias.',
+    'no_description_available' => 'No hay descripción disponible por el momento.',
+
+    // Beach Holidays
+    'coastal_paradise'      => 'Paraíso Costero',
+    'beach_holidays'        => 'Vacaciones de Playa',
+    'beach_subtitle'        => 'Descubre impresionantes destinos de playa a lo largo de la costa e islas de África Oriental.',
+    'no_beach_holidays'     => '¡Aún no hay ofertas de playa disponibles. ¡Vuelve pronto!',
+
+    // Blog Comments
+    'comments'              => 'Comentarios',
+    'no_comments'           => 'Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!',
+    'leave_comment'         => 'Dejar un comentario',
+    'email_not_published'   => 'Tu correo no será publicado.',
+    'submit_comment'        => 'Enviar comentario',
+    'comment_success'       => '¡Gracias! Tu comentario está pendiente de moderación.',
+
+    // TOC
+    'on_this_page'          => 'En esta página',
+    'toc_empty'             => 'El índice aparecerá cuando el artículo tenga encabezados.',
 ];

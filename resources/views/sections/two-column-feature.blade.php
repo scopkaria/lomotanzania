@@ -11,7 +11,7 @@
 
         @if($sectionHeading)
         <div class="text-center mb-14 reveal">
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $sectionHeading }}
             </h2>
         </div>
@@ -41,10 +41,10 @@
                 </div>
 
                 @if($title)
-                    <h3 class="font-heading text-2xl md:text-3xl font-bold text-[#131414] mb-4">{{ $title }}</h3>
+                    <h3 class="font-heading text-2xl md:text-3xl font-bold text-brand-dark mb-4">{{ $title }}</h3>
                 @endif
                 @if($body)
-                    <div class="prose prose-base max-w-none text-[#131414]/60 leading-relaxed">
+                    <div class="prose prose-base max-w-none text-brand-dark/60 leading-relaxed">
                         {!! $body !!}
                     </div>
                 @endif

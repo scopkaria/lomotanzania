@@ -18,7 +18,7 @@
                        @keydown.escape="showDropdown = false" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()"
                        @keydown.enter.prevent="selectHighlighted()"
                        placeholder="Search country (e.g. Tanzania, Kenya)"
-                       class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] pl-9 pr-10"
+                       class="w-full py-3 pl-9 pr-10 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"
                        autocomplete="off">
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                     <svg x-show="loading" class="w-4 h-4 text-[#FEBC11] animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -101,11 +101,16 @@
                 @error('slug') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
 
+            {{-- UPDATED: Rich text editor for description --}}
             <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="description" id="description" rows="4"
-                          class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">{{ old('description', $country->description ?? '') }}</textarea>
-                @error('description') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                @include('admin.partials.rich-editor', [
+                    'name'  => 'description',
+                    'id'    => 'country_description',
+                    'value' => old('description', $country->description ?? ''),
+                    'label' => 'Description',
+                    'rows'  => 'large',
+                    'placeholder' => 'Write a detailed description of this country...',
+                ])
             </div>
         </div>
     </div>

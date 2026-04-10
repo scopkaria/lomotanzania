@@ -95,7 +95,7 @@ class HomepageSectionsSeeder extends Seeder
             'order'         => 1,
             'is_active'     => true,
             'data'          => [
-                'heading'    => ['en' => 'Why Choose Lomo Africa', 'fr' => 'Pourquoi Choisir Lomo Africa', 'de' => 'Warum Lomo Africa Wählen', 'es' => 'Por Qué Elegir Lomo Africa'],
+                'heading'    => ['en' => 'Why Travel With Lomo Tanzania Safaris', 'fr' => 'Pourquoi Voyager Avec Lomo Tanzania Safaris', 'de' => 'Warum Mit Lomo Tanzania Safaris Reisen', 'es' => 'Por Qué Viajar Con Lomo Tanzania Safaris'],
                 'subheading' => ['en' => 'Crafting unforgettable safari experiences since day one', 'fr' => 'Créer des expériences de safari inoubliables depuis le premier jour', 'de' => 'Unvergessliche Safari-Erlebnisse seit dem ersten Tag', 'es' => 'Creando experiencias de safari inolvidables desde el primer día'],
                 'columns'    => '4',
                 'bg_color'   => '',

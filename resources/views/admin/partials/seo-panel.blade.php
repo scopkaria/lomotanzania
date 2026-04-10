@@ -14,6 +14,7 @@
         focusKeyword: '{{ old('focus_keyword', $seoMeta->focus_keyword ?? '') }}',
         metaTitle: '{{ old('meta_title', addslashes($model->meta_title ?? '')) }}',
         metaDescription: '{{ old('meta_description', addslashes($model->meta_description ?? '')) }}',
+        metaKeywordsRaw: '{{ old('meta_keywords', addslashes($model->meta_keywords ?? '')) }}',
         slug: '{{ old('slug', $model->slug ?? '') }}',
         seoScore: {{ $seoMeta->seo_score ?? 0 }},
         readabilityScore: {{ $seoMeta->readability_score ?? 0 }},
@@ -60,13 +61,28 @@
         </div>
     </div>
 
-    {{-- Focus Keyword --}}
+    {{-- Focus Keyword (pill/tag system) --}}
     <div class="mb-5">
         <label class="block text-sm font-medium text-gray-700 mb-1.5">Focus Keyword</label>
-        <input type="text" name="focus_keyword" x-model="focusKeyword" @input.debounce.500ms="runAnalysis()"
-               placeholder="e.g. Serengeti safari, Tanzania wildlife tour"
-               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">
-        <p class="mt-1 text-xs text-gray-400">The main keyword you want this page to rank for.</p>
+        <div class="flex flex-wrap items-center gap-2 p-2 min-h-[44px] border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-brand-gold focus-within:border-brand-gold transition">
+            <template x-for="(kw, idx) in focusKeywords" :key="idx">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition"
+                      :class="keywordInContent(kw) ? 'bg-green-100 text-green-800 ring-1 ring-green-300' : 'bg-red-100 text-red-800 ring-1 ring-red-300'">
+                    <span x-text="kw"></span>
+                    <button type="button" @click="removeKeyword(idx)" class="hover:text-red-600 transition">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </span>
+            </template>
+            <input type="text" x-model="newKeyword"
+                   @keydown.enter.prevent="addKeyword()"
+                   @keydown.comma.prevent="addKeyword()"
+                   @keydown.backspace="if(!newKeyword && focusKeywords.length) removeKeyword(focusKeywords.length - 1)"
+                   placeholder="Type keyword + Enter"
+                   class="flex-1 min-w-[120px] border-0 p-1 text-sm focus:ring-0 focus:outline-none bg-transparent">
+        </div>
+        <input type="hidden" name="focus_keyword" :value="focusKeywords.join(', ')">
+        <p class="mt-1 text-xs text-gray-400">Press Enter or comma to add. <span class="text-green-600">Green</span> = found in content, <span class="text-red-600">Red</span> = missing.</p>
     </div>
 
     {{-- Slug Preview --}}
@@ -116,14 +132,27 @@
         @error('meta_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
-    {{-- Meta Keywords --}}
+    {{-- Meta Keywords (pill UI) --}}
     <div class="mb-5">
-        <label for="meta_keywords" class="block text-sm font-medium text-gray-700 mb-1.5">Meta Keywords</label>
-        <input type="text" name="meta_keywords" id="meta_keywords"
-               value="{{ old('meta_keywords', $model->meta_keywords ?? '') }}"
-               placeholder="safari, tanzania, serengeti, wildlife"
-               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm">
-        <p class="mt-1 text-xs text-gray-400">Comma-separated keywords.</p>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Meta Keywords</label>
+        <div class="flex flex-wrap items-center gap-2 p-2 min-h-[44px] border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-brand-gold focus-within:border-brand-gold transition">
+            <template x-for="(mkw, idx) in metaKeywords" :key="idx">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 ring-1 ring-gray-200 text-xs font-medium">
+                    <span x-text="mkw"></span>
+                    <button type="button" @click="removeMetaKeyword(idx)" class="hover:text-red-600 transition">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </span>
+            </template>
+            <input type="text" x-model="newMetaKeyword"
+                   @keydown.enter.prevent="addMetaKeyword()"
+                   @keydown.comma.prevent="addMetaKeyword()"
+                   @keydown.backspace="if(!newMetaKeyword && metaKeywords.length) removeMetaKeyword(metaKeywords.length - 1)"
+                   placeholder="Type keyword + Enter"
+                   class="flex-1 min-w-[120px] border-0 p-1 text-sm focus:ring-0 focus:outline-none bg-transparent">
+        </div>
+        <input type="hidden" name="meta_keywords" :value="metaKeywords.join(', ')">
+        <p class="mt-1 text-xs text-gray-400">Press Enter or comma to add keywords.</p>
         @error('meta_keywords') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
@@ -246,6 +275,10 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('seoPanel', (config) => ({
         focusKeyword: config.focusKeyword || '',
+        focusKeywords: [],
+        newKeyword: '',
+        metaKeywords: [],
+        newMetaKeyword: '',
         metaTitle: config.metaTitle || '',
         metaDescription: config.metaDescription || '',
         slug: config.slug || '',
@@ -258,6 +291,17 @@ document.addEventListener('alpine:init', () => {
         optimizationResults: [],
 
         init() {
+            // Parse initial focus keywords from comma-separated string
+            if (config.focusKeyword) {
+                this.focusKeywords = config.focusKeyword.split(',').map(k => k.trim()).filter(k => k);
+            }
+            this.focusKeyword = this.focusKeywords.join(', ');
+
+            // Parse initial meta keywords from comma-separated string
+            if (config.metaKeywordsRaw) {
+                this.metaKeywords = config.metaKeywordsRaw.split(',').map(k => k.trim()).filter(k => k);
+            }
+
             // Watch for slug changes from the main form
             this.$nextTick(() => {
                 const slugInput = document.querySelector('input[name="slug"]');
@@ -271,21 +315,57 @@ document.addEventListener('alpine:init', () => {
             });
 
             // Run initial analysis if we have data
-            if (this.focusKeyword || this.metaTitle) {
+            if (this.focusKeywords.length || this.metaTitle) {
                 this.runAnalysis();
             }
         },
 
+        addKeyword() {
+            const kw = this.newKeyword.trim().replace(/,$/,'').trim();
+            if (kw && !this.focusKeywords.includes(kw)) {
+                this.focusKeywords.push(kw);
+                this.focusKeyword = this.focusKeywords.join(', ');
+                this.runAnalysis();
+            }
+            this.newKeyword = '';
+        },
+
+        removeKeyword(idx) {
+            this.focusKeywords.splice(idx, 1);
+            this.focusKeyword = this.focusKeywords.join(', ');
+            this.runAnalysis();
+        },
+
+        keywordInContent(kw) {
+            const content = this.getContentText().toLowerCase();
+            return content.includes(kw.toLowerCase());
+        },
+
+        addMetaKeyword() {
+            const kw = this.newMetaKeyword.trim().replace(/,$/,'').trim();
+            if (kw && !this.metaKeywords.includes(kw)) {
+                this.metaKeywords.push(kw);
+            }
+            this.newMetaKeyword = '';
+        },
+
+        removeMetaKeyword(idx) {
+            this.metaKeywords.splice(idx, 1);
+        },
+
         getContentText() {
-            // Try to get content from common form fields
+            // Try to get content from Jodit rich text editors
+            const joditEditors = document.querySelectorAll('.jodit-editor');
+            for (const el of joditEditors) {
+                const content = el._joditEditor ? el._joditEditor.value : el.value;
+                if (content && content.trim()) return content;
+            }
+            // Fallback: common form fields
             const fields = ['description', 'content', 'content[en]', 'body'];
             for (const name of fields) {
-                const el = document.querySelector(`[name="${name}"]`);
+                const el = document.querySelector('[name="' + name + '"]');
                 if (el && el.value) return el.value;
             }
-            // Try Quill editors
-            const quillEl = document.querySelector('.ql-editor');
-            if (quillEl) return quillEl.innerHTML;
             return '';
         },
 
@@ -302,7 +382,7 @@ document.addEventListener('alpine:init', () => {
         runAnalysis() {
             const content = this.getContentText();
             const title = this.getTitleText();
-            const kw = this.focusKeyword.toLowerCase().trim();
+            const kw = (this.focusKeywords[0] || '').toLowerCase().trim();
             const plainText = this.stripTags(content);
             const wordCount = this.countWords(plainText);
 
@@ -313,7 +393,8 @@ document.addEventListener('alpine:init', () => {
             if (!kw) {
                 checks.push({ key: 'keyword', status: 'error', message: 'No focus keyword set.', score: 0, max: 15 });
             } else {
-                checks.push({ key: 'keyword', status: 'pass', message: 'Focus keyword is set.', score: 15, max: 15 });
+                const allFound = this.focusKeywords.every(k => plainText.toLowerCase().includes(k.toLowerCase()));
+                checks.push({ key: 'keyword', status: 'pass', message: `Focus keyword set (${this.focusKeywords.length} keyword${this.focusKeywords.length > 1 ? 's' : ''}).`, score: 15, max: 15 });
                 totalScore += 15;
             }
 

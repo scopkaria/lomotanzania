@@ -46,6 +46,8 @@ class PageController extends Controller
         'highlight'             => 'Highlight Section',
         'two_column_feature'    => 'Two Column Feature',
         'experience_grid'       => 'Experience Grid',
+        'booking_cta'           => 'Booking CTA',
+        'tripadvisor_reviews'   => 'TripAdvisor Reviews',
     ];
 
     // ─── INDEX ──────────────────────────────────────────────
@@ -205,7 +207,7 @@ class PageController extends Controller
 
     public function uploadImage(Request $request)
     {
-        $request->validate(['image' => 'required|image|max:4096']);
+        $request->validate(['image' => 'required|image|max:'.config('uploads.max_upload_kb', 20480)]);
         $path = $request->file('image')->store('pages', 'public');
         return response()->json(['path' => $path, 'url' => asset('storage/' . $path)]);
     }

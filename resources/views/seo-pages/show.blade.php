@@ -52,7 +52,7 @@
             <span class="text-white/80">{{ $page->translated('title') }}</span>
         </nav>
 
-        <h1 class="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{{ $page->translated('title') }}</h1>
+        <h1 class="font-heading text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{{ $page->translated('title') }}</h1>
 
         @if($page->translated('intro_content'))
             <p class="mx-auto mt-6 max-w-2xl text-lg text-white/75 leading-relaxed">
@@ -94,7 +94,7 @@
                         @endif
                     </div>
                     <div class="p-5">
-                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-[#083321] transition">
+                        <h3 class="font-heading text-lg font-bold text-brand-dark group-hover:text-[#083321] transition">
                             {{ $safari->translated('title') }}
                         </h3>
                         @if($safari->duration)

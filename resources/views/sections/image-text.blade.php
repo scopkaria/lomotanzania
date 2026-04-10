@@ -20,12 +20,12 @@
             </div>
             <div class="{{ $imgLeft ? 'order-2' : 'order-2 md:order-1' }}">
                 @if($heading)
-                    <h2 class="font-heading text-3xl md:text-4xl font-bold text-[#131414] mb-6">
+                    <h2 class="font-heading text-3xl md:text-4xl font-bold text-brand-dark leading-heading tracking-safari mb-6">
                         {{ $heading }}
                     </h2>
                 @endif
                 @if($body)
-                    <div class="prose prose-lg max-w-none text-[#131414]/70 leading-relaxed">
+                    <div class="prose prose-lg max-w-none text-brand-dark/70 leading-relaxed">
                         {!! $body !!}
                     </div>
                 @endif

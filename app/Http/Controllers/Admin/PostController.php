@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Traits\HasBulkActions;
+use App\Traits\SanitizesHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    use HasBulkActions;
+    use HasBulkActions, SanitizesHtml;
 
     protected array $locales = ['en', 'fr', 'de', 'es'];
 
@@ -22,7 +23,7 @@ class PostController extends Controller
 
     public function index(Request $request)
     {
-        $query = Post::with(['category', 'author'])->latest('updated_at');
+        $query = Post::with(['category', 'author']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -34,7 +35,10 @@ class PostController extends Controller
             $query->where('title->en', 'like', '%' . $request->search . '%');
         }
 
-        $posts      = $query->paginate($request->integer('per_page', 15))->withQueryString();
+        $sortable = ['title', 'status', 'published_at', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable) ? $request->input('sort') : 'updated_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $posts      = $query->orderBy($sort, $direction)->paginate($request->integer('per_page', 15))->withQueryString();
         $categories = BlogCategory::orderBy('name->en')->get();
 
         return view('admin.posts.index', compact('posts', 'categories'));
@@ -56,7 +60,7 @@ class PostController extends Controller
         $post = Post::create([
             'title'            => $data['title'],
             'slug'             => $data['slug'] ?: Str::slug($data['title']['en']),
-            'content'          => $data['content'] ?? [],
+            'content'          => $this->sanitizeContentArray($data['content'] ?? []),
             'excerpt'          => $data['excerpt'] ?? [],
             'featured_image'   => $data['featured_image'] ?? null,
             'blog_category_id' => $data['blog_category_id'] ?? null,
@@ -86,7 +90,7 @@ class PostController extends Controller
         $post->update([
             'title'            => $data['title'],
             'slug'             => $data['slug'] ?: Str::slug($data['title']['en']),
-            'content'          => $data['content'] ?? $post->content,
+            'content'          => $this->sanitizeContentArray($data['content'] ?? $post->content),
             'excerpt'          => $data['excerpt'] ?? $post->excerpt,
             'featured_image'   => $data['featured_image'] ?? $post->featured_image,
             'blog_category_id' => $data['blog_category_id'] ?? null,
@@ -139,5 +143,10 @@ class PostController extends Controller
             'meta_title'       => $request->input('meta_title', []),
             'meta_description' => $request->input('meta_description', []),
         ];
+    }
+
+    private function sanitizeContentArray(array $content): array
+    {
+        return array_map(fn ($val) => $val ? $this->sanitizeRichText($val) : $val, $content);
     }
 }

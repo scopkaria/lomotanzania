@@ -11,6 +11,7 @@ use App\Models\Post;
 use App\Models\SafariPackage;
 use App\Models\Setting;
 use App\Models\Testimonial;
+use App\Models\TourCategory;
 use App\Models\TourType;
 use App\Traits\HasSeoData;
 use App\Traits\LoadsSectionData;
@@ -38,7 +39,7 @@ class HomeController extends Controller
             'page'           => $page,
             'sections'       => $sections,
             'sectionDataMap' => $sectionDataMap,
-        ] + $this->seoData($page, 'Luxury Safari Experiences in Tanzania'));
+        ] + $this->seoData($page, 'Luxury Tanzania Safaris | Serengeti, Ngorongoro & Zanzibar'));
     }
 
     protected function managedPageContent(string $slug): array
@@ -62,11 +63,10 @@ class HomeController extends Controller
 
     public function safariIndex(Request $request)
     {
+        // UPDATED: Use tour_categories pivot — show tours with 'safari' category (includes combos)
         $query = SafariPackage::where('status', 'published')
-            ->where(function($q) {
-                $q->where('safari_type', 'safari')->orWhereNull('safari_type');
-            })
-            ->with(['countries', 'itineraries.destination', 'tourType', 'categoryRelation']);
+            ->whereHas('tourCategories', fn ($q) => $q->where('slug', 'safari'))
+            ->with(['countries', 'itineraries.destination', 'tourType', 'categoryRelation', 'tourCategories']);
 
         // Search
         if ($request->filled('search')) {
@@ -143,8 +143,9 @@ class HomeController extends Controller
         $countries  = Country::orderBy('name')->get();
         $tourTypes  = TourType::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
+        $testimonials = \App\Models\Testimonial::approved()->with('safariPackage')->latest()->take(6)->get();
 
-        return view('safaris.index', compact('safaris', 'countries', 'tourTypes', 'categories') + $this->managedPageContent('safaris') + $this->seoData(null, __('messages.safari'), 'Browse our curated safari packages across Tanzania'));
+        return view('safaris.index', compact('safaris', 'countries', 'tourTypes', 'categories', 'testimonials') + $this->managedPageContent('safaris') + $this->seoData(null, __('messages.safari'), 'Browse our curated safari packages across Tanzania'));
     }
 
     public function show(string $locale, string $slug)
@@ -176,7 +177,12 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        return view('safaris.show', compact('safari', 'relatedSafaris') + $this->seoData($safari, $safari->translated('title'), $safari->translated('short_description')));
+        $tripadvisorReviews = \App\Models\TripadvisorReview::where('published', true)
+            ->orderBy('display_order')
+            ->orderByDesc('review_date')
+            ->get();
+
+        return view('safaris.show', compact('safari', 'relatedSafaris', 'tripadvisorReviews') + $this->seoData($safari, $safari->translated('title'), $safari->translated('short_description')));
     }
 
     public function country(string $locale, string $slug)
@@ -193,9 +199,10 @@ class HomeController extends Controller
     {
         $tourType = TourType::where('slug', $slug)->firstOrFail();
         $safaris = SafariPackage::where('status', 'published')
+            ->with('destinations')
             ->where('tour_type_id', $tourType->id)
             ->latest()
-            ->get();
+            ->paginate(12);
 
         return view('pages.tour-type', compact('tourType', 'safaris') + $this->seoData($tourType, $tourType->name));
     }
@@ -213,9 +220,10 @@ class HomeController extends Controller
     {
         $category = Category::where('slug', $slug)->firstOrFail();
         $safaris = SafariPackage::where('status', 'published')
+            ->with('destinations')
             ->where('category_id', $category->id)
             ->latest()
-            ->get();
+            ->paginate(12);
 
         return view('pages.category', compact('category', 'safaris') + $this->seoData($category, $category->name));
     }
@@ -289,8 +297,9 @@ class HomeController extends Controller
     public function trekkingIndex(Request $request)
     {
         $perPage = 12;
+        // UPDATED: Use tour_categories pivot — show tours with 'trekking' category (includes combos)
         $query = SafariPackage::where('status', 'published')
-            ->where('safari_type', 'trekking')
+            ->whereHas('tourCategories', fn ($q) => $q->where('slug', 'trekking'))
             ->with(['countries', 'itineraries.destination', 'tourType']);
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -304,6 +313,27 @@ class HomeController extends Controller
 
         $safaris = $query->latest()->paginate($perPage);
         return view('trekking.index', compact('safaris') + $this->seoData(null, 'Mountain Trekking', 'Conquer Africa\'s highest peaks with our guided trekking expeditions'));
+    }
+
+    // ADDED: Beach listing page
+    public function beachIndex(Request $request)
+    {
+        $perPage = 12;
+        $query = SafariPackage::where('status', 'published')
+            ->whereHas('tourCategories', fn ($q) => $q->where('slug', 'beach'))
+            ->with(['countries', 'itineraries.destination', 'tourType']);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $safaris = $query->latest()->paginate($perPage);
+            return response()->json([
+                'html'  => view('safaris._cards', compact('safaris'))->render(),
+                'count' => $safaris->total(),
+                'next'  => $safaris->nextPageUrl(),
+            ]);
+        }
+
+        $safaris = $query->latest()->paginate($perPage);
+        return view('beach.index', compact('safaris') + $this->seoData(null, 'Beach Holidays', 'Explore stunning beach destinations along the Tanzanian coast and Zanzibar'));
     }
 
     public function downloadPdf(string $locale, string $slug)

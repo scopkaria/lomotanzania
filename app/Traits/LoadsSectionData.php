@@ -6,7 +6,9 @@ use App\Models\Destination;
 use App\Models\HeroSetting;
 use App\Models\Post;
 use App\Models\SafariPackage;
+use App\Models\Setting;
 use App\Models\Testimonial;
+use App\Models\TourType;
 use App\Models\TripadvisorReview;
 
 trait LoadsSectionData
@@ -35,9 +37,20 @@ trait LoadsSectionData
                 })(),
                 'heroSettings' => HeroSetting::instance(),
             ],
-            'split_hero', 'highlight', 'two_column_feature', 'experience_grid' => [],
+            'split_hero', 'highlight', 'two_column_feature' => [],
+            // UPDATED: experience_grid now fetches TourTypes dynamically
+            'experience_grid' => [
+                'tourTypes' => TourType::withCount('safariPackages')
+                    ->limit((int) ($data['count'] ?? 10))
+                    ->get(),
+            ],
+            // ADDED: booking_cta section
+            'booking_cta' => [
+                'siteSetting' => Setting::first(),
+            ],
             'featured_safaris', 'safari_grid', 'safari_list' => [
                 'safaris' => SafariPackage::where('status', 'published')
+                    ->with(['destinations', 'itineraries'])
                     ->when(
                         !empty($data['featured_only']) && $data['featured_only'] !== '0',
                         fn ($q) => $q->where('featured', true)
@@ -61,6 +74,7 @@ trait LoadsSectionData
             ],
             'blog' => [
                 'posts' => Post::where('status', 'published')
+                    ->with(['category', 'author'])
                     ->latest('published_at')
                     ->limit((int) ($data['count'] ?? 3))
                     ->get(),

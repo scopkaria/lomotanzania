@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogCategory;
+use App\Models\BlogComment;
 use App\Models\Page;
 use App\Models\Post;
 use App\Traits\HasSeoData;
@@ -47,6 +48,8 @@ class BlogController extends Controller
     {
         $post = Post::published()->with(['category', 'author'])->where('slug', $slug)->firstOrFail();
 
+        $comments = $post->approvedComments()->latest()->get();
+
         $related = Post::published()
             ->with('category')
             ->where('id', '!=', $post->id)
@@ -55,6 +58,36 @@ class BlogController extends Controller
             ->take(3)
             ->get();
 
-        return view('blog.show', compact('post', 'related') + $this->seoData($post, $post->translatedTitle(), $post->translatedExcerpt()));
+        return view('blog.show', compact('post', 'related', 'comments') + $this->seoData($post, $post->translatedTitle(), $post->translatedExcerpt()));
+    }
+
+    public function storeComment(Request $request, string $locale, string $slug)
+    {
+        $post = Post::published()->where('slug', $slug)->firstOrFail();
+
+        $validated = $request->validate([
+            'name'  => 'required|string|max:100',
+            'email' => 'required|email|max:150',
+            'phone' => 'nullable|string|max:30',
+            'body'  => 'required|string|max:2000',
+        ]);
+
+        // Honeypot check — if filled, silently discard
+        if ($request->filled('website_url')) {
+            return back()->with('comment_success', 'Thank you! Your comment is awaiting moderation.');
+        }
+
+        BlogComment::create([
+            'post_id'    => $post->id,
+            'name'       => $validated['name'],
+            'email'      => $validated['email'],
+            'phone'      => $validated['phone'] ?? null,
+            'body'       => $validated['body'],
+            'status'     => 'pending',
+            'honeypot'   => $request->input('website_url'),
+            'ip_address' => $request->ip(),
+        ]);
+
+        return back()->with('comment_success', 'Thank you! Your comment is awaiting moderation.');
     }
 }

@@ -52,7 +52,7 @@
             Uploading…
         </span>
     </div>
-    <p class="text-xs text-gray-400">Select or upload multiple images for the gallery.</p>
+    <p class="text-xs text-gray-400">Select or upload multiple images for the gallery. Each image can be up to {{ (int) config('uploads.max_upload_mb', 20) }}MB.</p>
 
     {{-- ═══ Library Modal (multi-select) ═══ --}}
     <div x-show="libraryOpen" x-transition.opacity
@@ -70,7 +70,7 @@
             <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3 shrink-0">
                 <div class="relative flex-1">
                     <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                    <input type="text" x-model="searchQuery" @input.debounce.300ms="fetchMedia()"
+                    <input type="text" x-model="searchQuery" @input.debounce.300ms="currentPage = 1; libraryItems = []; fetchMedia()"
                            placeholder="Search images…"
                            class="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#FEBC11]/50 focus:border-[#FEBC11]">
                 </div>
@@ -92,7 +92,18 @@
                         </button>
                     </template>
                 </div>
-                <div x-show="libraryItems.length === 0" class="text-center py-12 text-gray-400 text-sm">No images found.</div>
+                <div x-show="libraryItems.length === 0 && !loadingMore" class="text-center py-12 text-gray-400 text-sm">No images found.</div>
+                {{-- Load More --}}
+                <div x-show="currentPage < lastPage" class="text-center pt-4">
+                    <button type="button" @click="loadMore()" :disabled="loadingMore"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#131414] bg-[#FEBC11]/20 rounded-lg hover:bg-[#FEBC11]/40 transition disabled:opacity-50">
+                        <template x-if="loadingMore">
+                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </template>
+                        Load More
+                    </button>
+                    <p class="text-xs text-gray-400 mt-1" x-text="'Showing ' + libraryItems.length + ' of ' + totalItems"></p>
+                </div>
             </div>
 
             <div class="px-5 py-3 border-t border-gray-100 flex justify-end gap-2 shrink-0">
@@ -116,6 +127,17 @@ document.addEventListener('alpine:init', () => {
         searchQuery: '',
         selectedPaths: [],
         uploading: false,
+        maxMb: {{ (int) config('uploads.max_upload_mb', 20) }},
+        currentPage: 1,
+        lastPage: 1,
+        totalItems: 0,
+        loadingMore: false,
+
+        notify(message, type = 'info', duration = 4500) {
+            if (window.showLomoToast) {
+                window.showLomoToast(message, type, duration);
+            }
+        },
 
         removeImage(idx) {
             this.images.splice(idx, 1);
@@ -124,20 +146,44 @@ document.addEventListener('alpine:init', () => {
         openLibrary() {
             this.libraryOpen = true;
             this.selectedPaths = [];
+            this.currentPage = 1;
+            this.libraryItems = [];
             this.fetchMedia();
         },
 
-        async fetchMedia() {
+        async fetchMedia(append = false) {
             try {
+                if (append) this.loadingMore = true;
                 const params = new URLSearchParams();
+                params.append('kind', 'all');
+                params.append('page', append ? this.currentPage : 1);
                 if (this.searchQuery) params.append('search', this.searchQuery);
                 const res = await fetch('/admin/media/json?' + params.toString(), {
                     headers: { 'Accept': 'application/json' }
                 });
-                const data = await res.json();
-                this.libraryItems = Array.isArray(data) ? data : (data.media?.data || data.media || data.data || []);
+                const json = await res.json();
+                const items = json.data || json;
+                if (append) {
+                    this.libraryItems = [...this.libraryItems, ...(Array.isArray(items) ? items : [])];
+                } else {
+                    this.libraryItems = Array.isArray(items) ? items : [];
+                    this.currentPage = 1;
+                }
+                this.currentPage = json.current_page || this.currentPage;
+                this.lastPage    = json.last_page || 1;
+                this.totalItems  = json.total || this.libraryItems.length;
             } catch (e) {
                 console.error('Failed to load media:', e);
+                this.notify('Unable to load gallery images right now.', 'error');
+            } finally {
+                this.loadingMore = false;
+            }
+        },
+
+        loadMore() {
+            if (this.currentPage < this.lastPage) {
+                this.currentPage++;
+                this.fetchMedia(true);
             }
         },
 
@@ -163,6 +209,14 @@ document.addEventListener('alpine:init', () => {
         async uploadFiles(event) {
             const files = Array.from(event.target.files);
             if (!files.length) return;
+
+            const oversized = files.find(file => file.size > this.maxMb * 1024 * 1024);
+            if (oversized) {
+                this.notify(`${oversized.name} is too large. Maximum file size is ${this.maxMb}MB.`, 'warning');
+                event.target.value = '';
+                return;
+            }
+
             this.uploading = true;
             try {
                 const token = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -173,14 +227,28 @@ document.addEventListener('alpine:init', () => {
                     headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                     body: formData,
                 });
-                if (!res.ok) throw new Error('Upload failed');
+
+                if (!res.ok) {
+                    let message = `Upload failed. Images can be up to ${this.maxMb}MB.`;
+                    try {
+                        const data = await res.json();
+                        message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                    } catch (error) {
+                        console.error('Upload response parse error:', error);
+                    }
+                    throw new Error(message);
+                }
+
                 const data = await res.json();
                 (data.media || []).forEach(m => {
                     this.images.push({ id: null, path: m.path });
                 });
+                if ((data.media || []).length) {
+                    this.notify(`${data.media.length} image${data.media.length === 1 ? '' : 's'} uploaded successfully.`, 'success', 3000);
+                }
             } catch (e) {
                 console.error('Upload error:', e);
-                alert('Upload failed. Please try again.');
+                this.notify(e.message || 'Upload failed. Please try again.', 'error');
             } finally {
                 this.uploading = false;
                 event.target.value = '';

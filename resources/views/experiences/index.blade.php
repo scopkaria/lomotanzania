@@ -5,15 +5,21 @@
 @section('content')
 
 {{-- Hero --}}
+@php $indexHero = \App\Models\IndexHeroImage::forSection('experiences'); @endphp
 <section class="relative h-[50vh] min-h-[380px] overflow-hidden">
-    <img src="https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&h=900&fit=crop&q=60"
+    <img src="{{ $indexHero->image_url ?? 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&h=900&fit=crop&q=60' }}"
          alt="{{ __('messages.experiences') }}"
          class="absolute inset-0 w-full h-full object-cover">
     <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-brand-dark/30 to-transparent"></div>
-    <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 pb-12">
+    <div class="relative z-10 h-full flex flex-col items-center justify-center max-w-7xl mx-auto px-6 text-center">
         <p class="text-xs font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.curated_journeys') }}</p>
         <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">{{ __('messages.experiences') }}</h1>
         <p class="mt-4 text-lg text-white/90 max-w-2xl leading-relaxed">{{ __('messages.experiences_subtitle') }}</p>
+        <nav class="mt-5 flex items-center justify-center gap-2 text-sm text-white/70">
+            <a href="{{ route('home') }}" class="hover:text-white transition">{{ __('messages.home') }}</a>
+            <span class="text-white/40">/</span>
+            <span class="text-white/90">{{ __('messages.experiences') }}</span>
+        </nav>
     </div>
 </section>
 
@@ -33,7 +39,7 @@
         @if($experiences->count())
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @foreach($experiences as $experience)
-                    <a href="{{ route('safaris.index') }}?tour_types={{ $experience->slug }}"
+                    <a href="{{ route('tour-types.show', ['locale' => app()->getLocale(), 'slug' => $experience->slug]) }}"
                        class="group bg-white rounded-xl shadow-sm overflow-hidden hover:-translate-y-2 hover:shadow-lg transition-all duration-300">
                         <div class="relative overflow-hidden h-64">
                             @if($experience->featured_image)

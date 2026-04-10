@@ -1,5 +1,16 @@
 {{-- Live Chat Widget — AI auto-responder, quick actions, emoji, lead capture --}}
-@php $chatSettings = \App\Models\Setting::first(); @endphp
+@php
+    $chatSettings = \App\Models\Setting::first();
+    $chatLocale = app()->getLocale();
+    $chatSupportedLocales = \App\Http\Middleware\SetLocale::SUPPORTED;
+    $chatQuickActionUrls = [
+        'packages' => route('safaris.index', ['locale' => $chatLocale], false),
+        'five_day_packages' => route('safaris.index', ['locale' => $chatLocale, 'days' => 5], false),
+        'contact' => route('contact', ['locale' => $chatLocale], false),
+        'about' => route('page.show', ['locale' => $chatLocale, 'slug' => 'about-us'], false),
+        'home' => route('home', ['locale' => $chatLocale], false),
+    ];
+@endphp
 @if($chatSettings && $chatSettings->chat_enabled)
 <div x-data="liveChatWidget()" x-cloak class="fixed bottom-6 right-6 z-[9999]" style="font-family: 'Inter', sans-serif;">
     {{-- Chat Window --}}
@@ -32,18 +43,18 @@
                     </div>
                 </template>
                 <div class="min-w-0">
-                    <p class="text-white font-semibold text-sm truncate" x-text="agentInfo ? agentInfo.name : '{{ optional($siteSetting ?? null)->site_name ?? 'Lomo Safari' }}'"></p>
+                    <p class="text-white font-semibold text-sm truncate" x-text="agentInfo ? agentInfo.name : (sessionId ? 'AI Safari Agent' : '{{ optional($siteSetting ?? null)->site_name ?? 'Lomo Safari' }}')"></p>
                     <p class="text-white/70 text-xs truncate">
                         <template x-if="agentInfo && agentInfo.department">
                             <span x-text="agentInfo.department + ' · Online'"></span>
                         </template>
                         <template x-if="!agentInfo || !agentInfo.department">
-                            <span x-text="sessionId ? (agentJoined ? 'Agent connected' : 'Connecting you...') : 'We reply instantly'"></span>
+                            <span x-text="sessionId ? (agentJoined ? 'Live agent connected' : (connectingToSupport ? 'Connecting to support...' : 'AI-powered assistant')) : 'We reply instantly'"></span>
                         </template>
                     </p>
                 </div>
             </div>
-            <button @click="if(sessionId && confirm('End this chat?')) endChat(); else if(!sessionId) open=false;"
+                <button @click="if(sessionId) { window.showLomoConfirm({ title: 'End chat', message: 'End this chat?', confirmText: 'End chat', tone: 'danger' }).then(confirmed => { if (confirmed) endChat(); }); } else { open=false; }"
                     class="p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition" title="Close">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -85,7 +96,7 @@
 
         {{-- Active chat --}}
         <template x-if="sessionId">
-            <div class="flex-1 flex flex-col min-h-0">
+            <div class="flex-1 flex flex-col min-h-0 relative">
                 {{-- Messages --}}
                 <div x-ref="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3" style="scroll-behavior: smooth;">
                     <template x-for="msg in messages" :key="msg.id">
@@ -98,18 +109,23 @@
                                     </div>
                                 </div>
                             </template>
-                            {{-- Bot messages --}}
+                            {{-- Bot / AI messages --}}
                             <template x-if="msg.sender_type === 'bot'">
                                 <div class="flex justify-start">
                                     <div class="max-w-[85%]">
                                         <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="w-5 h-5 rounded-full bg-[#FEBC11]/20 flex items-center justify-center">
-                                                <svg class="w-3 h-3 text-[#FEBC11]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            <span class="w-5 h-5 rounded-full flex items-center justify-center" :class="msg.aiProvider === 'gemini' ? 'bg-gradient-to-br from-blue-500 to-purple-500' : 'bg-[#FEBC11]/20'">
+                                                <template x-if="msg.aiProvider === 'gemini'">
+                                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM4.343 4.343a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.06zM13.536 13.536a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.06zM2 10a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 012 10zM15 10a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0115 10zM4.343 15.657a.75.75 0 010-1.06l1.061-1.061a.75.75 0 111.06 1.06l-1.06 1.06a.75.75 0 01-1.06 0zM13.536 6.464a.75.75 0 010-1.06l1.061-1.061a.75.75 0 111.06 1.06l-1.06 1.06a.75.75 0 01-1.06 0z"/><circle cx="10" cy="10" r="3"/></svg>
+                                                </template>
+                                                <template x-if="msg.aiProvider !== 'gemini'">
+                                                    <svg class="w-3 h-3 text-[#FEBC11]" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                </template>
                                             </span>
-                                            <span class="text-[10px] text-gray-400 font-medium">Safari Assistant</span>
+                                            <span class="text-[10px] font-medium" :class="msg.aiProvider === 'gemini' ? 'text-purple-500' : 'text-gray-400'" x-text="msg.aiProvider === 'gemini' ? 'AI Safari Agent' : 'Safari Assistant'"></span>
                                         </div>
-                                        <div class="bg-[#FEBC11]/10 text-gray-800 rounded-2xl rounded-tl-md px-4 py-2.5 text-sm leading-relaxed">
-                                            <p x-html="msg.message"></p>
+                                        <div class="text-gray-800 rounded-2xl rounded-tl-md px-4 py-2.5 text-sm leading-relaxed" :class="msg.aiProvider === 'gemini' ? 'bg-gradient-to-br from-blue-50 to-purple-50 border border-purple-100' : 'bg-[#FEBC11]/10'">
+                                            <p x-html="normalizeMessageHtml(msg.message)"></p>
                                             <p class="text-gray-400 text-[10px] mt-1" x-text="formatTime(msg.created_at)"></p>
                                         </div>
                                     </div>
@@ -123,7 +139,7 @@
                                             ? 'bg-[#083321] text-white rounded-2xl rounded-br-md'
                                             : 'bg-gray-100 text-gray-800 rounded-2xl rounded-tl-md'"
                                              class="px-4 py-2.5 text-sm leading-relaxed">
-                                            <p x-text="msg.message"></p>
+                                            <p x-html="linkify(msg.message)"></p>
                                             <p :class="msg.sender_type === 'visitor' ? 'text-white/40' : 'text-gray-400'"
                                                class="text-[10px] mt-1" x-text="formatTime(msg.created_at)"></p>
                                         </div>
@@ -134,13 +150,39 @@
                     </template>
 
                     {{-- Quick action pills --}}
-                    <div x-show="showQuickActions && !agentJoined && messages.length <= 3" x-transition class="flex flex-wrap gap-2 pt-2">
+                    <div x-show="showQuickActions && !agentJoined && messages.length <= 5" x-transition class="flex flex-wrap gap-2 pt-2">
                         <template x-for="action in quickActions" :key="action.label">
                             <button @click="handleQuickAction(action)"
                                     class="text-xs px-3 py-1.5 rounded-full border border-[#083321]/20 text-[#083321] bg-[#083321]/5 hover:bg-[#083321]/10 transition font-medium whitespace-nowrap">
                                 <span x-text="action.icon + ' ' + action.label"></span>
                             </button>
                         </template>
+                    </div>
+
+                    {{-- Department picker pills --}}
+                    <div x-show="showDepartments && !agentJoined && !connectingToSupport" x-transition class="pt-2">
+                        <div class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4">
+                            <p class="text-xs font-semibold text-gray-700 mb-1">💬 Connect to Live Support</p>
+                            <p class="text-[11px] text-gray-500 mb-3">Choose a department to speak with our team:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="dept in departments" :key="dept.id">
+                                    <button @click="connectToSupport(dept)"
+                                            class="text-xs px-4 py-2 rounded-full font-semibold text-white transition hover:brightness-110 hover:scale-105 shadow-sm"
+                                            :style="'background-color:' + (dept.color || '#083321')">
+                                        <span x-text="dept.name"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Connect to support button (shows after failed AI responses) --}}
+                    <div x-show="failedAiCount >= 1 && !showDepartments && !agentJoined && !connectingToSupport" x-transition class="flex justify-center pt-2">
+                        <button @click="showDepartmentPicker()"
+                                class="text-xs px-4 py-2 rounded-full bg-[#083321] text-white font-semibold hover:bg-[#083321]/90 transition shadow-sm flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                            Talk to Live Support
+                        </button>
                     </div>
 
                     {{-- Typing indicator --}}
@@ -168,8 +210,22 @@
                     </div>
                 </div>
 
+                {{-- Chat expired overlay --}}
+                <div x-show="chatExpired" x-transition class="absolute inset-0 bg-white/95 backdrop-blur-sm z-10 flex items-center justify-center p-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <h3 class="text-gray-800 font-semibold text-sm mb-1">Chat Session Expired</h3>
+                        <p class="text-gray-500 text-xs mb-4">This session has timed out for your security. Start a new conversation to continue.</p>
+                        <button @click="startNewChat()" class="bg-[#083321] text-white text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-[#083321]/90 transition">
+                            Start New Chat
+                        </button>
+                    </div>
+                </div>
+
                 {{-- Input area with emoji --}}
-                <div class="border-t border-gray-100 p-3 shrink-0 bg-white">
+                <div class="border-t border-gray-100 p-3 shrink-0 bg-white" x-show="!chatExpired">
                     <div x-show="showEmoji" x-transition class="mb-2 bg-gray-50 rounded-lg p-2 max-h-32 overflow-y-auto">
                         <div class="flex flex-wrap gap-1">
                             <template x-for="emoji in emojis" :key="emoji">
@@ -194,6 +250,45 @@
                 </div>
             </div>
         </template>
+    </div>
+
+    {{-- Welcome Notification Popup --}}
+    <div x-show="showNotification && !open" x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+         class="mb-3 ml-auto bg-white rounded-2xl shadow-xl border border-gray-100 p-4 max-w-[320px] relative">
+        <button @click.stop="showNotification = false; notificationDismissed = true;"
+                class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center text-gray-300 hover:text-gray-500 transition rounded-full" title="Dismiss">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="flex items-start gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM4.343 4.343a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.06zM13.536 13.536a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.06-1.06a.75.75 0 010-1.06z"/><circle cx="10" cy="10" r="3"/></svg>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-800">AI Safari Agent</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ $chatSettings->chat_greeting ?? 'Hello! 👋 Need help planning your safari?' }}</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button @click="showNotification = false; notificationDismissed = true; open = true;"
+                    class="flex-1 text-xs font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:brightness-110 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2z"/><circle cx="10" cy="10" r="3"/></svg>
+                Chat with AI
+            </button>
+            <button @click="showNotification = false; notificationDismissed = true; open = true; $nextTick(() => { if(!sessionId) return; showDepartmentPicker(); });"
+                    class="flex-1 text-xs font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1.5 bg-[#083321] text-white hover:bg-[#083321]/90 shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                Live Support
+            </button>
+        </div>
+        <div class="mt-2 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+            <span class="text-[10px] text-green-600 font-medium">Online now</span>
+        </div>
     </div>
 
     {{-- Floating button --}}
@@ -239,15 +334,27 @@ function liveChatWidget() {
 
         emojis: ['😊','😂','🤣','❤️','👍','🙏','😍','🎉','✨','🌍','🦁','🐘','🦒','🌅','🏕️','✈️','🗺️','📸','💬','👋','🙂','😃','🤔','👏','🔥','💯','🎊','⭐','🌟','💪'],
 
+        publicLocale: @json($chatLocale),
+        supportedLocales: @json($chatSupportedLocales),
         quickActions: [
-            { label: 'View Packages', icon: '📦', url: '/safaris', message: "I'd like to see your safari packages" },
-            { label: '5 Days Safari', icon: '🦁', url: '/safaris?days=5', message: "I'm interested in a 5-day safari" },
-            { label: 'Contact Us', icon: '📞', url: '/contact', message: 'I need to contact your team' },
-            { label: 'About Us', icon: 'ℹ️', url: '/about', message: 'Tell me about Lomo Safari' },
-            { label: 'Home Page', icon: '🏠', url: '/', message: 'Take me to the home page' },
+            { label: 'View Packages', icon: '📦', url: @json($chatQuickActionUrls['packages']), message: "I'd like to see your safari packages" },
+            { label: '5 Days Safari', icon: '🦁', url: @json($chatQuickActionUrls['five_day_packages']), message: "I'm interested in a 5-day safari" },
+            { label: 'Contact Us', icon: '📞', url: @json($chatQuickActionUrls['contact']), message: 'I need to contact your team' },
+            { label: 'About Us', icon: 'ℹ️', url: @json($chatQuickActionUrls['about']), message: 'Tell me about Lomo Safari' },
+            { label: 'Home Page', icon: '🏠', url: @json($chatQuickActionUrls['home']), message: 'Take me to the home page' },
         ],
 
         aiResponses: {},
+        chatExpired: false,
+        showNotification: false,
+        notificationDismissed: false,
+        sessionExpiresAt: null,
+        expiryCheckInterval: null,
+        SESSION_DURATION: 20 * 60 * 1000, // 20 minutes
+        departments: [],
+        showDepartments: false,
+        connectingToSupport: false,
+        failedAiCount: 0,
 
         async getAiResponse(text) {
             if (this.agentJoined) return null;
@@ -258,27 +365,113 @@ function liveChatWidget() {
                     body: JSON.stringify({ message: text })
                 });
                 const data = await res.json();
-                return data.response || null;
+                if (data.response) {
+                    // If the AI offered support or we've had too many fallbacks, show department pills
+                    if (data.offer_support) {
+                        this.failedAiCount++;
+                        if (this.failedAiCount >= 2) {
+                            // After 2 failed attempts, auto-show departments
+                            setTimeout(() => this.showDepartmentPicker(), 500);
+                        }
+                    } else {
+                        this.failedAiCount = 0;
+                    }
+                    return { text: data.response, provider: data.provider || 'keyword' };
+                }
+                return null;
             } catch (e) {
                 return null;
             }
         },
 
+        async loadDepartments() {
+            if (this.departments.length > 0) return;
+            try {
+                const res = await fetch('/api/chat/departments');
+                const data = await res.json();
+                this.departments = data.departments || [];
+            } catch (e) {}
+        },
+
+        showDepartmentPicker() {
+            this.loadDepartments();
+            this.showDepartments = true;
+            this.$nextTick(() => this.scrollToBottom());
+        },
+
+        async connectToSupport(dept) {
+            this.showDepartments = false;
+            this.connectingToSupport = true;
+            this.messages.push({
+                id: 'sys-dept-' + Date.now(),
+                message: 'Connecting you to ' + dept.name + ' department...',
+                sender_type: 'system',
+                message_type: 'system',
+                created_at: new Date().toISOString()
+            });
+            this.persistState();
+            this.$nextTick(() => this.scrollToBottom());
+
+            try {
+                const res = await fetch('/api/chat/' + this.sessionId + '/request-support', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ department_id: dept.id })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    this.messages.push({
+                        id: 'bot-connect-' + Date.now(),
+                        message: '✅ You\'ve been connected to the <strong>' + dept.name + '</strong> department. A team member will be with you shortly! Please wait while we get someone to help you.',
+                        sender_type: 'bot',
+                        aiProvider: 'keyword',
+                        created_at: new Date().toISOString()
+                    });
+                }
+            } catch (e) {
+                this.messages.push({
+                    id: 'bot-err-' + Date.now(),
+                    message: 'Sorry, I couldn\'t connect you right now. Please try again or use our <a href="' + this.normalizePublicHref(@json($chatQuickActionUrls['contact'])) + '" target="_blank" class="underline font-medium">contact page</a>.',
+                    sender_type: 'bot',
+                    aiProvider: 'keyword',
+                    created_at: new Date().toISOString()
+                });
+            }
+            this.connectingToSupport = false;
+            this.persistState();
+            this.$nextTick(() => this.scrollToBottom());
+        },
+
         init() {
-            this.restoreState();
+            // Always start a fresh session — clear any previous state
+            localStorage.removeItem(this.storageKey);
+            this.sessionId = null;
+            this.messages = [];
+            this.lastMessageId = 0;
+            this.agentJoined = false;
+            this.agentInfo = null;
+            this.chatExpired = false;
+
             ['click', 'keydown', 'touchstart'].forEach(evt => {
                 document.addEventListener(evt, () => { this.hasInteracted = true; }, { once: true });
             });
             if (!this.visitorId) {
                 this.visitorId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'visitor-' + Date.now();
             }
-            if (this.sessionId) {
-                this.startPolling();
-                this.poll();
-                this.trackPage();
-                this.startOfflineMonitor();
-            }
-            this.$watch('open', () => this.persistState());
+
+            // Show a welcome notification after 3 seconds
+            setTimeout(() => {
+                if (!this.open && !this.notificationDismissed) {
+                    this.showNotification = true;
+                    // Auto-hide after 10 seconds
+                    setTimeout(() => { this.showNotification = false; }, 10000);
+                }
+            }, 3000);
+
+            this.$watch('open', () => {
+                this.persistState();
+                if (this.open) this.showNotification = false;
+            });
             this.$watch('visitorName', () => this.persistState());
             this.$watch('visitorEmail', () => this.persistState());
             this.$watch('sessionId', () => this.persistState());
@@ -289,23 +482,18 @@ function liveChatWidget() {
             if (this.open) {
                 this.unreadCount = 0;
                 this.showEmoji = false;
+                this.showNotification = false;
+                this.notificationDismissed = true;
                 this.$nextTick(() => this.scrollToBottom());
             }
         },
 
         restoreState() {
+            // State is only used within a tab session (via persistState).
+            // Fresh sessions are enforced by init() clearing localStorage.
             try {
                 const saved = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
-
-                // Check 20-minute session timeout
-                if (saved.sessionId && saved.lastActivityAt) {
-                    const elapsed = Date.now() - saved.lastActivityAt;
-                    if (elapsed > 20 * 60 * 1000) {
-                        // Session expired — clear and start fresh
-                        localStorage.removeItem(this.storageKey);
-                        return;
-                    }
-                }
+                if (!saved.sessionId) return;
 
                 this.open = !!saved.open;
                 this.sessionId = saved.sessionId || null;
@@ -316,6 +504,8 @@ function liveChatWidget() {
                 this.lastMessageId = Number(saved.lastMessageId || 0);
                 this.agentJoined = !!saved.agentJoined;
                 this.agentInfo = saved.agentInfo || null;
+                this.chatExpired = !!saved.chatExpired;
+                this.sessionExpiresAt = saved.sessionExpiresAt || null;
                 if (this.agentInfo) this.updateHeaderColor();
             } catch (e) {}
         },
@@ -332,6 +522,8 @@ function liveChatWidget() {
                     lastMessageId: this.lastMessageId,
                     agentJoined: this.agentJoined,
                     agentInfo: this.agentInfo,
+                    chatExpired: this.chatExpired,
+                    sessionExpiresAt: this.sessionExpiresAt,
                     lastActivityAt: Date.now(),
                 }));
             } catch (e) {}
@@ -367,12 +559,13 @@ function liveChatWidget() {
                 this.agentJoined = false;
                 this.mergeMessages(data.messages || []);
                 if (data.greeting && !this.messages.length) {
-                    this.messages.push({ id: 'g0', message: data.greeting, sender_type: 'bot', created_at: new Date().toISOString() });
+                    this.messages.push({ id: 'g0', message: data.greeting, sender_type: 'bot', aiProvider: 'keyword', created_at: new Date().toISOString() });
                 }
                 this.showQuickActions = true;
                 this.startPolling();
                 this.trackPage();
                 this.startOfflineMonitor();
+                this.startExpiryTimer();
                 this.persistState();
                 this.$nextTick(() => this.scrollToBottom());
             } catch (e) { console.error('Chat start failed', e); }
@@ -389,9 +582,15 @@ function liveChatWidget() {
 
             // AI auto-respond before agent joins
             if (!this.agentJoined) {
-                this.getAiResponse(msg).then(aiReply => {
-                    if (aiReply && !this.agentJoined) {
-                        this.messages.push({ id: 'bot' + Date.now(), message: aiReply, sender_type: 'bot', created_at: new Date().toISOString() });
+                this.getAiResponse(msg).then(aiResult => {
+                    if (aiResult && !this.agentJoined) {
+                        this.messages.push({
+                            id: 'bot' + Date.now(),
+                            message: aiResult.text,
+                            sender_type: 'bot',
+                            aiProvider: aiResult.provider || 'keyword',
+                            created_at: new Date().toISOString()
+                        });
                         this.persistState();
                         this.$nextTick(() => this.scrollToBottom());
                     }
@@ -414,7 +613,7 @@ function liveChatWidget() {
                 fetch('/api/chat/' + this.sessionId + '/track-page', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                    body: JSON.stringify({ url: action.url, title: 'Quick Action: ' + action.label })
+                    body: JSON.stringify({ url: this.normalizePublicHref(action.url), title: 'Quick Action: ' + action.label })
                 }).catch(() => {});
             }
         },
@@ -498,10 +697,14 @@ function liveChatWidget() {
                 });
                 this.leadSubmitted = true;
                 this.showOfflineForm = false;
-                this.messages.push({ id: 'lead' + Date.now(), message: 'Your message has been saved. Our team will reach out via email shortly! 📧', sender_type: 'bot', created_at: new Date().toISOString() });
+                this.messages.push({ id: 'lead' + Date.now(), message: 'Your message has been saved. Our team will reach out via email shortly! 📧', sender_type: 'bot', aiProvider: 'keyword', created_at: new Date().toISOString() });
                 this.persistState();
                 this.$nextTick(() => this.scrollToBottom());
-            } catch (e) { alert('Failed to send. Please try again.'); }
+            } catch (e) {
+                if (window.showLomoToast) {
+                    window.showLomoToast('Failed to send. Please try again.', 'error');
+                }
+            }
         },
 
         async endChat() {
@@ -523,8 +726,52 @@ function liveChatWidget() {
             this.headerColor = '#083321';
             this.clearOfflineTimer();
             if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+            if (this.expiryCheckInterval) { clearInterval(this.expiryCheckInterval); this.expiryCheckInterval = null; }
             this.open = false;
             this.persistState();
+        },
+
+        startExpiryTimer() {
+            this.sessionExpiresAt = Date.now() + this.SESSION_DURATION;
+            this.chatExpired = false;
+            if (this.expiryCheckInterval) clearInterval(this.expiryCheckInterval);
+            this.expiryCheckInterval = setInterval(() => {
+                if (Date.now() >= this.sessionExpiresAt) {
+                    this.expireChat();
+                }
+            }, 5000);
+        },
+
+        expireChat() {
+            if (this.expiryCheckInterval) { clearInterval(this.expiryCheckInterval); this.expiryCheckInterval = null; }
+            if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+            this.clearOfflineTimer();
+            this.chatExpired = true;
+            // Close session on server
+            if (this.sessionId) {
+                fetch('/api/chat/' + this.sessionId + '/end', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                }).catch(() => {});
+            }
+            this.persistState();
+        },
+
+        startNewChat() {
+            this.sessionId = null;
+            this.messages = [];
+            this.agentInfo = null;
+            this.agentJoined = false;
+            this.lastMessageId = 0;
+            this.showOfflineForm = false;
+            this.leadSubmitted = false;
+            this.showQuickActions = true;
+            this.headerColor = '#083321';
+            this.chatExpired = false;
+            this.clearOfflineTimer();
+            if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; }
+            if (this.expiryCheckInterval) { clearInterval(this.expiryCheckInterval); this.expiryCheckInterval = null; }
+            localStorage.removeItem(this.storageKey);
         },
 
         playNotificationSound() {
@@ -579,7 +826,11 @@ function liveChatWidget() {
 
         openWhatsApp() {
             if (!this.visitorName.trim() || !this.visitorEmail.trim()) {
-                this.open = true; alert('Please enter your name and email first.'); return;
+                this.open = true;
+                if (window.showLomoToast) {
+                    window.showLomoToast('Please enter your name and email first.', 'warning');
+                }
+                return;
             }
             const msg = 'Hello, my name is ' + this.visitorName + ' (' + this.visitorEmail + '). I am viewing ' + document.title + ' - ' + window.location.href + ' and would like help planning my safari.';
             window.open('https://wa.me/{{ preg_replace("/[^0-9]/", "", $chatSettings->whatsapp_number ?? "") }}?text=' + encodeURIComponent(msg), '_blank', 'noopener');
@@ -587,6 +838,72 @@ function liveChatWidget() {
 
         scrollToBottom() {
             if (this.$refs.chatMessages) this.$refs.chatMessages.scrollTop = this.$refs.chatMessages.scrollHeight;
+        },
+
+        normalizeMessageHtml(html) {
+            if (!html) return '';
+
+            return html.replace(/href=(["'])([^"']+)\1/gi, (match, quote, href) => {
+                return 'href=' + quote + this.normalizePublicHref(href) + quote;
+            });
+        },
+
+        getActiveLocale() {
+            const firstSegment = window.location.pathname.replace(/^\/+/, '').split('/')[0] || '';
+            return this.supportedLocales.includes(firstSegment) ? firstSegment : this.publicLocale;
+        },
+
+        normalizePublicHref(url) {
+            if (!url) return '#';
+
+            const candidate = url.replace(/&amp;/g, '&');
+            if (/^(mailto:|tel:|#|javascript:)/i.test(candidate)) {
+                return candidate;
+            }
+
+            try {
+                const parsed = new URL(candidate, window.location.origin);
+                if (!/^https?:$/i.test(parsed.protocol)) {
+                    return candidate;
+                }
+
+                if (parsed.origin !== window.location.origin) {
+                    return parsed.toString();
+                }
+
+                const locale = this.getActiveLocale();
+                const segments = parsed.pathname.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
+                const firstSegment = segments[0] || '';
+
+                if (segments.length === 0) {
+                    parsed.pathname = '/' + locale;
+                } else if (!['admin', 'api', 'storage', 'build'].includes(firstSegment)) {
+                    if (this.supportedLocales.includes(firstSegment)) {
+                        segments.shift();
+                    }
+
+                    parsed.pathname = '/' + locale + (segments.length ? '/' + segments.join('/') : '');
+                }
+
+                if (/^https?:\/\//i.test(candidate)) {
+                    return parsed.toString();
+                }
+
+                return parsed.pathname + parsed.search + parsed.hash;
+            } catch (e) {
+                return candidate;
+            }
+        },
+
+        linkify(text) {
+            if (!text) return '';
+
+            const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+            return escaped.replace(
+                /((?:https?:\/\/[^\s<"']+)|(?:\/(?!\/)[^\s<"']+))/gi,
+                (match) => '<a href="' + this.normalizePublicHref(match) + '" target="_blank" rel="noopener" class="underline font-medium hover:opacity-80 break-all">' + match + '</a>'
+            );
         },
 
         formatTime(date) {

@@ -586,6 +586,175 @@
                                     </div>
                                 </template>
 
+                                {{-- ═══════ EXPERIENCE GRID ═══════ --}}
+                                {{-- ADDED: section data editor for experience_grid --}}
+                                <template x-if="section.section_type === 'experience_grid'">
+                                    <div class="space-y-4">
+                                        <template x-for="loc in locales" :key="'exp-'+loc">
+                                            <div x-show="(section._lang || 'en') === loc" class="space-y-3">
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'Heading (' + loc.toUpperCase() + ')'"></label>
+                                                    <input type="text" :name="'sections['+idx+'][data][heading]['+loc+']'" x-model="section.data.heading[loc]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'Subheading (' + loc.toUpperCase() + ')'"></label>
+                                                    <input type="text" :name="'sections['+idx+'][data][subheading]['+loc+']'" x-model="section.data.subheading[loc]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                            </div>
+                                        </template>
+                                        <div class="pt-3 border-t border-gray-100">
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Max Experiences to Show</label>
+                                                <input type="number" :name="'sections['+idx+'][data][count]'" x-model="section.data.count" min="1" max="20" placeholder="10" class="w-40 px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                        </div>
+                                        <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                            <p class="text-xs text-blue-700"><strong>Dynamic:</strong> Images and content are pulled from your Tour Types. Edit them in <a href="{{ route('admin.tour-types.index') }}" target="_blank" class="underline font-semibold">Tour Types</a> section.</p>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                {{-- ═══════ BOOKING CTA ═══════ --}}
+                                {{-- ADDED: conversion section editor --}}
+                                <template x-if="section.section_type === 'booking_cta'">
+                                    <div class="space-y-4">
+                                        <template x-for="loc in locales" :key="'bcta-'+loc">
+                                            <div x-show="(section._lang || 'en') === loc" class="space-y-3">
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'Heading (' + loc.toUpperCase() + ')'"></label>
+                                                    <input type="text" :name="'sections['+idx+'][data][heading]['+loc+']'" x-model="section.data.heading[loc]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'Subheading (' + loc.toUpperCase() + ')'"></label>
+                                                    <input type="text" :name="'sections['+idx+'][data][subheading]['+loc+']'" x-model="section.data.subheading[loc]" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'Body text (' + loc.toUpperCase() + ')'"></label>
+                                                    <textarea :name="'sections['+idx+'][data][body]['+loc+']'" x-model="section.data.body[loc]" rows="3" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></textarea></div>
+                                                <div><label class="block text-xs font-medium text-gray-600 mb-1" x-text="'CTA Button Text (' + loc.toUpperCase() + ')'"></label>
+                                                    <input type="text" :name="'sections['+idx+'][data][button_text]['+loc+']'" x-model="section.data.button_text[loc]" placeholder="Start Planning" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                            </div>
+                                        </template>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">CTA Button URL</label>
+                                                <input type="text" :name="'sections['+idx+'][data][button_url]'" x-model="section.data.button_url" placeholder="/en/plan-safari" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp Number</label>
+                                                <input type="text" :name="'sections['+idx+'][data][whatsapp_number]'" x-model="section.data.whatsapp_number" placeholder="+255..." class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]"></div>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Show Trust Badges</label>
+                                                <select :name="'sections['+idx+'][data][show_badges]'" x-model="section.data.show_badges" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="1">Yes</option><option value="0">No</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Show Mini Testimonials</label>
+                                                <select :name="'sections['+idx+'][data][show_testimonials]'" x-model="section.data.show_testimonials" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="1">Yes</option><option value="0">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Background Image</label>
+                                            <input type="hidden" :name="'sections['+idx+'][data][bg_image]'" x-model="section.data.bg_image">
+                                            <div class="flex items-center gap-2">
+                                                <div x-show="section.data.bg_image" class="relative group shrink-0">
+                                                    <img :src="'/storage/' + section.data.bg_image" class="w-20 h-14 object-cover rounded-lg border" alt="">
+                                                    <button type="button" @click="section.data.bg_image = ''" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition">&times;</button>
+                                                </div>
+                                                <button type="button" @click="openPicker(idx, 'bg_image')" class="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-300 text-xs font-semibold text-gray-700 rounded-lg hover:bg-gray-50 transition">Select</button>
+                                                <button type="button" @click="uploadFor(idx, 'bg_image')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11]/10 text-xs font-semibold text-[#131414] rounded-lg hover:bg-[#FEBC11]/20 transition">Upload</button>
+                                            </div></div>
+                                    </div>
+                                </template>
+
+                                {{-- ═══════════════════════════════════════════ --}}
+                                {{-- ═══════ DESIGN & ANIMATION PANEL ═══════ --}}
+                                {{-- ADDED: Universal settings for ALL section types --}}
+                                {{-- ═══════════════════════════════════════════ --}}
+                                <div class="mt-6 pt-5 border-t border-gray-200" x-data="{ settingsTab: 'design' }">
+                                    <div class="flex gap-1 mb-4 border-b border-gray-100">
+                                        <button type="button" @click="settingsTab = 'design'"
+                                                :class="settingsTab === 'design' ? 'border-[#083321] text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                                                class="flex items-center gap-1.5 px-3 py-2 text-xs border-b-2 transition">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/></svg>
+                                            Design
+                                        </button>
+                                        <button type="button" @click="settingsTab = 'animation'"
+                                                :class="settingsTab === 'animation' ? 'border-[#083321] text-gray-900 font-semibold' : 'border-transparent text-gray-400 hover:text-gray-600'"
+                                                class="flex items-center gap-1.5 px-3 py-2 text-xs border-b-2 transition">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+                                            Animation
+                                        </button>
+                                    </div>
+
+                                    {{-- Design Tab --}}
+                                    <div x-show="settingsTab === 'design'" class="space-y-4">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Margin Top</label>
+                                                <select :name="'sections['+idx+'][data][design_margin_top]'" x-model="section.data.design_margin_top" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="">Default</option><option value="0">None</option><option value="1rem">Small</option><option value="2rem">Medium</option><option value="4rem">Large</option><option value="6rem">Extra Large</option>
+                                                </select></div>
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Margin Bottom</label>
+                                                <select :name="'sections['+idx+'][data][design_margin_bottom]'" x-model="section.data.design_margin_bottom" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="">Default</option><option value="0">None</option><option value="1rem">Small</option><option value="2rem">Medium</option><option value="4rem">Large</option><option value="6rem">Extra Large</option>
+                                                </select></div>
+                                        </div>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Padding</label>
+                                            <select :name="'sections['+idx+'][data][design_padding]'" x-model="section.data.design_padding" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                <option value="">Default</option><option value="0">None</option><option value="1rem">Small</option><option value="2rem">Medium</option><option value="3rem 2rem">Large</option><option value="5rem 2rem">Extra Large</option>
+                                            </select></div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Background Color Override</label>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="color" :name="'sections['+idx+'][data][design_bg_color]'" x-model="section.data.design_bg_color" class="w-9 h-9 p-0.5 border border-gray-300 rounded-lg cursor-pointer">
+                                                    <input type="text" x-model="section.data.design_bg_color" placeholder="None" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <button type="button" @click="section.data.design_bg_color = ''" class="text-xs text-gray-400 hover:text-red-500">✕</button>
+                                                </div></div>
+                                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Text Color Override</label>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="color" :name="'sections['+idx+'][data][design_text_color]'" x-model="section.data.design_text_color" class="w-9 h-9 p-0.5 border border-gray-300 rounded-lg cursor-pointer">
+                                                    <input type="text" x-model="section.data.design_text_color" placeholder="None" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <button type="button" @click="section.data.design_text_color = ''" class="text-xs text-gray-400 hover:text-red-500">✕</button>
+                                                </div></div>
+                                        </div>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1">Text Alignment</label>
+                                            <select :name="'sections['+idx+'][data][design_align]'" x-model="section.data.design_align" class="w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                <option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+                                            </select></div>
+                                    </div>
+
+                                    {{-- Animation Tab --}}
+                                    <div x-show="settingsTab === 'animation'" class="space-y-4">
+                                        <div>
+                                            <label class="flex items-center gap-3 cursor-pointer">
+                                                <input type="hidden" :name="'sections['+idx+'][data][animation_enabled]'" value="0">
+                                                <input type="checkbox" :name="'sections['+idx+'][data][animation_enabled]'" value="1"
+                                                       :checked="(section.data.animation_enabled ?? '1') !== '0'"
+                                                       @change="section.data.animation_enabled = $event.target.checked ? '1' : '0'"
+                                                       class="w-4 h-4 rounded border-gray-300 text-[#083321] focus:ring-[#FEBC11]">
+                                                <span class="text-sm font-medium text-gray-700">Enable scroll animation</span>
+                                            </label>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Animation Type</label>
+                                                <select :name="'sections['+idx+'][data][animation_type]'" x-model="section.data.animation_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="">None</option>
+                                                    <option value="fade-in">Fade In</option>
+                                                    <option value="slide-up">Slide Up</option>
+                                                    <option value="slide-left">Slide Left</option>
+                                                    <option value="slide-right">Slide Right</option>
+                                                    <option value="zoom-in">Zoom In</option>
+                                                    <option value="stagger">Stagger (cards/lists)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Speed</label>
+                                                <select :name="'sections['+idx+'][data][animation_speed]'" x-model="section.data.animation_speed" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                                    <option value="slow">Slow (1.2s)</option>
+                                                    <option value="medium" selected>Medium (0.8s)</option>
+                                                    <option value="fast">Fast (0.45s)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Delay (ms)</label>
+                                                <input type="number" :name="'sections['+idx+'][data][animation_delay]'" x-model="section.data.animation_delay" min="0" max="2000" step="50" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-400">Animation triggers when the section scrolls into view. "Stagger" is best for grid/card sections.</p>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </template>
@@ -878,6 +1047,22 @@
                             show_rating: '1',
                             gallery_layout: 'masonry',
                             lightbox: '1',
+                            // ADDED: design settings
+                            design_margin_top: '',
+                            design_margin_bottom: '',
+                            design_padding: '',
+                            design_bg_color: '',
+                            design_text_color: '',
+                            design_align: '',
+                            // ADDED: animation settings
+                            animation_type: '',
+                            animation_speed: 'medium',
+                            animation_delay: 0,
+                            animation_enabled: '1',
+                            // ADDED: booking_cta fields
+                            whatsapp_number: '',
+                            show_badges: '1',
+                            show_testimonials: '1',
                             ...(typeof s.data === 'object' && s.data !== null ? s.data : {}),
                         },
                         slides: (s.slides || []).map((sl, si) => ({
@@ -924,6 +1109,13 @@
                             layout: 'image_right', latitude: '', longitude: '', zoom: 6, embed_url: '', items: [],
                             columns: '3', category_filter: '', show_rating: '1',
                             gallery_layout: 'masonry', lightbox: '1',
+                            // ADDED: design settings
+                            design_margin_top: '', design_margin_bottom: '', design_padding: '',
+                            design_bg_color: '', design_text_color: '', design_align: '',
+                            // ADDED: animation settings
+                            animation_type: '', animation_speed: 'medium', animation_delay: 0, animation_enabled: '1',
+                            // ADDED: booking_cta fields
+                            whatsapp_number: '', show_badges: '1', show_testimonials: '1',
                         },
                         slides: [],
                     });
@@ -975,8 +1167,17 @@
                     });
                 },
 
-                removeSlide(sectionIdx, slideIdx) {
-                    if (confirm('Remove this slide?')) this.sections[sectionIdx].slides.splice(slideIdx, 1);
+                async removeSlide(sectionIdx, slideIdx) {
+                    const confirmed = await window.showLomoConfirm({
+                        title: 'Remove slide',
+                        message: 'Remove this slide?',
+                        confirmText: 'Remove slide',
+                        tone: 'danger',
+                    });
+
+                    if (confirmed) {
+                        this.sections[sectionIdx].slides.splice(slideIdx, 1);
+                    }
                 },
 
                 addWhyItem(sectionIdx) {
@@ -1051,7 +1252,18 @@
                             headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                             body: formData,
                         });
-                        if (!res.ok) throw new Error('Upload failed');
+
+                        if (!res.ok) {
+                            let message = 'Upload failed. Files can be up to {{ (int) config('uploads.max_upload_mb', 20) }}MB.';
+                            try {
+                                const data = await res.json();
+                                message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                            } catch (error) {
+                                console.error('Upload response parse error:', error);
+                            }
+                            throw new Error(message);
+                        }
+
                         const data = await res.json();
                         const media = data.media || [];
                         if (media.length) {
@@ -1071,7 +1283,9 @@
                         }
                     } catch (e) {
                         console.error('Upload error:', e);
-                        alert('Upload failed.');
+                        if (window.showLomoToast) {
+                            window.showLomoToast(e.message || 'Upload failed.', 'error');
+                        }
                     } finally {
                         event.target.value = '';
                     }
@@ -1089,11 +1303,24 @@
                             headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                             body: formData,
                         });
-                        if (!res.ok) throw new Error('Upload failed');
+
+                        if (!res.ok) {
+                            let message = 'Upload failed. Files can be up to {{ (int) config('uploads.max_upload_mb', 20) }}MB.';
+                            try {
+                                const data = await res.json();
+                                message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                            } catch (error) {
+                                console.error('Upload response parse error:', error);
+                            }
+                            throw new Error(message);
+                        }
+
                         await this.fetchMedia();
                     } catch (e) {
                         console.error('Upload error:', e);
-                        alert('Upload failed.');
+                        if (window.showLomoToast) {
+                            window.showLomoToast(e.message || 'Upload failed.', 'error');
+                        }
                     } finally {
                         event.target.value = '';
                     }

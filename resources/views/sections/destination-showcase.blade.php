@@ -10,12 +10,12 @@
     <div class="max-w-7xl mx-auto px-6">
 
         <div class="text-center mb-14 reveal">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Destinations</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-[#131414] leading-tight">
+            <p class="font-accent text-2xl md:text-3xl text-brand-gold mb-2">Destinations</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
-            <p class="mt-4 text-base text-[#131414]/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
+            <p class="mt-4 text-base text-brand-dark/50 max-w-lg mx-auto leading-relaxed">{{ $subheading }}</p>
             @endif
         </div>
 
@@ -23,7 +23,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($destinations as $destination)
             <a href="{{ route('destinations.show', $destination->slug) }}"
-               class="group relative rounded-2xl overflow-hidden aspect-[4/3] block reveal shadow-sm hover:shadow-xl transition-all duration-300"
+               class="group relative rounded-2xl overflow-hidden aspect-[3/4] block reveal shadow-sm hover:shadow-xl transition-all duration-300"
                style="transition-delay: {{ ($loop->index + 1) * 100 }}ms;">
                 @if($destination->featured_image)
                     <img src="{{ asset('storage/' . $destination->featured_image) }}"
@@ -32,7 +32,7 @@
                 @endif
                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 class="font-heading text-xl font-bold mb-1">{{ $destination->translated('name') }}</h3>
+                    <h3 class="font-heading text-2xl font-bold text-white uppercase tracking-wide mb-1">{{ $destination->translated('name') }}</h3>
                     @if($destination->country)
                         <p class="text-sm text-white/90">{{ $destination->country->name }}</p>
                     @endif

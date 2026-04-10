@@ -39,12 +39,16 @@
                         @error('slug') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
+                    {{-- UPDATED: Rich text editor for description --}}
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="description" id="description" rows="5"
-                                  placeholder="Describe this accommodation…"
-                                  class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11]">{{ old('description', $accommodation->description ?? '') }}</textarea>
-                        @error('description') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                        @include('admin.partials.rich-editor', [
+                            'name'  => 'description',
+                            'id'    => 'accommodation_description',
+                            'value' => old('description', $accommodation->description ?? ''),
+                            'label' => 'Description',
+                            'rows'  => 'medium',
+                            'placeholder' => 'Describe this accommodation...',
+                        ])
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -92,7 +96,7 @@
                 'model' => $accommodation ?? null,
                 'fields' => [
                     ['name' => 'name', 'label' => 'Name', 'type' => 'text'],
-                    ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'rows' => 5],
+                    ['name' => 'description', 'label' => 'Description', 'type' => 'richtext', 'rows' => 5],
                 ],
             ])
 

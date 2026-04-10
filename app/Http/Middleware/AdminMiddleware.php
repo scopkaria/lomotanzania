@@ -13,7 +13,7 @@ class AdminMiddleware
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, ['admin', 'super_admin', 'worker'])) {
+        if (! $user || ! in_array($user->role, ['admin', 'super_admin'])) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

@@ -5,7 +5,27 @@
         <div class="mb-4 px-4 py-3 rounded-lg bg-green-50 text-green-800 text-sm font-medium">{{ session('success') }}</div>
     @endif
 
-    <div x-data="adminTable({ ids: [{{ $posts->pluck('id')->join(',') }}], key: 'posts', columns: { category: true, author: true, status: true, date: true } })">
+    <div x-data="adminTable({ ids: [{{ $posts->pluck('id')->join(',') }}], key: 'posts', columns: { category: true, author: true, status: true, date: true }, sortField: '{{ request('sort', '') }}', sortDir: '{{ request('direction', 'asc') }}' })">
+
+        {{-- Screen Options --}}
+        <div class="mb-3 flex justify-end">
+            <div class="relative">
+                <button @click="showScreenOptions = !showScreenOptions" type="button" class="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
+                    Screen Options
+                </button>
+                <div x-show="showScreenOptions" @click.away="showScreenOptions = false" x-cloak
+                     class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-3 px-4 z-30">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Show Columns</p>
+                    @foreach(['category' => 'Category', 'author' => 'Author', 'status' => 'Status', 'date' => 'Date'] as $ck => $cl)
+                        <label class="flex items-center gap-2 py-1 cursor-pointer">
+                            <input type="checkbox" :checked="isVisible('{{ $ck }}')" @change="toggleColumn('{{ $ck }}')" class="rounded border-gray-300 text-[#083321] focus:ring-[#083321]">
+                            <span class="text-sm text-gray-700">{{ $cl }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        </div>
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div class="flex flex-wrap items-center gap-3">
@@ -67,17 +87,31 @@
                 <thead>
                     <tr class="bg-gray-50/80">
                         <th class="w-10 px-4 py-3"><input type="checkbox" @click="toggleSelectAll()" :checked="selectAll" class="rounded border-gray-300 text-[#083321] focus:ring-[#083321]"></th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Post</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700" @click="sortBy('title')">
+                            <span class="inline-flex items-center gap-1">Post
+                                <template x-if="sortField === 'title'"><svg class="w-3 h-3" :class="sortDir === 'desc' && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg></template>
+                            </span>
+                        </th>
                         <th x-show="isVisible('category')" class="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
                         <th x-show="isVisible('author')" class="hidden lg:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Author</th>
-                        <th x-show="isVisible('status')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th x-show="isVisible('date')" class="hidden sm:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th x-show="isVisible('status')" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700" @click="sortBy('status')">
+                            <span class="inline-flex items-center gap-1">Status
+                                <template x-if="sortField === 'status'"><svg class="w-3 h-3" :class="sortDir === 'desc' && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg></template>
+                            </span>
+                        </th>
+                        <th x-show="isVisible('date')" class="hidden sm:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700" @click="sortBy('published_at')">
+                            <span class="inline-flex items-center gap-1">Date
+                                <template x-if="sortField === 'published_at'"><svg class="w-3 h-3" :class="sortDir === 'desc' && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg></template>
+                            </span>
+                        </th>
                         <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @forelse($posts as $post)
-                        <tr class="hover:bg-[#F9F7F3]/60 transition-colors" :class="isSelected({{ $post->id }}) && 'bg-[#083321]/5'">
+                        <tr class="hover:bg-[#F9F7F3]/60 transition-colors cursor-pointer"
+                            :class="isSelected({{ $post->id }}) && 'bg-[#083321]/5'"
+                            @click="rowClick('{{ route('admin.posts.edit', $post) }}', $event)">
                             <td class="w-10 px-4 py-3"><input type="checkbox" @click="toggleRow({{ $post->id }})" :checked="isSelected({{ $post->id }})" class="rounded border-gray-300 text-[#083321] focus:ring-[#083321]"></td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
@@ -89,7 +123,7 @@
                                         </div>
                                     @endif
                                     <div class="min-w-0">
-                                        <p class="text-sm font-semibold text-gray-900 truncate">{{ $post->title['en'] ?? '—' }}</p>
+                                        <a href="{{ route('admin.posts.edit', $post) }}" class="text-sm font-semibold text-gray-900 hover:text-[#FEBC11] transition-colors truncate block">{{ $post->title['en'] ?? '—' }}</a>
                                         <p class="text-xs text-gray-400 font-mono truncate">/blog/{{ $post->slug }}</p>
                                     </div>
                                 </div>

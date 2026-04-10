@@ -16,6 +16,7 @@ return [
     'countries'     => 'Countries',
     'categories'    => 'Budget',
     'safari_types'  => 'Experiences',
+    'popular_safaris' => 'Popular Safaris',
     'explore'       => 'Explore',
     'mega_dest_text'=> 'Discover Tanzania\'s most breathtaking wildlife destinations.',
     'mega_safari_text'=> 'Tailored safari journeys through the heart of East Africa.',
@@ -38,6 +39,7 @@ return [
     'view_country'           => 'View Country',
     'view_tours'             => 'View Tours',
     'ready_to_plan'          => 'Ready to Plan Your Journey?',
+    'ready_to_plan_desc'     => 'Download the full itinerary to share with your travel companions, or start customising this safari to match your dates, group size, and preferences.',
     'download_itinerary'     => 'Download Itinerary',
     'plan_this_safari'       => 'Plan This Safari',
     'related_tours'          => 'Related Tours',
@@ -83,7 +85,7 @@ return [
     'per_person'    => 'Per Person',
     'download_pdf'  => 'Download PDF',
     'overview'      => 'Overview',
-    'editorial_overview'     => 'Editorial Overview',
+    'editorial_overview'     => 'Experience Overview',
     'journey_map'            => 'Journey Map',
     'route_overview'         => 'Route Overview',
     'route_overview_desc'    => 'Follow the itinerary as it moves through each destination, with grouped day ranges for consecutive stays.',
@@ -93,8 +95,10 @@ return [
     'itinerary_stops'        => 'Itinerary Stops',
     'itinerary_map_note'     => 'Add itinerary destinations with coordinates to show the route summary.',
     'highlights_intro'       => 'The standout moments woven into this safari.',
-    'pricing_inclusions'     => 'Pricing, Inclusions & Exclusions',
-    'pricing_inclusions_desc'=> 'Everything you need to understand what is included, what is not, and how the seasonal rates are structured.',
+    'pricing_inclusions'     => 'Inclusions & Exclusions',
+    'pricing_inclusions_desc'=> 'A clear view of what is covered and what to plan for separately.',
+    'pricing_section_desc'   => 'Transparent pricing per person based on group size and travel season.',
+    'seasonal_rates'         => 'Seasonal Rates',
     'itinerary_section_desc' => 'An editorial journey through each day of the safari, with destinations, imagery, and places you will stay.',
     'day_prefix'             => 'Day',
     'safari_day'             => 'Safari Day',
@@ -202,6 +206,7 @@ return [
     'about_destination'     => 'About This Destination',
     'available_safaris_in'  => 'Available Safaris in :destination',
     'no_safaris_destination'=> 'No safaris are currently available for this destination.',
+    'no_description_available' => 'No description available yet.',
     'view_on_map'           => 'View on Map',
 
     // Country page
@@ -310,4 +315,27 @@ return [
     'lang_fr' => 'Français',
     'lang_de' => 'Deutsch',
     'lang_es' => 'Español',
+
+    // Beach holidays
+    'coastal_paradise'      => 'Coastal Paradise',
+    'beach_holidays'        => 'Beach Holidays',
+    'beach_subtitle'        => 'Discover stunning beach destinations along the East African coast and islands.',
+    'no_beach_holidays'     => 'No beach holidays available yet. Check back soon!',
+
+    // Blog comments
+    'comments'              => 'Comments',
+    'no_comments'           => 'No comments yet. Be the first to share your thoughts!',
+    'leave_comment'         => 'Leave a Comment',
+    'email_not_published'   => 'Your email will not be published.',
+    'submit_comment'        => 'Submit Comment',
+    'comment_success'       => 'Thank you! Your comment is awaiting moderation.',
+
+    // TOC
+    'on_this_page'          => 'On this page',
+    'toc_empty'             => 'Table of contents will appear when the article has headings.',
+
+    // ADDED: Destination CTA
+    'plan_safari_to'        => 'Plan Your Safari to :destination',
+    'destination_cta_text'  => 'Let our local experts create a personalized itinerary tailored to your interests, budget, and travel dates.',
+    'plan_my_safari'        => 'Plan My Safari',
 ];

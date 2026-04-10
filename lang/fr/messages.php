@@ -16,6 +16,7 @@ return [
     'countries'     => 'Pays',
     'categories'    => 'Budget',
     'safari_types'  => 'Expériences',
+    'popular_safaris' => 'Safaris Populaires',
     'explore'       => 'Explorer',
     'mega_dest_text'=> 'Découvrez les destinations de faune sauvage les plus époustouflantes de Tanzanie.',
     'mega_safari_text'=> 'Des voyages safari sur mesure au cœur de l\'Afrique de l\'Est.',
@@ -93,8 +94,10 @@ return [
     'itinerary_stops'        => 'Étapes de l\'itinéraire',
     'itinerary_map_note'     => 'Ajoutez des destinations avec coordonnées pour afficher le résumé de l\'itinéraire.',
     'highlights_intro'       => 'Les moments forts de ce safari.',
-    'pricing_inclusions'     => 'Tarifs, Inclusions & Exclusions',
-    'pricing_inclusions_desc'=> 'Tout ce qu\'il faut savoir sur ce qui est inclus, ce qui ne l\'est pas, et la structure des tarifs saisonniers.',
+    'pricing_inclusions'     => 'Inclusions & Exclusions',
+    'pricing_inclusions_desc'=> 'Un aper\u00e7u clair de ce qui est couvert et ce qui reste \u00e0 votre charge.',
+    'pricing_section_desc'   => 'Tarification transparente par personne selon la taille du groupe et la saison.',
+    'seasonal_rates'         => 'Tarifs Saisonniers',
     'itinerary_section_desc' => 'Un voyage éditorial à travers chaque jour du safari, avec destinations, images et hébergements.',
     'day_prefix'             => 'Jour',
     'safari_day'             => 'Jour de safari',
@@ -310,4 +313,31 @@ return [
     'lang_fr' => 'Français',
     'lang_de' => 'Deutsch',
     'lang_es' => 'Español',
+
+    // ADDED: Destination CTA
+    'plan_safari_to'        => 'Planifiez votre safari à :destination',
+    'destination_cta_text'  => 'Laissez nos experts locaux créer un itinéraire personnalisé adapté à vos intérêts, budget et dates de voyage.',
+    'plan_my_safari'        => 'Planifier mon safari',
+
+    // Safari CTA
+    'ready_to_plan_desc'    => 'Téléchargez l\'itinéraire complet à partager avec vos compagnons de voyage, ou commencez à personnaliser ce safari selon vos dates, taille de groupe et préférences.',
+    'no_description_available' => 'Aucune description disponible pour le moment.',
+
+    // Beach Holidays
+    'coastal_paradise'      => 'Paradis Côtier',
+    'beach_holidays'        => 'Vacances Balnéaires',
+    'beach_subtitle'        => 'Découvrez de superbes destinations balnéaires le long de la côte et des îles d\'Afrique de l\'Est.',
+    'no_beach_holidays'     => 'Aucune offre balnéaire disponible pour le moment. Revenez bientôt !',
+
+    // Blog Comments
+    'comments'              => 'Commentaires',
+    'no_comments'           => 'Aucun commentaire pour le moment. Soyez le premier à partager vos impressions !',
+    'leave_comment'         => 'Laisser un commentaire',
+    'email_not_published'   => 'Votre email ne sera pas publié.',
+    'submit_comment'        => 'Envoyer le commentaire',
+    'comment_success'       => 'Merci ! Votre commentaire est en attente de modération.',
+
+    // TOC
+    'on_this_page'          => 'Sur cette page',
+    'toc_empty'             => 'Le sommaire apparaîtra lorsque l\'article contiendra des titres.',
 ];

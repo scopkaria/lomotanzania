@@ -72,8 +72,8 @@
                     <td class="px-5 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ route('admin.workers.admin-edit', $admin) }}" class="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs hover:bg-gray-200 transition">Edit</a>
-                            <form method="POST" action="{{ route('admin.workers.admin-destroy', $admin) }}" x-data
-                                  @submit.prevent="if(confirm('Delete this administrator?')) $el.submit()">
+                                <form method="POST" action="{{ route('admin.workers.admin-destroy', $admin) }}" x-data
+                                    @submit.prevent="window.showLomoConfirm({ title: 'Delete administrator', message: 'Delete this administrator?', confirmText: 'Delete administrator', tone: 'danger' }).then(confirmed => { if (confirmed) $el.submit(); })">
                                 @csrf @method('DELETE')
                                 <button class="px-2.5 py-1 bg-red-50 text-red-600 rounded-lg text-xs hover:bg-red-100 transition">Delete</button>
                             </form>

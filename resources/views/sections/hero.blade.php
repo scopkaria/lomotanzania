@@ -15,6 +15,11 @@
 
     $btnText       = $heroSettings?->button_text ?? [];
     $btnLink       = $heroSettings?->button_link;
+    $bgVideoMime   = match (strtolower(pathinfo((string) $bgVideo, PATHINFO_EXTENSION))) {
+        'webm' => 'video/webm',
+        'mov' => 'video/quicktime',
+        default => 'video/mp4',
+    };
 @endphp
 
 @if($heroSafaris->count())
@@ -35,7 +40,7 @@
         <video autoplay muted loop playsinline
                poster="{{ $videoPoster ? asset('storage/' . $videoPoster) : '' }}"
                class="w-full h-full object-cover">
-            <source src="{{ asset('storage/' . $bgVideo) }}" type="video/mp4">
+            <source src="{{ asset('storage/' . $bgVideo) }}" type="{{ $bgVideoMime }}">
         </video>
     </div>
     @elseif($videoPoster)
@@ -59,7 +64,7 @@
 
                     {{-- Label --}}
                     @if($safari->featured_label)
-                    <p class="text-xs md:text-sm font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-5"
+                    <p class="text-kicker tracking-kicker uppercase text-[#FEBC11] mb-5"
                        x-show="active === {{ $i }}"
                        x-transition:enter="transition duration-700 delay-200"
                        x-transition:enter-start="opacity-0 -translate-y-3"
@@ -69,7 +74,7 @@
                     @endif
 
                     {{-- Title --}}
-                    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.05] mb-6"
+                    <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.08] tracking-[0.01em] mb-6"
                         x-show="active === {{ $i }}"
                         x-transition:enter="transition duration-700 delay-300"
                         x-transition:enter-start="opacity-0 translate-y-4"
@@ -79,7 +84,7 @@
 
                     {{-- Subtitle / Short Description --}}
                     @if($safari->translated('short_description', $locale))
-                    <p class="text-base md:text-lg text-white/85 leading-relaxed mb-10 max-w-md"
+                    <p class="text-base md:text-lg text-white/80 leading-relaxed mb-10 max-w-md tracking-wide"
                        x-show="active === {{ $i }}"
                        x-transition:enter="transition duration-700 delay-[400ms]"
                        x-transition:enter-start="opacity-0 translate-y-4"
@@ -99,7 +104,7 @@
                             $heroLabel = $btnText[$locale] ?? $btnText['en'] ?? __('messages.explore_safari') ?: 'Explore Safari';
                         @endphp
                         <a href="{{ $heroUrl }}"
-                           class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-wider rounded hover:scale-105 hover:brightness-90 transition-all duration-300 shadow-lg shadow-[#FEBC11]/20">
+                           class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-[0.15em] rounded hover:scale-105 hover:brightness-90 transition-all duration-300 shadow-lg shadow-[#FEBC11]/20">
                             {{ $heroLabel }}
                         </a>
                     </div>
@@ -302,19 +307,19 @@ function luxuryHero(total, autoplay, interval) {
         <div class="relative z-10 flex flex-col lg:flex-row w-full max-w-7xl mx-auto px-6 lg:px-12">
             <div class="flex-1 flex flex-col justify-center py-24 lg:py-32 lg:pr-12">
                 @if($slide->translated('label', $locale))
-                <p class="text-xs md:text-sm font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-5"
+                <p class="text-kicker tracking-kicker uppercase text-[#FEBC11] mb-5"
                    x-show="active === {{ $i }}" x-transition:enter="transition duration-700 delay-200" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     {{ $slide->translated('label', $locale) }}
                 </p>
                 @endif
 
-                <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.05] mb-6"
+                <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.08] tracking-[0.01em] mb-6"
                     x-show="active === {{ $i }}" x-transition:enter="transition duration-700 delay-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     {{ $slide->translated('title', $locale) }}
                 </h1>
 
                 @if($slide->translated('subtitle', $locale))
-                <p class="text-base md:text-lg text-white/85 leading-relaxed mb-10 max-w-md"
+                <p class="text-base md:text-lg text-white/80 leading-relaxed mb-10 max-w-md tracking-wide"
                    x-show="active === {{ $i }}" x-transition:enter="transition duration-700 delay-400" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     {{ $slide->translated('subtitle', $locale) }}
                 </p>
@@ -323,7 +328,7 @@ function luxuryHero(total, autoplay, interval) {
                 @if($slide->translated('button_text', $locale) && $slide->button_link)
                 <div x-show="active === {{ $i }}" x-transition:enter="transition duration-700 delay-500" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
                     <a href="{{ $slide->button_link }}"
-                       class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-wider rounded hover:scale-105 hover:brightness-90 transition-all duration-300 shadow-lg shadow-[#FEBC11]/20">
+                       class="inline-block px-8 py-4 bg-[#FEBC11] text-[#131414] text-sm font-bold uppercase tracking-[0.15em] rounded hover:scale-105 hover:brightness-90 transition-all duration-300 shadow-lg shadow-[#FEBC11]/20">
                         {{ $slide->translated('button_text', $locale) }}
                     </a>
                 </div>

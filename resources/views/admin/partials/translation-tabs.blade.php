@@ -109,12 +109,14 @@
                                   placeholder="{{ $field['placeholder'] ?? "Enter {$fieldLabel} in {$locale['name']}" }}"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">{{ $currentValue }}</textarea>
                     @elseif($fieldType === 'richtext')
-                        <textarea name="translations[{{ $code }}][{{ $fieldName }}]"
-                                  id="translations_{{ $code }}_{{ $fieldName }}"
-                                  rows="{{ $field['rows'] ?? 6 }}"
-                                  placeholder="{{ $field['placeholder'] ?? "Enter {$fieldLabel} in {$locale['name']}" }}"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">{{ $currentValue }}</textarea>
-                        <p class="mt-1 text-xs text-gray-400">Plain text or HTML. The rich text editor is available for the main English field above.</p>
+                        @include('admin.partials.rich-editor', [
+                            'name'        => "translations[{$code}][{$fieldName}]",
+                            'id'          => "translations_{$code}_{$fieldName}",
+                            'value'       => $currentValue,
+                            'rows'        => $field['rows'] ?? 'medium',
+                            'placeholder' => $field['placeholder'] ?? "Enter {$fieldLabel} in {$locale['name']}",
+                            'label'       => null,
+                        ])
                     @else
                         <input type="text"
                                name="translations[{{ $code }}][{{ $fieldName }}]"
@@ -149,11 +151,10 @@ document.addEventListener('alpine:init', () => {
         },
 
         syncQuillEditors() {
-            document.querySelectorAll('[data-quill-wrapper]').forEach(wrapper => {
-                const editor = wrapper.querySelector('.ql-editor');
-                const hidden = wrapper.closest('div').querySelector('input[type=hidden]');
-                if (editor && hidden) hidden.value = editor.innerHTML;
-            });
+            // Sync all rich text editors to their textareas
+            if (typeof window.syncAllEditors === 'function') {
+                window.syncAllEditors();
+            }
         },
 
         copyFromEnglish() {
@@ -164,6 +165,11 @@ document.addEventListener('alpine:init', () => {
                 if (source && target) {
                     target.value = source.value;
                     target.dispatchEvent(new Event('input', { bubbles: true }));
+                    // Also update rich text editor if present
+                    const editorId = 'translations_' + this.langTab + '_' + field;
+                    if (typeof window.setEditorContent === 'function') {
+                        window.setEditorContent(editorId, source.value);
+                    }
                 }
             });
         },
@@ -214,6 +220,11 @@ document.addEventListener('alpine:init', () => {
                 const translated = await this.translateText(text, langCode);
                 target.value = translated;
                 target.dispatchEvent(new Event('input', { bubbles: true }));
+                // Update rich text editor if this is a rich text field
+                const editorId = 'translations_' + langCode + '_' + fieldName;
+                if (typeof window.setEditorContent === 'function') {
+                    window.setEditorContent(editorId, translated);
+                }
             } catch (e) {
                 this.translateMsg = 'Translation failed: ' + e.message;
                 this.translateError = true;
@@ -243,6 +254,11 @@ document.addEventListener('alpine:init', () => {
                     const translated = await this.translateText(text, lang);
                     target.value = translated;
                     target.dispatchEvent(new Event('input', { bubbles: true }));
+                    // Update rich text editor if this is a rich text field
+                    const editorId = 'translations_' + lang + '_' + field;
+                    if (typeof window.setEditorContent === 'function') {
+                        window.setEditorContent(editorId, translated);
+                    }
                     success++;
                 } catch (e) {
                     failed++;

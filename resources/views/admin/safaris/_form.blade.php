@@ -92,27 +92,7 @@
 @endphp
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
-    <style>
-        .quill-shell .ql-toolbar.ql-snow,
-        .quill-shell .ql-container.ql-snow {
-            border-color: rgb(209 213 219);
-        }
-
-        .quill-shell .ql-toolbar.ql-snow {
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
-            background: #fff;
-        }
-
-        .quill-shell .ql-container.ql-snow {
-            min-height: 18rem;
-            border-bottom-left-radius: 0.5rem;
-            border-bottom-right-radius: 0.5rem;
-            background: #fff;
-            font-size: 0.875rem;
-        }
-    </style>
+    {{-- Editor styles are loaded via the rich-editor partial --}}
 @endpush
 
 @if($errors->any())
@@ -182,15 +162,16 @@
                     @error('overview_title') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-                    <input type="hidden" name="description" id="description" value="{{ old('description', $safari->description ?? '') }}">
-                    <div class="quill-shell" data-quill-wrapper>
-                        <div id="description_editor"
-                             class="rounded-lg"
-                             data-initial-html="{{ e(old('description', $safari->description ?? '')) }}"></div>
-                    </div>
-                    <p class="mt-1 text-xs text-gray-400">Safe HTML is allowed and will render on the safari detail page.</p>
-                    @error('description') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    {{-- UPDATED: Jodit rich text editor replaces Quill --}}
+                    @include('admin.partials.rich-editor', [
+                        'name'  => 'description',
+                        'id'    => 'safari_description',
+                        'value' => old('description', $safari->description ?? ''),
+                        'label' => 'Full Description',
+                        'rows'  => 'large',
+                        'placeholder' => 'Craft the long-form editorial overview for this safari...',
+                    ])
+                    <p class="mt-1 text-xs text-gray-400">Rich HTML is allowed and will render on the safari detail page.</p>
                 </div>
             </div>
         </div>
@@ -361,6 +342,29 @@
                         </select>
                         @error('safari_type') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- ADDED: Tour Categories multi-select (Safari/Trekking/Beach, combo = multiple) --}}
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tour Categories</label>
+                        <p class="text-xs text-gray-400 mb-2">Select one or more. Multiple = Combo tour (appears in all selected category pages).</p>
+                        <div class="flex flex-wrap gap-3">
+                            @php
+                                $selectedTourCats = old('tour_categories', $editing ? $safari->tourCategories->pluck('id')->toArray() : []);
+                                $selectedTourCats = array_map('intval', is_array($selectedTourCats) ? $selectedTourCats : []);
+                            @endphp
+                            @foreach($tourCategoriesList ?? [] as $tc)
+                                <label class="inline-flex items-center gap-2 px-4 py-2.5 border rounded-lg cursor-pointer transition
+                                    {{ in_array($tc->id, $selectedTourCats) ? 'border-green-600 bg-green-50 text-green-800' : 'border-gray-200 bg-white text-gray-600 hover:border-green-300' }}">
+                                    <input type="checkbox" name="tour_categories[]" value="{{ $tc->id }}"
+                                           {{ in_array($tc->id, $selectedTourCats) ? 'checked' : '' }}
+                                           class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                           onchange="this.closest('label').classList.toggle('border-green-600', this.checked); this.closest('label').classList.toggle('bg-green-50', this.checked); this.closest('label').classList.toggle('text-green-800', this.checked);">
+                                    <span class="text-sm font-medium">{{ $tc->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <div>
                         <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
                         <select name="difficulty" id="difficulty"
@@ -417,7 +421,7 @@
                                         <div>
                                             <label for="seasonal_pricing_{{ $seasonKey }}_{{ $paxKey }}" class="block text-xs font-medium text-gray-600 mb-1">{{ $paxLabel }}</label>
                                             <div class="relative">
-                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" x-text="selectedCurrency"></span>
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium pointer-events-none" x-text="selectedCurrency"></span>
                                                 <input type="number"
                                                        name="seasonal_pricing[{{ $seasonKey }}][{{ $paxKey }}]"
                                                        id="seasonal_pricing_{{ $seasonKey }}_{{ $paxKey }}"
@@ -425,7 +429,7 @@
                                                        min="0"
                                                        value="{{ old('seasonal_pricing.' . $seasonKey . '.' . $paxKey, data_get($seasonalPricing, $seasonKey . '.' . $paxKey, '')) }}"
                                                        placeholder="0.00"
-                                                       class="w-full rounded-lg border border-gray-300 bg-white py-3 pl-14 pr-4 text-sm focus:border-[#FEBC11] focus:ring-2 focus:ring-[#FEBC11]">
+                                                       class="w-full rounded-lg border border-gray-300 bg-white py-3 pl-12 pr-4 text-sm focus:border-[#FEBC11] focus:ring-2 focus:ring-[#FEBC11]">
                                             </div>
                                             @error('seasonal_pricing.' . $seasonKey . '.' . $paxKey) <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                                         </div>
@@ -457,13 +461,13 @@
                 <div>
                     <label for="video_url" class="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                         </span>
                         <input type="url" name="video_url" id="video_url"
                                value="{{ old('video_url', $safari->video_url ?? '') }}"
-                               placeholder="https://youtube.com/watch?v=…"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm pl-9">
+                               placeholder="https://youtube.com/watch?v=..."
+                               class="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-[#FEBC11] focus:border-[#FEBC11] text-sm">
                     </div>
                     @error('video_url') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     <p class="mt-1 text-xs text-gray-400">Route mapping now uses itinerary destination coordinates and the public Mapbox view automatically.</p>
@@ -578,13 +582,13 @@
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Day Image</label>
                                     <div x-data="mediaPicker(day.image_path || '')" class="space-y-2">
-                                        <div x-show="currentImage" x-transition class="relative inline-block group">
-                                            <img :src="'/storage/' + currentImage"
+                                        <div x-show="currentPath" x-transition class="relative inline-block group">
+                                            <img :src="'/storage/' + currentPath"
                                                  class="h-20 w-28 rounded-lg object-cover border border-gray-200 shadow-sm" alt="Day image">
-                                            <button type="button" @click="removeImage()"
+                                            <button type="button" @click="removeFile()"
                                                     class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-600 transition opacity-0 group-hover:opacity-100">&times;</button>
                                         </div>
-                                        <input type="hidden" :name="'itinerary[' + idx + '][image_path]'" :value="currentImage">
+                                        <input type="hidden" :name="'itinerary[' + idx + '][image_path]'" :value="currentPath">
                                         <div class="flex items-center gap-2">
                                             <button type="button" @click="openLibrary()"
                                                     class="inline-flex items-center gap-1 px-2.5 py-1.5 border border-gray-300 text-[11px] font-semibold text-gray-700 rounded-lg hover:bg-gray-50 hover:border-[#FEBC11] transition">
@@ -599,28 +603,68 @@
                                             <input type="file" x-ref="fileUpload" @change="uploadFile($event)" class="hidden" accept="image/*">
                                             <span x-show="uploading" class="text-[11px] text-gray-400">Uploading…</span>
                                         </div>
-                                        {{-- Inline library modal --}}
+                                        {{-- Inline library modal — GLOBAL MEDIA PICKER --}}
                                         <div x-show="libraryOpen" x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" style="display:none;">
                                             <div @click.outside="libraryOpen = false" class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+                                                {{-- Header --}}
                                                 <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
                                                     <h3 class="font-bold text-gray-900 text-base">Media Library</h3>
                                                     <button type="button" @click="libraryOpen = false" class="p-1 hover:bg-gray-100 rounded-lg transition"><svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
                                                 </div>
-                                                <div class="px-5 py-3 border-b border-gray-100 shrink-0">
-                                                    <input type="text" x-model="searchQuery" @input.debounce.300ms="fetchMedia()" placeholder="Search images…" class="w-full px-4 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#FEBC11]/50 focus:border-[#FEBC11]">
+                                                {{-- Search + Upload bar --}}
+                                                <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3 shrink-0">
+                                                    <div class="relative flex-1">
+                                                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                                                        <input type="text" x-model="searchQuery" @input.debounce.300ms="currentPage = 1; libraryItems = []; fetchMedia()"
+                                                               placeholder="Search images…"
+                                                               class="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#FEBC11]/50 focus:border-[#FEBC11]">
+                                                    </div>
+                                                    <button type="button" @click="$refs.modalUpload.click()"
+                                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-[#FEBC11] text-[#131414] text-xs font-bold rounded-lg hover:bg-yellow-400 transition shrink-0">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                                        Upload
+                                                    </button>
+                                                    <input type="file" x-ref="modalUpload" @change="uploadFromModal($event)" class="hidden" accept="image/*" multiple>
                                                 </div>
+                                                {{-- Grid --}}
                                                 <div class="flex-1 overflow-y-auto p-5">
+                                                    <div x-show="modalUploading" class="text-center py-4 text-sm text-gray-500">
+                                                        <svg class="w-5 h-5 animate-spin mx-auto mb-2 text-[#FEBC11]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                                        Uploading…
+                                                    </div>
                                                     <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                                                         <template x-for="item in libraryItems" :key="item.id">
-                                                            <button type="button" @click="selectItem(item)" class="aspect-square rounded-lg overflow-hidden border-2 transition hover:shadow-md" :class="selectedId === item.id ? 'border-[#FEBC11] ring-2 ring-[#FEBC11]/30' : 'border-transparent hover:border-gray-200'">
-                                                                <img :src="'/storage/' + item.path" class="w-full h-full object-cover">
+                                                            <button type="button" @click="selectItem(item)"
+                                                                    class="aspect-square rounded-lg overflow-hidden border-2 transition hover:shadow-md relative group"
+                                                                    :class="selectedId === item.id ? 'border-[#FEBC11] ring-2 ring-[#FEBC11]/30 shadow-md' : 'border-transparent hover:border-gray-200'">
+                                                                <img :src="'/storage/' + item.path" :alt="item.filename" class="w-full h-full object-cover">
+                                                                <div class="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-0.5 text-[9px] text-white truncate opacity-0 group-hover:opacity-100 transition"
+                                                                     x-text="item.filename"></div>
                                                             </button>
                                                         </template>
                                                     </div>
+                                                    <div x-show="libraryItems.length === 0 && !modalUploading" class="text-center py-12 text-gray-400 text-sm">No images found.</div>
+                                                    {{-- LOAD MORE --}}
+                                                    <div x-show="currentPage < lastPage" class="text-center pt-4">
+                                                        <button type="button" @click="loadMore()" :disabled="loadingMore"
+                                                                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#131414] bg-[#FEBC11]/20 rounded-lg hover:bg-[#FEBC11]/40 transition disabled:opacity-50">
+                                                            <template x-if="loadingMore">
+                                                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                                            </template>
+                                                            Load More
+                                                        </button>
+                                                        <p class="text-xs text-gray-400 mt-1" x-text="'Showing ' + libraryItems.length + ' of ' + totalItems"></p>
+                                                    </div>
                                                 </div>
-                                                <div class="px-5 py-3 border-t border-gray-100 flex justify-end gap-2 shrink-0">
-                                                    <button type="button" @click="libraryOpen = false" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Cancel</button>
-                                                    <button type="button" @click="confirmSelection()" :disabled="!selectedId" class="px-4 py-2 bg-[#FEBC11] text-[#131414] text-sm font-bold rounded-lg hover:bg-yellow-400 transition disabled:opacity-40 disabled:cursor-not-allowed">Use Image</button>
+                                                {{-- Footer --}}
+                                                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between shrink-0">
+                                                    <p class="text-xs text-gray-400" x-show="selectedId">
+                                                        Selected: <span class="font-medium text-gray-600" x-text="selectedFilename"></span>
+                                                    </p>
+                                                    <div class="flex gap-2 ml-auto">
+                                                        <button type="button" @click="libraryOpen = false" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                                                        <button type="button" @click="confirmSelection()" :disabled="!selectedId" class="px-4 py-2 bg-[#FEBC11] text-[#131414] text-sm font-bold rounded-lg hover:bg-yellow-400 transition disabled:opacity-40 disabled:cursor-not-allowed">Use Image</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1195,40 +1239,4 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 
-@push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const editorElement = document.getElementById('description_editor');
-            const hiddenInput = document.getElementById('description');
-
-            if (!editorElement || !hiddenInput || typeof Quill === 'undefined') {
-                return;
-            }
-
-            const quill = new Quill(editorElement, {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        [{ header: [3, 4, false] }],
-                        ['bold', 'italic', 'underline', 'blockquote'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['link'],
-                        ['clean'],
-                    ],
-                },
-                placeholder: 'Craft the long-form editorial overview for this safari...',
-            });
-
-            const initialHtml = editorElement.dataset.initialHtml || '';
-            quill.root.innerHTML = initialHtml || '<p><br></p>';
-
-            const syncEditor = () => {
-                hiddenInput.value = quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML;
-            };
-
-            quill.on('text-change', syncEditor);
-            syncEditor();
-        });
-    </script>
-@endpush
+{{-- Old Quill editor removed — Jodit is loaded via the rich-editor partial --}}

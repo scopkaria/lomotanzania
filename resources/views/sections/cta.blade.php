@@ -17,7 +17,7 @@
     @endif
 
     <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
-        <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-5 reveal">
+        <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-heading tracking-safari mb-5 reveal">
             {{ $heading }}
         </h2>
         @if($subheading)

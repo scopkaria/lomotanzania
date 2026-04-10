@@ -11,7 +11,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                         Back to list
                     </a>
-                    <a href="{{ route('safaris.show', $safari->slug) }}" target="_blank"
+                    <a href="{{ route('safaris.show', ['locale' => app()->getLocale(), 'slug' => $safari->slug]) }}" target="_blank"
                        class="inline-flex items-center gap-1.5 rounded-lg bg-brand-green/5 px-3 py-1.5 text-sm font-medium text-brand-green transition hover:bg-brand-green/10">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                         View on site

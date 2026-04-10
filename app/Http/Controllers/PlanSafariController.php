@@ -56,16 +56,23 @@ class PlanSafariController extends Controller
 
     public function store(Request $request)
     {
+        // Honeypot spam check
+        if ($request->filled('website')) {
+            return redirect()->route('plan-safari');
+        }
+
         $validated = $request->validate([
             'safari_id' => 'nullable|integer|exists:safari_packages,id',
             'destinations' => 'required|array|min:1',
             'destinations.*' => 'integer|exists:destinations,id',
-            'months' => 'required|array|min:1',
+            'months' => 'nullable|array',
             'months.*' => 'string|max:20',
+            'travel_start_date' => 'nullable|date|after_or_equal:today',
+            'travel_end_date' => 'nullable|date|after_or_equal:travel_start_date',
             'travel_group' => 'required|string|in:Solo,Couple,Family,Friends,Group',
             'interests' => 'nullable|array',
             'interests.*' => 'string|max:100',
-            'budget_range' => 'required|string|max:50',
+            'budget_range' => 'required|string|max:100',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -77,13 +84,18 @@ class PlanSafariController extends Controller
             'know_destination' => 'nullable|string|max:50',
         ]);
 
+        // Require either months or exact dates
+        if (empty($validated['months']) && empty($validated['travel_start_date'])) {
+            return back()->withErrors(['months' => 'Please select travel months or exact dates.']);
+        }
+
         $destinationNames = Destination::whereIn('id', $validated['destinations'])
             ->pluck('name')->toArray();
 
         $plan = SafariPlan::create([
             'safari_package_id' => $validated['safari_id'] ?? null,
             'destinations' => $destinationNames,
-            'months' => $validated['months'],
+            'months' => $validated['months'] ?? [],
             'travel_group' => $validated['travel_group'],
             'interests' => $validated['interests'] ?? [],
             'budget_range' => $validated['budget_range'],
@@ -95,6 +107,8 @@ class PlanSafariController extends Controller
             'contact_methods' => $validated['contact_methods'],
             'wants_updates' => $request->boolean('wants_updates'),
             'know_destination' => $validated['know_destination'] ?? null,
+            'travel_start_date' => $validated['travel_start_date'] ?? null,
+            'travel_end_date' => $validated['travel_end_date'] ?? null,
         ]);
 
         // Send admin email

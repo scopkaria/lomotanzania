@@ -29,12 +29,16 @@ use App\Http\Controllers\Agent\SafariRequestController as AgentSafariRequestCont
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\HeroSettingController;
 use App\Http\Controllers\Admin\HomepageController;
+use App\Http\Controllers\Admin\IndexHeroImageController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuBuilderController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\TourCategoryController;
 use App\Http\Controllers\Admin\TripadvisorReviewController;
+use App\Http\Controllers\Admin\BlogCommentController;
+use App\Http\Controllers\Admin\EditorUploadController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CustomTourController;
 use App\Http\Controllers\HomeController;
@@ -55,74 +59,7 @@ use Illuminate\Support\Facades\Route;
 | Server Diagnostic Route — DELETE after debugging
 |--------------------------------------------------------------------------
 */
-Route::get('/server-debug', function () {
-    $checks = [];
-
-    // PHP
-    $checks[] = 'PHP ' . PHP_VERSION;
-
-    // Extensions
-    foreach (['pdo_mysql','mbstring','openssl','tokenizer','xml','ctype','fileinfo','curl'] as $ext) {
-        if (!extension_loaded($ext)) $checks[] = "❌ MISSING ext-$ext";
-    }
-
-    // .env
-    $checks[] = 'APP_ENV=' . config('app.env');
-    $checks[] = 'APP_DEBUG=' . (config('app.debug') ? 'true' : 'false');
-    $checks[] = 'APP_URL=' . config('app.url');
-    $checks[] = 'DB=' . config('database.default');
-
-    // DB test
-    try {
-        \DB::connection()->getPdo();
-        $checks[] = '✅ DB connected: ' . \DB::connection()->getDatabaseName();
-        $checks[] = 'Tables: ' . count(\DB::select('SHOW TABLES'));
-    } catch (\Throwable $e) {
-        $checks[] = '❌ DB error: ' . $e->getMessage();
-    }
-
-    // Storage
-    $checks[] = is_writable(storage_path()) ? '✅ storage/ writable' : '❌ storage/ NOT writable';
-    $checks[] = is_writable(storage_path('logs')) ? '✅ storage/logs writable' : '❌ storage/logs NOT writable';
-    $checks[] = is_writable(storage_path('framework/views')) ? '✅ views writable' : '❌ views NOT writable';
-    $checks[] = is_dir(public_path('storage')) ? '✅ public/storage exists' : '❌ public/storage symlink MISSING';
-    $checks[] = file_exists(public_path('build/manifest.json')) ? '✅ build assets exist' : '❌ build/manifest.json MISSING';
-
-    // Paths
-    $checks[] = 'base_path: ' . base_path();
-    $checks[] = 'public_path: ' . public_path();
-    $checks[] = 'storage_path: ' . storage_path();
-
-    // Cached config check
-    if (file_exists(base_path('bootstrap/cache/config.php'))) {
-        $c = file_get_contents(base_path('bootstrap/cache/config.php'));
-        if (str_contains($c, 'wamp64') || str_contains($c, 'C:\\')) {
-            $checks[] = '❌ STALE CONFIG CACHE with Windows paths — deleting...';
-            @unlink(base_path('bootstrap/cache/config.php'));
-            $checks[] = '✅ Deleted stale config cache';
-        } else {
-            $checks[] = '✅ Config cache OK';
-        }
-    }
-
-    // Log tail
-    $logFile = storage_path('logs/laravel.log');
-    $logTail = '';
-    if (file_exists($logFile) && filesize($logFile) > 0) {
-        $lines = file($logFile);
-        $logTail = implode('', array_slice($lines, -50));
-    }
-
-    return response(
-        '<html><head><title>Debug</title><style>body{font-family:monospace;background:#111;color:#eee;padding:20px;max-width:900px;margin:0 auto}'
-        . 'h1{color:#FEBC11}pre{background:#222;padding:12px;border-radius:6px;overflow-x:auto;font-size:13px;max-height:500px;overflow-y:auto}</style></head>'
-        . '<body><h1>Lomo Server Debug</h1>'
-        . '<pre>' . e(implode("\n", $checks)) . '</pre>'
-        . '<h2>Log Tail</h2><pre>' . e($logTail) . '</pre>'
-        . '<p style="color:#f66"><strong>DELETE this route from routes/web.php after debugging!</strong></p>'
-        . '</body></html>'
-    );
-});
+// Debug route removed for security (was exposing server info publicly)
 
 // Root → redirect to default locale
 Route::get('/', fn () => redirect('/en'));
@@ -142,6 +79,8 @@ Route::prefix('{locale}')
         Route::get('/countries', [HomeController::class, 'countryIndex'])->name('countries.index');
         Route::get('/countries/{slug}', [HomeController::class, 'country'])->name('countries.show');
         Route::get('/trekking', [HomeController::class, 'trekkingIndex'])->name('trekking.index');
+        // ADDED: Beach page
+        Route::get('/beach', [HomeController::class, 'beachIndex'])->name('beach.index');
         Route::get('/experiences', [HomeController::class, 'experienceIndex'])->name('experiences.index');
         Route::get('/types/{slug}', [HomeController::class, 'tourType'])->name('tour-types.show');
         Route::get('/budget/{slug}', [HomeController::class, 'category'])->name('categories.show');
@@ -164,6 +103,9 @@ Route::prefix('{locale}')
 
         Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
         Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+        // ADDED: Blog comments
+        Route::post('/blog/{slug}/comments', [BlogController::class, 'storeComment'])->middleware('throttle:5,10')->name('blog.comment.store');
 
         // Programmatic SEO pages & GEO market pages
         Route::get('/safaris/market/{slug}', [SeoPageController::class, 'market'])->name('seo.market');
@@ -204,6 +146,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('pages/hero-settings', [HeroSettingController::class, 'edit'])->name('pages.hero-settings.edit');
     Route::put('pages/hero-settings', [HeroSettingController::class, 'update'])->name('pages.hero-settings.update');
 
+    // Index hero images (per-section hero banners)
+    Route::get('pages/index-hero-images', [IndexHeroImageController::class, 'edit'])->name('pages.index-hero-images.edit');
+    Route::put('pages/index-hero-images', [IndexHeroImageController::class, 'update'])->name('pages.index-hero-images.update');
+
     // Bulk action routes (must be before resource routes)
     Route::post('safaris/bulk-action', [SafariController::class, 'bulkAction'])->name('safaris.bulk-action');
     Route::post('accommodations/bulk-action', [AccommodationController::class, 'bulkAction'])->name('accommodations.bulk-action');
@@ -223,6 +169,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('accommodations', AccommodationController::class)->except(['show']);
     Route::resource('tour-types', TourTypeController::class)->except(['show']);
     Route::resource('categories', CategoryController::class)->except(['show']);
+
+    // ADDED: Tour Categories (Safari/Trekking/Beach)
+    Route::resource('tour-categories', TourCategoryController::class)->except(['show']);
+    Route::post('tour-categories/bulk-action', [TourCategoryController::class, 'bulkAction'])->name('tour-categories.bulk-action');
+
+    // ADDED: Blog Comment Moderation
+    Route::get('blog-comments', [BlogCommentController::class, 'index'])->name('blog-comments.index');
+    Route::post('blog-comments/{blogComment}/approve', [BlogCommentController::class, 'approve'])->name('blog-comments.approve');
+    Route::post('blog-comments/{blogComment}/reject', [BlogCommentController::class, 'reject'])->name('blog-comments.reject');
+    Route::delete('blog-comments/{blogComment}', [BlogCommentController::class, 'destroy'])->name('blog-comments.destroy');
+    Route::post('blog-comments/bulk-action', [BlogCommentController::class, 'bulkAction'])->name('blog-comments.bulk-action');
     Route::resource('countries', CountryController::class)->except(['show']);
     Route::resource('destinations', DestinationController::class)->except(['show']);
     Route::resource('testimonials', TestimonialController::class)->except(['show']);
@@ -240,6 +197,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('pages', AdminPageController::class)->except(['show']);
     Route::post('pages/upload-image', [AdminPageController::class, 'uploadImage'])->name('pages.upload-image');
+
+    // ADDED: Global editor image upload endpoint for rich text editor
+    Route::post('editor/upload-image', [EditorUploadController::class, 'uploadImage'])->name('editor.upload-image');
 
     Route::resource('posts', PostController::class)->except(['show']);
     Route::resource('blog-categories', BlogCategoryController::class)->except(['show']);
@@ -486,6 +446,8 @@ Route::prefix('api/chat')->name('api.chat.')->middleware('throttle:60,1')->group
     Route::post('{chatSession}/typing', [ApiChatController::class, 'typing'])->name('typing');
     Route::post('{chatSession}/lead', [ApiChatController::class, 'lead'])->name('lead')->middleware('throttle:5,1');
     Route::post('{chatSession}/ai-response', [ApiChatController::class, 'aiResponse'])->name('ai-response')->middleware('throttle:20,1');
+    Route::post('{chatSession}/request-support', [ApiChatController::class, 'requestSupport'])->name('request-support')->middleware('throttle:5,1');
+    Route::get('departments', [ApiChatController::class, 'departments'])->name('departments');
     Route::post('{chatSession}/end', [ApiChatController::class, 'endSession'])->name('end');
 });
 

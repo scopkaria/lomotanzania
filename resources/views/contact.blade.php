@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', __('messages.contact') . ' - ' . ($siteName ?? 'Lomo Tanzania Safari'))
 
@@ -25,7 +25,7 @@
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/50 to-brand-dark/90"></div>
     <div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
-        <p class="text-[11px] font-semibold tracking-[0.3em] uppercase text-brand-gold mb-3">{{ __('messages.get_in_touch') }}</p>
+        <p class="text-kicker tracking-kicker uppercase text-brand-gold mb-3">{{ __('messages.get_in_touch') }}</p>
         <h1 class="font-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-4">{{ __('messages.contact') }}</h1>
         <p class="text-white/70 text-base md:text-lg max-w-xl mx-auto">We'd love to hear from you. Whether you have a question about our safaris, pricing, or anything else — our team is ready to help.</p>
     </div>
@@ -45,7 +45,7 @@
                     <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
                 </div>
                 <h3 class="font-heading text-sm font-bold text-brand-dark uppercase tracking-wider mb-1">Phone</h3>
-                <p class="text-sm text-brand-dark/70">{{ $setting->phone_number ?? '+255 123 456 789' }}</p>
+                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $setting->phone_number ?? '+255123456789') }}" class="text-sm text-brand-dark/70 hover:text-brand-green transition">{{ $setting->phone_number ?? '+255 123 456 789' }}</a>
             </div>
 
             {{-- WhatsApp --}}
@@ -54,7 +54,7 @@
                     <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.918l4.462-1.495A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.34 0-4.528-.67-6.387-1.826l-.458-.282-2.65.888.886-2.647-.282-.458A9.935 9.935 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
                 </div>
                 <h3 class="font-heading text-sm font-bold text-brand-dark uppercase tracking-wider mb-1">WhatsApp</h3>
-                <p class="text-sm text-brand-dark/70">{{ $setting->whatsapp_number ?? '+255 123 456 789' }}</p>
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $setting->whatsapp_number ?? '255123456789') }}" target="_blank" rel="noopener" class="text-sm text-brand-dark/70 hover:text-green-600 transition">{{ $setting->whatsapp_number ?? '+255 123 456 789' }}</a>
             </div>
 
             {{-- Email --}}
@@ -63,7 +63,7 @@
                     <svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                 </div>
                 <h3 class="font-heading text-sm font-bold text-brand-dark uppercase tracking-wider mb-1">Email</h3>
-                <p class="text-sm text-brand-dark/70">{{ $setting->notification_email ?? 'info@lomotanzania.com' }}</p>
+                <a href="mailto:{{ $setting->notification_email ?? 'info@lomotanzaniasafari.com' }}" class="text-sm text-brand-dark/70 hover:text-brand-gold transition">{{ $setting->notification_email ?? 'info@lomotanzaniasafari.com' }}</a>
             </div>
 
             {{-- Hours --}}
@@ -84,7 +84,7 @@
         <div class="flex flex-col lg:flex-row gap-10">
 
             {{-- Contact Form --}}
-            <div class="flex-1">
+            <div class="flex-1 scroll-reveal">
                 <h2 class="font-heading text-2xl md:text-3xl font-bold text-brand-dark mb-2">Send Us a Message</h2>
                 <p class="text-sm text-brand-dark/60 mb-8">Fill out the form below and we'll get back to you as soon as possible.</p>
 
@@ -132,7 +132,26 @@
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">{{ __('messages.phone_with_code') ?: 'Phone' }} <span class="text-red-500">*</span></label>
                             <div class="flex gap-2">
                                 <select name="country_code" class="w-28 rounded-lg border-gray-300 bg-white shadow-sm focus:border-brand-gold focus:ring-brand-gold text-sm py-3 px-3">
-                                    @foreach(['+255' => 'TZ +255', '+1' => 'US +1', '+44' => 'UK +44', '+49' => 'DE +49', '+33' => 'FR +33', '+34' => 'ES +34', '+971' => 'AE +971'] as $code => $label)
+                                    @foreach([
+                                        '+93' => '🇦🇫 +93', '+355' => '🇦🇱 +355', '+213' => '🇩🇿 +213', '+54' => '🇦🇷 +54',
+                                        '+61' => '🇦🇺 +61', '+43' => '🇦🇹 +43', '+880' => '🇧🇩 +880', '+32' => '🇧🇪 +32',
+                                        '+55' => '🇧🇷 +55', '+267' => '🇧🇼 +267', '+1' => '🇨🇦/🇺🇸 +1', '+56' => '🇨🇱 +56',
+                                        '+86' => '🇨🇳 +86', '+57' => '🇨🇴 +57', '+243' => '🇨🇩 +243', '+506' => '🇨🇷 +506',
+                                        '+385' => '🇭🇷 +385', '+420' => '🇨🇿 +420', '+45' => '🇩🇰 +45', '+20' => '🇪🇬 +20',
+                                        '+251' => '🇪🇹 +251', '+358' => '🇫🇮 +358', '+33' => '🇫🇷 +33', '+49' => '🇩🇪 +49',
+                                        '+233' => '🇬🇭 +233', '+30' => '🇬🇷 +30', '+852' => '🇭🇰 +852', '+36' => '🇭🇺 +36',
+                                        '+91' => '🇮🇳 +91', '+62' => '🇮🇩 +62', '+353' => '🇮🇪 +353', '+972' => '🇮🇱 +972',
+                                        '+39' => '🇮🇹 +39', '+81' => '🇯🇵 +81', '+254' => '🇰🇪 +254', '+82' => '🇰🇷 +82',
+                                        '+965' => '🇰🇼 +965', '+60' => '🇲🇾 +60', '+52' => '🇲🇽 +52', '+212' => '🇲🇦 +212',
+                                        '+258' => '🇲🇿 +258', '+31' => '🇳🇱 +31', '+64' => '🇳🇿 +64', '+234' => '🇳🇬 +234',
+                                        '+47' => '🇳🇴 +47', '+92' => '🇵🇰 +92', '+51' => '🇵🇪 +51', '+63' => '🇵🇭 +63',
+                                        '+48' => '🇵🇱 +48', '+351' => '🇵🇹 +351', '+974' => '🇶🇦 +974', '+40' => '🇷🇴 +40',
+                                        '+7' => '🇷🇺 +7', '+250' => '🇷🇼 +250', '+966' => '🇸🇦 +966', '+65' => '🇸🇬 +65',
+                                        '+27' => '🇿🇦 +27', '+34' => '🇪🇸 +34', '+46' => '🇸🇪 +46', '+41' => '🇨🇭 +41',
+                                        '+886' => '🇹🇼 +886', '+255' => '🇹🇿 +255', '+66' => '🇹🇭 +66', '+90' => '🇹🇷 +90',
+                                        '+256' => '🇺🇬 +256', '+971' => '🇦🇪 +971', '+44' => '🇬🇧 +44',
+                                        '+84' => '🇻🇳 +84', '+260' => '🇿🇲 +260', '+263' => '🇿🇼 +263',
+                                    ] as $code => $label)
                                         <option value="{{ $code }}" @selected(old('country_code', '+255') === $code)>{{ $label }}</option>
                                     @endforeach
                                 </select>
@@ -161,6 +180,13 @@
                         @error('message') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    {{-- Consent --}}
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" name="consent" value="1" required
+                               class="rounded border-gray-300 text-brand-green focus:ring-brand-green mt-0.5">
+                        <span class="text-sm text-gray-600 leading-relaxed">By submitting this form, you agree to receive updates and special offers from <strong>{{ $siteName ?? 'Lomo Tanzania Safari' }}</strong>.</span>
+                    </label>
+
                     <div>
                         <button type="submit"
                                 class="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-dark text-white text-sm font-semibold uppercase tracking-wider hover:bg-brand-gold hover:text-brand-dark transition-all duration-200">
@@ -174,10 +200,13 @@
             {{-- Location & Map --}}
             <div class="lg:w-[420px] flex-shrink-0">
                 <div class="bg-white rounded-lg border border-gray-100 overflow-hidden shadow-sm sticky top-[100px]">
-                    {{-- Static map placeholder --}}
+                    {{-- Dynamic map from admin settings --}}
                     <div class="aspect-[4/3] bg-gray-100 relative">
+                        @php
+                            $mapEmbed = $setting->map_embed ?? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253466.21150476826!2d36.66857905!3d-3.38692895!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x18371b8b1237c7a1%3A0xefb65c43a8923926!2sArusha%2C%20Tanzania!5e0!3m2!1sen!2sus!4v1704067200000';
+                        @endphp
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253466.21150476826!2d36.66857905!3d-3.38692895!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x18371b8b1237c7a1%3A0xefb65c43a8923926!2sArusha%2C%20Tanzania!5e0!3m2!1sen!2sus!4v1704067200000"
+                            src="{{ $mapEmbed }}"
                             class="w-full h-full border-0"
                             allowfullscreen=""
                             loading="lazy"
@@ -188,15 +217,15 @@
                         <div class="space-y-3">
                             <div class="flex items-start gap-3">
                                 <svg class="w-4 h-4 text-brand-green mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                                <p class="text-sm text-brand-dark/70">Arusha, Tanzania</p>
+                                <p class="text-sm text-brand-dark/70">{{ $setting->office_location ?? 'Arusha, Tanzania' }}</p>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="w-4 h-4 text-brand-green mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                                <p class="text-sm text-brand-dark/70">{{ $setting->phone_number ?? '+255 123 456 789' }}</p>
+                                <a href="tel:{{ preg_replace('/[^0-9+]/', '', $setting->phone_number ?? '+255123456789') }}" class="text-sm text-brand-dark/70 hover:text-brand-green transition">{{ $setting->phone_number ?? '+255 123 456 789' }}</a>
                             </div>
                             <div class="flex items-start gap-3">
                                 <svg class="w-4 h-4 text-brand-green mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                                <p class="text-sm text-brand-dark/70">{{ $setting->notification_email ?? 'info@lomotanzania.com' }}</p>
+                                <a href="mailto:{{ $setting->notification_email ?? 'info@lomotanzaniasafari.com' }}" class="text-sm text-brand-dark/70 hover:text-brand-gold transition">{{ $setting->notification_email ?? 'info@lomotanzaniasafari.com' }}</a>
                             </div>
                         </div>
                     </div>

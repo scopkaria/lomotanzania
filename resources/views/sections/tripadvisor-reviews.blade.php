@@ -15,8 +15,8 @@
 
         {{-- Header --}}
         <div class="text-center mb-14">
-            <p class="text-xs font-semibold tracking-[0.3em] uppercase text-[#FEBC11] mb-3">Reviews</p>
-            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            <p class="text-kicker tracking-kicker uppercase text-[#FEBC11] mb-3">Reviews</p>
+            <h2 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-heading tracking-safari">
                 {{ $heading }}
             </h2>
             @if($subheading)
@@ -54,7 +54,7 @@
                 @endif
 
                 {{-- Review text --}}
-                <blockquote class="text-xl md:text-2xl text-white/90 leading-relaxed mb-8 max-w-3xl mx-auto font-light italic">
+                <blockquote class="text-lg md:text-xl text-white/90 leading-relaxed mb-8 max-w-3xl mx-auto font-body italic">
                     &ldquo;{{ Str::limit($review->review_text, 300) }}&rdquo;
                 </blockquote>
 

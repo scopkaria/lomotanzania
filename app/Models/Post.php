@@ -47,6 +47,17 @@ class Post extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    // ADDED: Blog comments
+    public function comments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BlogComment::class);
+    }
+
+    public function approvedComments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BlogComment::class)->where('status', 'approved');
+    }
+
     // ── Translation helpers ──
 
     public function translatedTitle(?string $locale = null): string

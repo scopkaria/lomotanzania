@@ -30,7 +30,7 @@ class MediaController extends Controller
     {
         $request->validate([
             'files'   => 'required|array',
-            'files.*' => 'required|file|mimes:jpg,jpeg,png,gif,webp,svg,pdf,mp4|max:10240',
+            'files.*' => 'required|file|mimes:'.implode(',', config('uploads.media_library_mimes', [])).'|max:'.config('uploads.max_upload_kb', 20480),
         ]);
 
         $uploaded = [];
@@ -83,12 +83,27 @@ class MediaController extends Controller
 
     /**
      * JSON endpoint for the media picker modal.
+     * Returns paginated results so the admin can load ALL media.
      */
     public function json(Request $request)
     {
-        $query = Media::where(function ($q) {
-            $q->where('mime_type', 'like', 'image/%');
-        })->latest();
+        $kind = (string) $request->input('kind', 'all');
+
+        $query = Media::query();
+
+        if ($kind === 'video') {
+            $query->where('mime_type', 'like', 'video/%');
+        } elseif ($kind === 'image') {
+            $query->where('mime_type', 'like', 'image/%');
+        } elseif ($kind === 'media') {
+            $query->where(function ($q) {
+                $q->where('mime_type', 'like', 'image/%')
+                    ->orWhere('mime_type', 'like', 'video/%');
+            });
+        }
+        // kind === 'all' → no mime filter
+
+        $query->latest();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -98,7 +113,16 @@ class MediaController extends Controller
             });
         }
 
-        return response()->json($query->limit(60)->get());
+        $page    = max(1, (int) $request->input('page', 1));
+        $perPage = 60;
+        $items   = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data'         => $items->items(),
+            'current_page' => $items->currentPage(),
+            'last_page'    => $items->lastPage(),
+            'total'        => $items->total(),
+        ]);
     }
 
     /**

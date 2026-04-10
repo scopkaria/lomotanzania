@@ -686,8 +686,15 @@
                     });
                 },
 
-                removeSection(idx) {
-                    if (confirm('Remove this section?')) {
+                async removeSection(idx) {
+                    const confirmed = await window.showLomoConfirm({
+                        title: 'Remove section',
+                        message: 'Remove this section?',
+                        confirmText: 'Remove section',
+                        tone: 'danger',
+                    });
+
+                    if (confirmed) {
                         this.sections.splice(idx, 1);
                     }
                 },
@@ -711,8 +718,15 @@
                     });
                 },
 
-                removeSlide(sectionIdx, slideIdx) {
-                    if (confirm('Remove this slide?')) {
+                async removeSlide(sectionIdx, slideIdx) {
+                    const confirmed = await window.showLomoConfirm({
+                        title: 'Remove slide',
+                        message: 'Remove this slide?',
+                        confirmText: 'Remove slide',
+                        tone: 'danger',
+                    });
+
+                    if (confirmed) {
                         this.sections[sectionIdx].slides.splice(slideIdx, 1);
                     }
                 },
@@ -777,7 +791,18 @@
                             headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                             body: formData,
                         });
-                        if (!res.ok) throw new Error('Upload failed');
+
+                        if (!res.ok) {
+                            let message = 'Upload failed. Files can be up to {{ (int) config('uploads.max_upload_mb', 20) }}MB.';
+                            try {
+                                const data = await res.json();
+                                message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                            } catch (error) {
+                                console.error('Upload response parse error:', error);
+                            }
+                            throw new Error(message);
+                        }
+
                         const data = await res.json();
                         const media = data.media || [];
                         if (media.length) {
@@ -793,7 +818,9 @@
                         }
                     } catch (e) {
                         console.error('Upload error:', e);
-                        alert('Upload failed.');
+                        if (window.showLomoToast) {
+                            window.showLomoToast(e.message || 'Upload failed.', 'error');
+                        }
                     } finally {
                         event.target.value = '';
                     }
@@ -811,11 +838,24 @@
                             headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                             body: formData,
                         });
-                        if (!res.ok) throw new Error('Upload failed');
+
+                        if (!res.ok) {
+                            let message = 'Upload failed. Files can be up to {{ (int) config('uploads.max_upload_mb', 20) }}MB.';
+                            try {
+                                const data = await res.json();
+                                message = Object.values(data.errors || {}).flat()[0] || data.message || message;
+                            } catch (error) {
+                                console.error('Upload response parse error:', error);
+                            }
+                            throw new Error(message);
+                        }
+
                         await this.fetchMedia();
                     } catch (e) {
                         console.error(e);
-                        alert('Upload failed.');
+                        if (window.showLomoToast) {
+                            window.showLomoToast(e.message || 'Upload failed.', 'error');
+                        }
                     } finally {
                         event.target.value = '';
                     }
